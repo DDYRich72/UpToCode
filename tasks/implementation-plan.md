@@ -1,0 +1,40 @@
+# Implementation Plan
+
+## Gate 1
+
+- [ ] Package/import smoke test.
+- [ ] Public Pydantic contracts and deterministic serialization.
+- [ ] Config, discovery, exclusions, `.gitignore`, size limit, suppressions.
+- [ ] Redaction boundary.
+- [ ] AA001 evidence extraction and rule behavior.
+- [ ] JSON reporter, scan CLI, exit codes 0/1/2.
+- [ ] Record Gate 1 validation.
+
+## Gate 2
+
+- [ ] Implement static AA002, AA003, AA004, AA006, AA007, AA010, AA011, AA012.
+- [ ] Implement judgment candidate extraction for AA003, AA005, AA008, AA009, AA010, AA011.
+- [ ] OpenAI Agents SDK, LangGraph, custom-loop, and raw-call evidence.
+- [ ] Rule registry/YAML, terminal reporter, fixtures, goldens, coverage and warnings.
+- [ ] Record Gate 2 validation.
+
+## Gate 3
+
+- [ ] Mocked GPT-5.6 structured judgment and failure behavior.
+- [ ] Review manifest and FIXPLAN generation.
+- [ ] Standalone HTML report and visual verification.
+- [ ] Static MCP tools and integration tests.
+- [ ] Record Gate 3 validation.
+
+## Gate 4
+
+- [ ] README and demo assets.
+- [ ] Cross-platform `scripts/acceptance.py`.
+- [ ] Self-scan triage.
+- [ ] Full completion audit and validation report.
+- [ ] Ask for approval, then run one live GPT-5.6 smoke test.
+
+## Definition of Done mapping
+
+Each item in `SPEC.md §9` maps to the corresponding gate above; authoritative evidence is recorded in `tasks/validation-report.md`.
+
