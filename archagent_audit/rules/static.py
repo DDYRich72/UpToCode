@@ -107,6 +107,8 @@ def evaluate_file(file: str, lines: list[str], facts: FileFacts) -> list[Finding
             findings.append(_finding("AA004", "Unvalidated tool arguments", Severity.CRITICAL, file, sink.line, "model-arg-to-sensitive-sink", f"A model-controlled value reaches {sink.kind} without recognized validation.", excerpt(sink.line), "Validate and constrain arguments before the sink.", [OPENAI_FUNCTIONS]))
     for line in facts.hardcoded_secrets:
         findings.append(_finding("AA006", "Secret exposure", Severity.CRITICAL, file, line, "hardcoded-secret", "A hardcoded API credential is present in source.", excerpt(line), "Load the secret from a protected runtime environment and keep it out of prompts and logs.", [OPENAI_SAFETY]))
+    for line in facts.hardcoded_pii:
+        findings.append(_finding("AA006", "PII exposure", Severity.CRITICAL, file, line, "hardcoded-pii", "A hardcoded email address or US Social Security number is present in agent source.", excerpt(line), "Remove personal data from source and pass only the minimum protected value at runtime.", [OPENAI_SAFETY]))
     for line in facts.secret_prompt_exposures:
         findings.append(_finding("AA006", "Secret exposure", Severity.CRITICAL, file, line, "secret-in-prompt", "A secret-derived environment value is interpolated into a model prompt.", excerpt(line), "Keep credentials out of model inputs and pass them only to the trusted integration that needs them.", [OPENAI_SAFETY]))
     for sink in facts.raw_output_sinks:

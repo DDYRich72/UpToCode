@@ -74,7 +74,7 @@ main{{max-width:980px;margin:auto;padding:40px 22px 80px}} h1{{font-size:2rem;ma
 <div class="metric"><strong>{len(report.findings)}</strong>Findings</div>
 <div class="metric"><strong>{report.coverage.files_analyzed}/{report.coverage.files_discovered}</strong>Files analyzed</div>
 <div class="metric"><strong>{len(report.analysis_warnings)}</strong>Analysis warnings</div>
-<div class="metric"><strong>{report.redactions.secrets}</strong>Secrets redacted</div></section>
+<div class="metric"><strong>{report.redactions.secrets + report.redactions.pii}</strong>Sensitive values redacted</div></section>
 <section class="panel"><h2>Findings by category</h2>{bars}</section>
 <section class="panel"><h2>Coverage</h2><p>Frameworks: {_text(frameworks)}</p>
 <p>Rules evaluated: {_text(', '.join(report.coverage.rules_evaluated) or 'None')}</p>

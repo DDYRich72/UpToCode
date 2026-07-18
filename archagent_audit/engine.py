@@ -131,7 +131,7 @@ def scan_path(
             try:
                 from openai import OpenAI
 
-                judgment_client = OpenAI()
+                judgment_client = OpenAI(max_retries=2, timeout=30.0)
             except Exception:
                 report.judgment_status = "failed"
                 report.analysis_warnings.append(

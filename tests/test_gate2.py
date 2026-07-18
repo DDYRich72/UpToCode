@@ -31,6 +31,21 @@ def test_clean_fixture_has_no_findings_or_unexplained_warnings() -> None:
     assert report.analysis_warnings == []
 
 
+def test_hardcoded_pii_is_reported_and_redacted(tmp_path: Path) -> None:
+    (tmp_path / "agent.py").write_text(
+        'contact = "owner@example.com"\nagent = Agent(name="support")\n',
+        encoding="utf-8",
+    )
+
+    report = scan_path(tmp_path)
+    rendered = report.model_dump_json()
+
+    assert any(item.rule_id == "AA006" for item in report.findings)
+    assert "owner@example.com" not in rendered
+    assert "[REDACTED:email-address]" in rendered
+    assert report.redactions.pii >= 1
+
+
 @pytest.mark.parametrize(
     ("source", "expected_rule"),
     [

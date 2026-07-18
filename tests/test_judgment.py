@@ -84,6 +84,9 @@ def test_structured_success_adds_judgment_finding_and_redacts_payload() -> None:
     assert SECRET not in payload
     assert "[REDACTED:openai-api-key]" in payload
     assert client.responses.calls[0]["model"] == "gpt-5.6"
+    assert client.responses.calls[0]["max_output_tokens"] == 2_000
+    assert client.responses.calls[0]["timeout"] == 30.0
+    assert client.responses.calls[0]["store"] is False
     assert client.responses.calls[0]["text_format"] is JudgmentBatch
 
 

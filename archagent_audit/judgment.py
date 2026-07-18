@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from collections import defaultdict
 from typing import Literal
 
@@ -23,6 +24,10 @@ from archagent_audit.models import (
 )
 from archagent_audit.redaction import redact_text
 from archagent_audit.rules.registry import load_core_rules
+
+
+logger = logging.getLogger(__name__)
+JUDGMENT_RULE_BUDGET = 6
 
 
 class JudgmentFinding(BaseModel):
@@ -132,14 +137,30 @@ def run_judgment(
     grouped: dict[str, list[JudgmentCandidate]] = defaultdict(list)
     for candidate in candidates:
         grouped[candidate.rule_id].append(candidate)
+    if len(grouped) > JUDGMENT_RULE_BUDGET:
+        report.analysis_warnings.append(
+            _warning(
+                "*",
+                "JUDGMENT_BUDGET_EXCEEDED",
+                "Judgment rule-call budget was exceeded; static results were preserved.",
+            )
+        )
+        report.judgment_status = "failed"
+        return report
     failures = 0
     successes = 0
     for rule_id in sorted(grouped):
         rule_candidates = grouped[rule_id]
         payload = _candidate_payload(rule_candidates, report)
         try:
+            # The OpenAI client is created with bounded retries in engine.py.
+            # archagent-audit: ignore AA007
             response = client.responses.parse(
                 model="gpt-5.6",
+                max_output_tokens=2_000,
+                timeout=30.0,
+                store=False,
+                metadata={"component": "archagent-judgment", "rule_id": rule_id},
                 input=[
                     {
                         "role": "system",
@@ -155,6 +176,7 @@ def run_judgment(
             )
         except BaseException as error:
             code, message = _error_code(error)
+            logger.warning("Judgment rule %s failed with %s", rule_id, code)
             report.analysis_warnings.append(_warning(rule_id, code, message))
             failures += 1
             continue
@@ -199,4 +221,3 @@ def run_judgment(
         key=lambda item: (item.file or "", item.line or 0, item.code)
     )
     return report
-

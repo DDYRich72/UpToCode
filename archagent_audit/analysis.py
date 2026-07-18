@@ -5,6 +5,8 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass, field
 
+from archagent_audit.redaction import contains_pii
+
 
 MODEL_METHODS = {"create", "parse", "run", "run_sync", "run_streamed"}
 SIDE_EFFECT_NAMES = {
@@ -64,6 +66,7 @@ class FileFacts:
     risky_sinks: list[SinkFact] = field(default_factory=list)
     raw_output_sinks: list[SinkFact] = field(default_factory=list)
     hardcoded_secrets: list[int] = field(default_factory=list)
+    hardcoded_pii: list[int] = field(default_factory=list)
     secret_prompt_exposures: list[int] = field(default_factory=list)
     has_run_budget: bool = False
     has_observability: bool = False
@@ -178,6 +181,8 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
             if node.value.startswith("sk-") and len(node.value) >= 20:
                 facts.hardcoded_secrets.append(node.lineno)
+            if contains_pii(node.value):
+                facts.hardcoded_pii.append(node.lineno)
 
     for function in [node for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]:
         is_tool = _is_tool(function)

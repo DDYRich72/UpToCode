@@ -130,6 +130,16 @@ def test_secret_redaction_is_irreversible() -> None:
     assert counts.secrets == 1
 
 
+def test_narrow_pii_forms_are_redacted_and_counted() -> None:
+    redacted, counts = redact_text("owner@example.com 123-45-6789")
+
+    assert "owner@example.com" not in redacted
+    assert "123-45-6789" not in redacted
+    assert "[REDACTED:email-address]" in redacted
+    assert "[REDACTED:us-ssn]" in redacted
+    assert counts.pii == 2
+
+
 def test_discovery_honors_gitignore_and_default_excludes(tmp_path: Path) -> None:
     write_source(tmp_path, "while True:\n    work()\n", "keep.py")
     write_source(tmp_path, "while True:\n    work()\n", "ignored.py")
