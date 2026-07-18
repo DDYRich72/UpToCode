@@ -37,8 +37,9 @@ def _has_break(node: ast.While) -> bool:
 
 
 class EvidenceVisitor(ast.NodeVisitor):
-    def __init__(self) -> None:
+    def __init__(self, constants: dict[str, int | None]) -> None:
         self.result = PythonEvidence()
+        self.constants = constants
 
     def visit_Call(self, node: ast.Call) -> None:  # noqa: N802
         name = _qualified_name(node.func)
@@ -57,9 +58,27 @@ class EvidenceVisitor(ast.NodeVisitor):
                 kind, detail = "disabled", "max_turns=None"
             elif isinstance(max_turns, ast.Constant) and isinstance(max_turns.value, int):
                 kind, detail = "explicit", f"max_turns={max_turns.value}"
+            elif isinstance(max_turns, ast.Name) and max_turns.id in self.constants:
+                value = self.constants[max_turns.id]
+                kind = "disabled" if value is None else "explicit"
+                detail = f"max_turns={value!r} via {max_turns.id}"
             else:
                 kind, detail = "unknown", "max_turns is dynamically configured"
             self.result.loops.append(LoopEvidence(node.lineno, "openai-agents", kind, detail))
+        elif name.endswith((".invoke", ".ainvoke")):
+            config = next((keyword.value for keyword in node.keywords if keyword.arg == "config"), None)
+            if isinstance(config, ast.Dict):
+                for key, value in zip(config.keys, config.values, strict=False):
+                    if not isinstance(key, ast.Constant) or key.value != "recursion_limit":
+                        continue
+                    self.result.frameworks.add("langgraph")
+                    if isinstance(value, ast.Constant) and value.value is None:
+                        kind, detail = "disabled", "recursion_limit=None"
+                    elif isinstance(value, ast.Constant) and isinstance(value.value, int):
+                        kind, detail = "explicit", f"recursion_limit={value.value}"
+                    else:
+                        kind, detail = "unknown", "recursion_limit is dynamically configured"
+                    self.result.loops.append(LoopEvidence(node.lineno, "langgraph", kind, detail))
         self.generic_visit(node)
 
     def visit_While(self, node: ast.While) -> None:  # noqa: N802
@@ -70,10 +89,38 @@ class EvidenceVisitor(ast.NodeVisitor):
             self.result.loops.append(LoopEvidence(node.lineno, "custom-python", kind, detail))
         self.generic_visit(node)
 
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:  # noqa: N802
+        recursive = any(
+            isinstance(candidate, ast.Call)
+            and _qualified_name(candidate.func) == node.name
+            for candidate in ast.walk(node)
+        )
+        has_base_case = any(isinstance(candidate, ast.If) for candidate in ast.walk(node))
+        if recursive:
+            self.result.frameworks.add("custom-python")
+            kind = "custom" if has_base_case else "disabled"
+            detail = "recursive function has a base case" if has_base_case else "direct recursion has no base case"
+            self.result.loops.append(LoopEvidence(node.lineno, "custom-python", kind, detail))
+        self.generic_visit(node)
+
+    visit_AsyncFunctionDef = visit_FunctionDef
+
 
 def extract_python_evidence(source: str) -> PythonEvidence:
     tree = ast.parse(source)
-    visitor = EvidenceVisitor()
+    constants: dict[str, int | None] = {}
+    for statement in tree.body:
+        if not isinstance(statement, (ast.Assign, ast.AnnAssign)):
+            continue
+        value = statement.value
+        if not isinstance(value, ast.Constant) or not (
+            value.value is None or isinstance(value.value, int)
+        ):
+            continue
+        targets = statement.targets if isinstance(statement, ast.Assign) else [statement.target]
+        for target in targets:
+            if isinstance(target, ast.Name):
+                constants[target.id] = value.value
+    visitor = EvidenceVisitor(constants)
     visitor.visit(tree)
     return visitor.result
-

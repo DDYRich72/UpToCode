@@ -50,12 +50,12 @@ def evaluate_aa001(
         )
     evidence_kind = (
         "explicit-disabled-limit"
-        if loop.framework == "openai-agents"
+        if loop.framework in {"openai-agents", "langgraph"}
         else "custom-loop-no-exit"
     )
     observed = (
         "Runner.run explicitly disables its turn limit."
-        if loop.framework == "openai-agents"
+        if loop.framework in {"openai-agents", "langgraph"}
         else "A custom while-True agent loop has no detectable exit."
     )
     finding = Finding(
@@ -79,4 +79,3 @@ def evaluate_aa001(
         remediation=Remediation(complexity="moderate"),
     )
     return finding, None
-

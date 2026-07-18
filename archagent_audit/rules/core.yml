@@ -1,0 +1,81 @@
+- id: AA001
+  name: unbounded-agent-loop
+  tier: static
+  severity: critical
+  citations:
+    - https://openai.github.io/openai-agents-python/ref/run/
+    - https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
+- id: AA002
+  name: missing-run-budget
+  tier: static
+  severity: critical
+  citations:
+    - https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
+- id: AA003
+  name: ungated-destructive-action
+  tier: static+judgment
+  severity: critical
+  citations:
+    - https://openai.github.io/openai-agents-python/human_in_the_loop/
+    - https://developers.openai.com/api/docs/guides/agent-builder-safety
+- id: AA004
+  name: unvalidated-tool-arguments
+  tier: static
+  severity: critical
+  citations:
+    - https://developers.openai.com/api/docs/guides/function-calling
+    - https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools
+- id: AA005
+  name: untrusted-content-in-prompt
+  tier: judgment
+  severity: critical
+  citations:
+    - https://developers.openai.com/api/docs/guides/agent-builder-safety
+    - https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/mitigate-jailbreaks
+- id: AA006
+  name: secret-exposure
+  tier: static
+  severity: critical
+  citations:
+    - https://developers.openai.com/api/docs/guides/agent-builder-safety
+- id: AA007
+  name: missing-resilience-controls
+  tier: static
+  severity: warning
+  citations:
+    - https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
+- id: AA008
+  name: unjustified-orchestration-complexity
+  tier: judgment
+  severity: warning
+  citations:
+    - https://www.anthropic.com/engineering/building-effective-agents
+    - https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
+- id: AA009
+  name: poor-tool-schema
+  tier: judgment
+  severity: warning
+  citations:
+    - https://developers.openai.com/api/docs/guides/function-calling
+    - https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools
+- id: AA010
+  name: unvalidated-output-before-side-effect
+  tier: static+judgment
+  severity: warning
+  citations:
+    - https://developers.openai.com/api/docs/guides/function-calling
+    - https://developers.openai.com/api/docs/guides/agent-builder-safety
+- id: AA011
+  name: no-agent-eval-coverage
+  tier: static+judgment
+  severity: warning
+  citations:
+    - https://developers.openai.com/api/docs/guides/evals
+    - https://adk.dev/evaluate/
+- id: AA012
+  name: no-agent-observability
+  tier: static
+  severity: info
+  citations:
+    - https://openai.github.io/openai-agents-python/tracing/
+

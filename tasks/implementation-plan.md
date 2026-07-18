@@ -12,11 +12,11 @@
 
 ## Gate 2
 
-- [ ] Implement static AA002, AA003, AA004, AA006, AA007, AA010, AA011, AA012.
-- [ ] Implement judgment candidate extraction for AA003, AA005, AA008, AA009, AA010, AA011.
-- [ ] OpenAI Agents SDK, LangGraph, custom-loop, and raw-call evidence.
-- [ ] Rule registry/YAML, terminal reporter, fixtures, goldens, coverage and warnings.
-- [ ] Record Gate 2 validation.
+- [x] Implement static AA002, AA003, AA004, AA006, AA007, AA010, AA011, AA012.
+- [x] Implement judgment candidate extraction for AA003, AA005, AA008, AA009, AA010, AA011.
+- [x] OpenAI Agents SDK, LangGraph, custom-loop, and raw-call evidence.
+- [x] Rule registry/YAML, terminal reporter, fixtures, goldens, coverage and warnings.
+- [x] Record Gate 2 validation.
 
 ## Gate 3
 

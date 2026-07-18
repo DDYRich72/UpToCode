@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import ast
 from pathlib import Path
 
 from archagent_audit import __version__
+from archagent_audit.analysis import FileFacts, analyze_source
 from archagent_audit.adapters.python import extract_python_evidence
 from archagent_audit.config import discover_python_files, load_config
 from archagent_audit.models import (
@@ -16,6 +16,7 @@ from archagent_audit.models import (
 )
 from archagent_audit.redaction import redact_text
 from archagent_audit.rules.aa001 import evaluate_aa001
+from archagent_audit.rules.static import evaluate_file, evaluate_project
 
 
 def _is_suppressed(lines: list[str], line: int, rule_id: str) -> bool:
@@ -42,11 +43,15 @@ def scan_path(root: str | Path) -> Report:
         coverage=Coverage(files_discovered=len(files), files_skipped=skipped),
     )
     frameworks: set[str] = set()
+    project_facts: list[tuple[str, list[str], FileFacts]] = []
     for path in files:
         relative = path.relative_to(scan_root).as_posix()
         try:
             source = path.read_text(encoding="utf-8")
             evidence = extract_python_evidence(source)
+            import ast
+
+            facts = analyze_source(ast.parse(source), source)
         except (UnicodeDecodeError, SyntaxError) as error:
             line = error.lineno if isinstance(error, SyntaxError) else None
             report.analysis_warnings.append(
@@ -61,12 +66,12 @@ def scan_path(root: str | Path) -> Report:
         report.coverage.files_analyzed += 1
         frameworks.update(evidence.frameworks)
         lines = source.splitlines()
+        project_facts.append((relative, lines, facts))
         for loop in evidence.loops:
             if _is_suppressed(lines, loop.line, "AA001"):
                 report.suppressions += 1
                 continue
-            excerpt, counts = redact_text(_excerpt(lines, loop.line))
-            report.redactions.add(counts)
+            excerpt = _excerpt(lines, loop.line)
             finding, warning = evaluate_aa001(
                 loop,
                 file=relative,
@@ -76,8 +81,26 @@ def scan_path(root: str | Path) -> Report:
                 report.findings.append(finding)
             if warning:
                 report.analysis_warnings.append(warning)
+        report.findings.extend(evaluate_file(relative, lines, facts))
+    report.findings.extend(evaluate_project(project_facts))
+    filtered_findings = []
+    for finding in report.findings:
+        source_lines = next((lines for file, lines, _ in project_facts if file == finding.file), [])
+        if _is_suppressed(source_lines, finding.line, finding.rule_id):
+            report.suppressions += 1
+            continue
+        finding.excerpt, counts = redact_text(finding.excerpt)
+        report.redactions.add(counts)
+        filtered_findings.append(finding)
+    report.findings = filtered_findings
     report.coverage.frameworks_detected = sorted(frameworks)
-    report.coverage.rules_evaluated = ["AA001"] if files else []
+    if project_facts and any(facts.agent_present or facts.model_calls for _, _, facts in project_facts):
+        report.coverage.rules_evaluated = [
+            "AA001", "AA002", "AA003", "AA004", "AA006", "AA007", "AA010", "AA011", "AA012"
+        ]
+        report.coverage.rules_not_applicable = ["AA005", "AA008", "AA009"]
+    elif files:
+        report.coverage.rules_not_applicable = [f"AA{index:03d}" for index in range(1, 13)]
     report.findings.sort(
         key=lambda item: (
             SEVERITY_ORDER[item.severity],
@@ -90,4 +113,3 @@ def scan_path(root: str | Path) -> Report:
         key=lambda item: (item.file or "", item.line or 0, item.code)
     )
     return report
-

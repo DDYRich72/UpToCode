@@ -7,10 +7,10 @@ Resolved direct environment: pydantic 2.13.4, typer 0.27.0, rich 14.3.4, PyYAML 
 | Criterion | Status | Evidence |
 |---|---|---|
 | Gate 1 scaffold and AA001 | PASS | `python -m pytest -q` → 13 passed; AA001 matrix, deterministic report, redaction, discovery, and exit-code tests included |
-| Gate 2 Python static engine | NOT RUN | — |
-| Full offline suite | PASS (Gate 1) | `python -m pytest -q` → 13 passed |
-| Bad/clean fixtures | NOT RUN | — |
-| Secret redaction | NOT RUN | — |
+| Gate 2 Python static engine | PASS | `python -m pytest -q` → 49 passed; static rules, edge matrices, candidate extraction, registry, terminal, coverage, and error behavior included |
+| Full offline suite | PASS (Gate 2) | `python -m pytest -q` → 49 passed |
+| Bad/clean fixtures | PASS | Bad fixture matches deliberate fingerprint golden; clean fixture has zero findings/warnings |
+| Secret redaction | PASS (static surfaces) | Raw sentinel absent from JSON and terminal assertions; environment secret flow cases pass |
 | Judgment failure matrix | NOT RUN | — |
 | Review and planning non-mutation | NOT RUN | — |
 | Standalone HTML visual inspection | NOT RUN | — |

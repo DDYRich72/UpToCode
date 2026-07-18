@@ -8,6 +8,7 @@ import typer
 from archagent_audit.engine import scan_path
 from archagent_audit.models import SEVERITY_ORDER, Severity
 from archagent_audit.reporters.json import render_json
+from archagent_audit.reporters.terminal import render_terminal
 
 app = typer.Typer(
     name="archagent-audit",
@@ -52,7 +53,10 @@ def scan(
     except (OSError, ValueError) as error:
         typer.echo(str(error), err=True)
         raise typer.Exit(2) from error
-    rendered = render_json(report)
+    if report.coverage.files_discovered and not report.coverage.files_analyzed:
+        typer.echo("No discovered Python file could be analyzed", err=True)
+        raise typer.Exit(2)
+    rendered = render_json(report) if output_format == OutputFormat.JSON else render_terminal(report)
     if output is not None:
         output.write_text(rendered, encoding="utf-8")
     else:

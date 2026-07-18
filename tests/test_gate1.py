@@ -48,8 +48,9 @@ def test_openai_runner_none_disables_limit(tmp_path: Path) -> None:
 
     report = scan_path(tmp_path)
 
-    assert rule_ids(report) == ["AA001"]
-    finding = report.findings[0]
+    aa001 = [finding for finding in report.findings if finding.rule_id == "AA001"]
+    assert len(aa001) == 1
+    finding = aa001[0]
     assert finding.evidence[0].kind == "explicit-disabled-limit"
     assert finding.file == "agent.py"
     assert finding.line == 1
@@ -61,7 +62,7 @@ def test_dynamic_max_turns_is_warning_not_finding(tmp_path: Path) -> None:
 
     report = scan_path(tmp_path)
 
-    assert report.findings == []
+    assert "AA001" not in rule_ids(report)
     assert [warning.code for warning in report.analysis_warnings] == ["AA001_INCONCLUSIVE_BOUND"]
 
 
@@ -100,7 +101,7 @@ def test_suppression_honored_and_counted(tmp_path: Path) -> None:
 
     report = scan_path(tmp_path)
 
-    assert report.findings == []
+    assert "AA001" not in rule_ids(report)
     assert report.suppressions == 1
 
 
@@ -162,4 +163,3 @@ def test_cli_invalid_path_and_missing_send_code_exit_two(tmp_path: Path) -> None
     assert invalid.exit_code == 2
     assert no_consent.exit_code == 2
     assert "--send-code" in no_consent.output
-
