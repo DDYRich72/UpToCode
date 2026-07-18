@@ -7,8 +7,12 @@ import typer
 
 from archagent_audit.engine import scan_path
 from archagent_audit.models import SEVERITY_ORDER, Severity
+from archagent_audit.models import Report, ReviewManifest
+from archagent_audit.planner import generate_fixplan
 from archagent_audit.reporters.json import render_json
+from archagent_audit.reporters.html import render_html
 from archagent_audit.reporters.terminal import render_terminal
+from archagent_audit.review import create_manifest
 
 app = typer.Typer(
     name="archagent-audit",
@@ -45,18 +49,30 @@ def scan(
     if judgment and not send_code:
         typer.echo("--judgment requires --send-code consent", err=True)
         raise typer.Exit(2)
-    if output_format not in {OutputFormat.JSON, OutputFormat.TERMINAL}:
+    if output_format == OutputFormat.HTML and output is None:
+        typer.echo("--format html requires --output", err=True)
+        raise typer.Exit(2)
+    if output_format == OutputFormat.GITHUB:
         typer.echo(f"{output_format.value} reporting is not implemented yet", err=True)
         raise typer.Exit(2)
     try:
-        report = scan_path(path)
+        report = scan_path(
+            path,
+            judgment=judgment,
+            send_code=send_code,
+        )
     except (OSError, ValueError) as error:
         typer.echo(str(error), err=True)
         raise typer.Exit(2) from error
     if report.coverage.files_discovered and not report.coverage.files_analyzed:
         typer.echo("No discovered Python file could be analyzed", err=True)
         raise typer.Exit(2)
-    rendered = render_json(report) if output_format == OutputFormat.JSON else render_terminal(report)
+    if output_format == OutputFormat.JSON:
+        rendered = render_json(report)
+    elif output_format == OutputFormat.HTML:
+        rendered = render_html(report)
+    else:
+        rendered = render_terminal(report)
     if output is not None:
         output.write_text(rendered, encoding="utf-8")
     else:
@@ -66,6 +82,81 @@ def scan(
         for finding in report.findings
     ):
         raise typer.Exit(1)
+
+
+def _read_report(path: Path) -> Report:
+    try:
+        return Report.model_validate_json(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise typer.BadParameter(f"Invalid report: {path}") from error
+
+
+def _selectors(value: str | None) -> set[str]:
+    return {item.strip() for item in (value or "").split(",") if item.strip()}
+
+
+@app.command("review")
+def review_command(
+    report_path: Path = typer.Argument(..., metavar="REPORT"),
+    approve: str | None = typer.Option(None, "--approve"),
+    approve_all: bool = typer.Option(False, "--approve-all"),
+    reject: str | None = typer.Option(None, "--reject"),
+    non_interactive: bool = typer.Option(False, "--non-interactive"),
+) -> None:
+    """Record approval and rejection decisions for an existing report."""
+    report = _read_report(report_path)
+    approve_set = _selectors(approve)
+    reject_set = _selectors(reject)
+    if non_interactive and not (approve_all or approve_set or reject_set):
+        typer.echo("Non-interactive review requires at least one decision", err=True)
+        raise typer.Exit(2)
+    if not non_interactive and not (approve_all or approve_set or reject_set):
+        for finding in report.findings:
+            if typer.confirm(
+                f"Approve {finding.rule_id} {finding.file}:{finding.line}?",
+                default=False,
+            ):
+                approve_set.add(finding.fingerprint)
+            else:
+                reject_set.add(finding.fingerprint)
+    manifest = create_manifest(
+        report,
+        approve=approve_set,
+        reject=reject_set,
+        approve_all=approve_all,
+    )
+    output = report_path.parent / ".archagent-audit" / "manifest.json"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(manifest.model_dump_json(indent=2), encoding="utf-8")
+    typer.echo(str(output))
+
+
+@app.command("plan")
+def plan_command(
+    report_path: Path = typer.Argument(..., metavar="REPORT"),
+    manifest_path: Path = typer.Option(..., "--manifest", metavar="MANIFEST"),
+    output: Path = typer.Option(Path("FIXPLAN.md"), "--output"),
+) -> None:
+    """Generate a non-mutating Codex plan for approved findings."""
+    report = _read_report(report_path)
+    try:
+        manifest = ReviewManifest.model_validate_json(
+            manifest_path.read_text(encoding="utf-8")
+        )
+        rendered = generate_fixplan(report, manifest)
+    except (OSError, ValueError) as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(2) from error
+    output.write_text(rendered, encoding="utf-8")
+    typer.echo(str(output))
+
+
+@app.command()
+def serve() -> None:
+    """Serve the five ArchAgent tools over MCP stdio."""
+    from archagent_audit.mcp_server import run_server
+
+    run_server()
 
 
 if __name__ == "__main__":

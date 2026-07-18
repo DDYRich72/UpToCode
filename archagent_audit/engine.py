@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from archagent_audit import __version__
 from archagent_audit.analysis import FileFacts, analyze_source
 from archagent_audit.adapters.python import extract_python_evidence
 from archagent_audit.config import discover_python_files, load_config
+from archagent_audit.judgment import run_judgment
+from archagent_audit.judgment_candidates import collect_judgment_candidates
 from archagent_audit.models import (
     AnalysisWarning,
     Coverage,
@@ -31,7 +34,15 @@ def _excerpt(lines: list[str], line: int) -> str:
     return "\n".join(lines[start:end])
 
 
-def scan_path(root: str | Path) -> Report:
+def scan_path(
+    root: str | Path,
+    *,
+    judgment: bool = False,
+    send_code: bool = False,
+    judgment_client: Any | None = None,
+) -> Report:
+    if judgment and not send_code:
+        raise ValueError("Judgment requires explicit --send-code authorization.")
     scan_root = Path(root).resolve()
     if not scan_root.exists() or not scan_root.is_dir():
         raise ValueError(f"Scan path is not a directory: {scan_root}")
@@ -44,6 +55,7 @@ def scan_path(root: str | Path) -> Report:
     )
     frameworks: set[str] = set()
     project_facts: list[tuple[str, list[str], FileFacts]] = []
+    judgment_sources: list[tuple[str, str]] = []
     for path in files:
         relative = path.relative_to(scan_root).as_posix()
         try:
@@ -64,6 +76,7 @@ def scan_path(root: str | Path) -> Report:
             )
             continue
         report.coverage.files_analyzed += 1
+        judgment_sources.append((relative, source))
         frameworks.update(evidence.frameworks)
         lines = source.splitlines()
         project_facts.append((relative, lines, facts))
@@ -112,4 +125,23 @@ def scan_path(root: str | Path) -> Report:
     report.analysis_warnings.sort(
         key=lambda item: (item.file or "", item.line or 0, item.code)
     )
+    if judgment:
+        candidates = collect_judgment_candidates(judgment_sources)
+        if judgment_client is None:
+            try:
+                from openai import OpenAI
+
+                judgment_client = OpenAI()
+            except Exception:
+                report.judgment_status = "failed"
+                report.analysis_warnings.append(
+                    AnalysisWarning(
+                        code="JUDGMENT_CREDENTIALS_UNAVAILABLE",
+                        message=(
+                            "Judgment credentials are unavailable; static results were preserved."
+                        ),
+                    )
+                )
+                return report
+        run_judgment(report, candidates, client=judgment_client)
     return report

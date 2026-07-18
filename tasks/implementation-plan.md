@@ -20,11 +20,11 @@
 
 ## Gate 3
 
-- [ ] Mocked GPT-5.6 structured judgment and failure behavior.
-- [ ] Review manifest and FIXPLAN generation.
-- [ ] Standalone HTML report and visual verification.
-- [ ] Static MCP tools and integration tests.
-- [ ] Record Gate 3 validation.
+- [x] Mocked GPT-5.6 structured judgment and failure behavior.
+- [x] Review manifest and FIXPLAN generation.
+- [x] Standalone HTML report and automated structural verification.
+- [x] Static MCP tools and integration tests.
+- [x] Record Gate 3 validation (rendered visual inspection deferred to final validation).
 
 ## Gate 4
 
