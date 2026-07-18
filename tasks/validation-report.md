@@ -6,9 +6,9 @@ Resolved direct environment: pydantic 2.13.4, typer 0.27.0, rich 14.3.4, PyYAML 
 
 | Criterion | Status | Evidence |
 |---|---|---|
-| Gate 1 scaffold and AA001 | IN PROGRESS | Bootstrap: `python -m pytest -q tests/test_bootstrap.py` → 1 passed |
+| Gate 1 scaffold and AA001 | PASS | `python -m pytest -q` → 13 passed; AA001 matrix, deterministic report, redaction, discovery, and exit-code tests included |
 | Gate 2 Python static engine | NOT RUN | — |
-| Full offline suite | NOT RUN | — |
+| Full offline suite | PASS (Gate 1) | `python -m pytest -q` → 13 passed |
 | Bad/clean fixtures | NOT RUN | — |
 | Secret redaction | NOT RUN | — |
 | Judgment failure matrix | NOT RUN | — |

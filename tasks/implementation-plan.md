@@ -2,13 +2,13 @@
 
 ## Gate 1
 
-- [ ] Package/import smoke test.
-- [ ] Public Pydantic contracts and deterministic serialization.
-- [ ] Config, discovery, exclusions, `.gitignore`, size limit, suppressions.
-- [ ] Redaction boundary.
-- [ ] AA001 evidence extraction and rule behavior.
-- [ ] JSON reporter, scan CLI, exit codes 0/1/2.
-- [ ] Record Gate 1 validation.
+- [x] Package/import smoke test.
+- [x] Public Pydantic contracts and deterministic serialization.
+- [x] Config, discovery, exclusions, `.gitignore`, size limit, suppressions.
+- [x] Redaction boundary.
+- [x] AA001 evidence extraction and rule behavior.
+- [x] JSON reporter, scan CLI, exit codes 0/1/2.
+- [x] Record Gate 1 validation.
 
 ## Gate 2
 
@@ -37,4 +37,3 @@
 ## Definition of Done mapping
 
 Each item in `SPEC.md §9` maps to the corresponding gate above; authoritative evidence is recorded in `tasks/validation-report.md`.
-
