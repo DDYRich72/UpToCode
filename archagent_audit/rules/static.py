@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-import hashlib
 from collections.abc import Iterable
+from typing import Literal
 
 from archagent_audit.analysis import FileFacts
+from archagent_audit.fingerprints import finding_fingerprint
 from archagent_audit.models import (
     Citation,
     Evidence,
     Finding,
+    FindingContext,
     Remediation,
     Severity,
     Verdict,
@@ -43,10 +45,6 @@ OPENAI_TRACING = Citation(
 )
 
 
-def _fingerprint(rule_id: str, file: str, line: int, kind: str) -> str:
-    return hashlib.sha256(f"{rule_id}|{file}|{line}|{kind}".encode()).hexdigest()[:16]
-
-
 def _finding(
     rule_id: str,
     title: str,
@@ -58,7 +56,7 @@ def _finding(
     excerpt: str,
     recommended: str,
     citations: list[Citation],
-    complexity: str = "moderate",
+    complexity: Literal["trivial", "moderate", "complex"] = "moderate",
 ) -> Finding:
     return Finding(
         rule_id=rule_id,
@@ -67,7 +65,9 @@ def _finding(
         title=title,
         file=file,
         line=line,
-        fingerprint=_fingerprint(rule_id, file, line, kind),
+        fingerprint=finding_fingerprint(
+            rule_id, file, kind, detail=detail, excerpt=excerpt
+        ),
         evidence=[Evidence(kind=kind, detail=detail)],
         verdict=Verdict(
             observed=detail,
@@ -77,14 +77,16 @@ def _finding(
         ),
         citations=citations,
         excerpt=excerpt,
-        context={},
+        context=FindingContext(),
         remediation=Remediation(complexity=complexity),
     )
 
 
 def evaluate_file(file: str, lines: list[str], facts: FileFacts) -> list[Finding]:
     findings: list[Finding] = []
-    excerpt = lambda line: "\n".join(lines[max(0, line - 2): min(len(lines), line + 1)])
+
+    def excerpt(line: int) -> str:
+        return "\n".join(lines[max(0, line - 2) : min(len(lines), line + 1)])
     for call in facts.model_calls:
         missing: list[str] = []
         if not call.has_output_limit:

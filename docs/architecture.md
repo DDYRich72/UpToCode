@@ -1,6 +1,6 @@
 # Architecture
 
-ArchAgent uses one evidence pipeline:
+ArchAgent uses one evidence pipeline and inward-only dependency direction:
 
 ```text
 discover → parse → normalize evidence → static rules → optional judgment → report
@@ -16,5 +16,23 @@ discover → parse → normalize evidence → static rules → optional judgment
 - Review and planning consume existing reports and never rescan or modify source.
 - MCP wraps the same engine; static-only is its default.
 
-See `SPEC.md` for contracts, exact interfaces, and rule semantics.
+```text
+interfaces (CLI, MCP, reporters)
+              ↓
+application (audit, review, plan, baseline)
+              ↓
+domain (evidence, findings, policies, rule outcomes)
+              ↑
+adapters (Python AST, filesystem, diff, OpenAI, rulepacks)
+```
 
+Public boundaries use strict Pydantic contracts. Domain and deterministic rule
+evaluation perform no filesystem or network access. `AuditService` owns scan
+budgets, deadlines, cancellation, and report assembly. Local MCP may read only
+inside its configured root; hosted MCP registers no path-bearing tools.
+
+Raw source is untrusted data. It is bounded before parsing and irreversibly
+redacted before report, judgment, or log egress. Judgment can supply reasoning
+only; registry metadata remains authoritative.
+
+See `SPEC.md` for contracts, exact interfaces, and rule semantics.

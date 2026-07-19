@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from typing import Literal
 
 from archagent_audit.models import Report, ReviewDecision, ReviewManifest
 
@@ -25,6 +26,8 @@ def create_manifest(
     reject: set[str] | None = None,
     approve_all: bool = False,
 ) -> ReviewManifest:
+    if report.schema_version != "2.0":
+        raise ValueError("Review decision reuse requires Report 2.0")
     approve = approve or set()
     reject = reject or set()
     matched_approve: set[str] = set()
@@ -46,7 +49,7 @@ def create_manifest(
                 f"Finding {finding.fingerprint} is selected for both approval and rejection"
             )
         if is_rejected:
-            status = "rejected"
+            status: Literal["approved", "rejected"] = "rejected"
         elif approve_all or is_approved:
             status = "approved"
         else:

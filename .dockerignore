@@ -1,0 +1,13 @@
+.git
+.github
+.archagent-audit
+.pytest_cache
+.venv*
+web
+tests
+fixtures
+docs
+specs
+tasks
+__pycache__
+*.pyc

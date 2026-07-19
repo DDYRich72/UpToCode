@@ -1,25 +1,36 @@
 # Validation Report
 
-Environment: Python 3.13.7 on Windows; project supports Python 3.11+.
+Environment: Windows, Python 3.13, Node 24. The supported CI matrix is Python 3.11–3.13 on Ubuntu, Windows, and macOS; Node 22 is used for the site gate.
 
-Resolved direct environment: pydantic 2.13.4, typer 0.27.0, rich 14.3.4, PyYAML 6.0.3, pathspec 0.12.1, openai 2.46.0, mcp 1.28.1, pytest 9.1.1.
+## Reference production gates
 
-| Criterion | Status | Evidence |
+| Gate | Status | Evidence |
 |---|---|---|
-| Gate 1 scaffold and AA001 | PASS | `python -m pytest -q` → 13 passed; AA001 matrix, deterministic report, redaction, discovery, and exit-code tests included |
-| Gate 2 Python static engine | PASS | `python -m pytest -q` → 49 passed; static rules, edge matrices, candidate extraction, registry, terminal, coverage, and error behavior included |
-| Gate 3 developer surfaces | PASS | `python -m pytest -q` → 71 passed; mocked structured judgment, review/plan, standalone HTML, and five MCP tools included |
-| Full offline suite | PASS (Gate 4) | `python scripts/acceptance.py` → 133 passed plus all acceptance stages |
-| Rule contract matrix | PASS | Every AA001–AA012 rule has positive/clean evidence, location suppression coverage, an unsupported-dynamic warning case, and false-positive regression coverage; all judgment rules use schema-valid mocked outcomes |
-| Bad/clean fixtures | PASS | Bad fixture matches deliberate fingerprint golden; clean fixture has zero findings/warnings |
-| Secret/PII redaction | PASS | Raw sentinels are absent from terminal, JSON, HTML, judgment payload, logs, and snapshots; narrow email/SSN patterns and secret-derived prompt flows pass |
-| Judgment failure matrix | PASS (mocked) | Structured success, refusal, timeout, unavailable authentication, partial failure, bounded/redacted payload, and static preservation pass |
-| Review and planning non-mutation | PASS | Temporary repository tests verify report fingerprinting, manifest decisions, deterministic FIXPLAN, and unchanged source files |
-| Standalone HTML structure | PASS | Inline-only HTML, CSP, semantic sections, fixed bar chart, escaped excerpts, redaction, and CLI output behavior pass |
-| Standalone HTML visual inspection | PASS | The user opened and approved `.archagent-audit/final-report.html`; automated standalone, semantic, CSP, escaping, and redaction checks also pass |
-| MCP integration | PASS | Five tools exposed; static default and consent boundary pass; AA001 detected through `check_loop` and `audit_diff`; malformed call followed by valid call passes |
-| Self-scan triage | PASS | `.archagent-audit/self-scan.json`; 39/39 project files, 19 expected fixture/test findings, zero production-code findings, zero analysis warnings; detailed classification in `PROGRESS.md` |
-| Cross-platform acceptance | PASS | Windows Python 3.13: 133-test acceptance PASS; Ubuntu/WSL Python 3.13: full acceptance PASS and 133 tests; Windows Python 3.11 baseline: 133 tests PASS |
-| Authorized GPT-5.6 live smoke | PASS | User authorized exactly one paid request; `.archagent-audit/live-smoke.json` records `gpt-5.6`, request count 1, synthetic code only, completed structured output, one expected finding, and no analysis warnings at 2026-07-19T02:44:32Z |
-| README/demo claims | PASS | README documents positioning, install, exact CLI, privacy, rule URLs, MCP, limitations, and output; demo and unpublished Devpost drafts match the validated Python MVP |
-| External actions | PASS | No deployment, publication, upload, external message, or submission performed; the only paid usage was the single explicitly authorized GPT-5.6 smoke request |
+| Python suite | PASS | `python -m pytest -q` → 158 passed, including official-client hosted HTTP lifecycle |
+| Offline product acceptance | PASS | `python scripts/acceptance.py` → real installed-process stdio MCP, malformed-call recovery, CLI/report/review/plan/non-mutation, clean/bad fixtures |
+| Production dogfood | PASS | `python scripts/compliance.py` → zero production findings, zero suppressions, zero analysis warnings; `.archagent-audit/architecture-compliance.json` |
+| Ruff | PASS | `python -m ruff check archagent_audit tests scripts` |
+| Strict typing | PASS | `python -m mypy archagent_audit` → no issues in 29 source files |
+| Branch coverage | PASS | 86%, exceeding the configured 85% release floor |
+| Wheel | PASS | `archagent_audit-1.0.0-py3-none-any.whl` built, installed in an isolated environment, imported from site-packages, and exercised through stdio MCP |
+| Python dependency audit | PASS | Clean isolated install with upgraded packaging toolchain and Starlette 1.3.1: `pip check` and `pip-audit` report no broken requirements or known vulnerabilities |
+| Report 2.0 | PASS | strict contracts, stable fingerprints, rule states, metadata/usage, baselines, SARIF, and Report 1.0 clean-reader compatibility tests |
+| Analyzer hardening | PASS | unified-diff context reconstruction, strict Draft 2020-12 schemas, project evidence resolution, pruned nested ignores, unsupported-state warnings, and `super().__init__` false-positive regression |
+| CLI | PASS | module/version execution, file/directory scans, baselines, changed-since, selectors, excludes, severity overrides, GitHub/SARIF, timing, and warning gates |
+| Local MCP | PASS | official SDK stdio lifecycle; full typed tool catalog, malformed-call survival, workspace containment, workspace diff bases, progress, and explicit judgment consent |
+| Hosted MCP | PASS | official SDK Streamable HTTP lifecycle; bearer authorization, four-request transport concurrency probe, health/readiness, no path tools, submitted-source limits, output cap, and no-persistence test |
+| Judgment boundary | PASS (mocked) | Structured Outputs, trusted metadata merge, redaction, bounded calls/tokens/retries/timeouts, consent, refusal/failure preservation, and prompt-injection cases |
+| Packaging/release | PASS (artifact level) | non-root Dockerfile, Cloud Run limits/secrets/probes, protected release environment, SBOM and provenance attestation workflow, operations/rollback runbook |
+| Functional site | PASS | Vinext production build completed for `/` and `/connect`; both routes pass server-rendered HTML tests, responsive CSS states are present, and live HTTP returned 200. Browser automation CLI was unavailable, so no screenshot evidence was produced. |
+| Site dependency audit | PASS AT RELEASE THRESHOLD / REVIEW REQUIRED | `npm audit --omit=dev --audit-level=high` exits 0; it reports two moderate findings in Next's nested PostCSS dependency with no non-breaking automated fix. Security review must disposition these before release. |
+| Container build | NOT RUN LOCALLY | Docker is not installed in this environment; `docker build` remains a required CI gate |
+
+## Safety and external actions
+
+- Static analysis makes no network calls and submitted-source temporary directories are removed after each request.
+- Source, prompts, keys, email addresses, and SSNs are absent from captured judgment failure logs; hosted operational logs are payload-free by policy and implementation.
+- Review and FIXPLAN generation do not modify scanned repositories.
+- No package publication, site deployment, Cloud Run deployment, repository publication, submission, or new paid model request was performed.
+- The historical single authorized synthetic GPT-5.6 smoke remains recorded in `.archagent-audit/live-smoke.json`; a post-build/post-deploy smoke requires fresh explicit approval.
+
+Release remains approval-gated for package-name review, security review, dependency/SBOM review, judge access, publication, and deployment.

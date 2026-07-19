@@ -1,0 +1,44 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: archagent-mcp
+  annotations:
+    run.googleapis.com/description: Stateless ArchAgent private-beta MCP service
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "3"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 4
+      timeoutSeconds: 300
+      serviceAccountName: archagent-mcp-runtime
+      containers:
+        - image: REGION-docker.pkg.dev/PROJECT/archagent/mcp:VERSION
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          env:
+            - name: ARCHAGENT_API_KEY_HASHES
+              valueFrom:
+                secretKeyRef:
+                  key: latest
+                  name: archagent-api-key-hashes
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: latest
+                  name: archagent-openai-api-key
+          startupProbe:
+            httpGet:
+              path: /readyz
+            periodSeconds: 2
+            failureThreshold: 15
+          livenessProbe:
+            httpGet:
+              path: /healthz
+            periodSeconds: 30

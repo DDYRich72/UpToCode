@@ -1,10 +1,13 @@
 """Command-line interface for ArchAgent."""
 
 from enum import StrEnum
+import subprocess
 from pathlib import Path
 
 import typer
 
+from archagent_audit import __version__
+from archagent_audit.baseline import Baseline, apply_baseline, create_baseline
 from archagent_audit.engine import scan_path
 from archagent_audit.models import SEVERITY_ORDER, Severity
 from archagent_audit.models import Report, ReviewManifest
@@ -12,6 +15,7 @@ from archagent_audit.planner import generate_fixplan
 from archagent_audit.reporters.json import render_json
 from archagent_audit.reporters.html import render_html
 from archagent_audit.reporters.terminal import render_terminal
+from archagent_audit.reporters.sarif import render_sarif
 from archagent_audit.review import create_manifest
 
 app = typer.Typer(
@@ -19,6 +23,12 @@ app = typer.Typer(
     help="ArchAgent architecture-quality analysis for Python agent applications.",
     no_args_is_help=True,
 )
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(__version__)
+        raise typer.Exit()
 
 
 def _write_output(path: Path, content: str, *, create_parent: bool = False) -> None:
@@ -32,7 +42,15 @@ def _write_output(path: Path, content: str, *, create_parent: bool = False) -> N
 
 
 @app.callback()
-def main() -> None:
+def main(
+    version: bool = typer.Option(
+        False,
+        "--version",
+        callback=_version_callback,
+        is_eager=True,
+        help="Show the ArchAgent version and exit.",
+    ),
+) -> None:
     """Run ArchAgent commands."""
 
 
@@ -41,6 +59,7 @@ class OutputFormat(StrEnum):
     JSON = "json"
     HTML = "html"
     GITHUB = "github"
+    SARIF = "sarif"
 
 
 @app.command()
@@ -54,6 +73,15 @@ def scan(
     judgment: bool = typer.Option(False, "--judgment"),
     send_code: bool = typer.Option(False, "--send-code"),
     fail_on: Severity | None = typer.Option(None, "--fail-on"),
+    baseline: Path | None = typer.Option(None, "--baseline"),
+    update_baseline: Path | None = typer.Option(None, "--update-baseline"),
+    changed_since: str | None = typer.Option(None, "--changed-since"),
+    select: str | None = typer.Option(None, "--select"),
+    ignore: str | None = typer.Option(None, "--ignore"),
+    exclude: list[str] | None = typer.Option(None, "--exclude"),
+    severity: list[str] | None = typer.Option(None, "--severity", metavar="RULE=LEVEL"),
+    fail_on_analysis_warning: bool = typer.Option(False, "--fail-on-analysis-warning"),
+    verbose: bool = typer.Option(False, "--verbose"),
 ) -> None:
     """Scan a Python repository for architecture-quality findings."""
     if judgment and not send_code:
@@ -62,31 +90,83 @@ def scan(
     if output_format == OutputFormat.HTML and output is None:
         typer.echo("--format html requires --output", err=True)
         raise typer.Exit(2)
-    if output_format == OutputFormat.GITHUB:
-        typer.echo(f"{output_format.value} reporting is not implemented yet", err=True)
-        raise typer.Exit(2)
+    severity_overrides: dict[str, str] = {}
+    for value in severity or []:
+        rule_id, separator, level = value.partition("=")
+        if not separator or level not in {item.value for item in Severity}:
+            typer.echo(f"Invalid --severity {value!r}; use RULE=critical|warning|info", err=True)
+            raise typer.Exit(2)
+        severity_overrides[rule_id.upper()] = level
     try:
         report = scan_path(
             path,
             judgment=judgment,
             send_code=send_code,
+            extra_excludes=exclude,
+            severity_overrides=severity_overrides,
         )
     except (OSError, ValueError) as error:
         typer.echo(str(error), err=True)
         raise typer.Exit(2) from error
-    if report.coverage.files_discovered and not report.coverage.files_analyzed:
+    if (report.coverage.files_discovered or report.coverage.files_skipped) and not report.coverage.files_analyzed:
         typer.echo("No discovered Python file could be analyzed", err=True)
         raise typer.Exit(2)
+    selected = _selectors(select)
+    ignored = _selectors(ignore)
+    if selected:
+        report.findings = [item for item in report.findings if item.rule_id in selected]
+    if ignored:
+        report.findings = [item for item in report.findings if item.rule_id not in ignored]
+    if changed_since:
+        try:
+            changed = subprocess.run(
+                ["git", "diff", "--name-only", f"{changed_since}...HEAD", "--", "*.py"],
+                cwd=path if path.is_dir() else path.parent,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                timeout=10,
+                check=True,
+            )
+        except (OSError, subprocess.SubprocessError) as error:
+            typer.echo(f"Could not resolve --changed-since: {error}", err=True)
+            raise typer.Exit(2) from error
+        changed_files = {item.replace("\\", "/") for item in changed.stdout.splitlines()}
+        report.findings = [item for item in report.findings if item.file in changed_files]
+        report.analysis_warnings = [
+            item for item in report.analysis_warnings if item.file is None or item.file in changed_files
+        ]
+    if baseline is not None:
+        try:
+            baseline_data = Baseline.model_validate_json(baseline.read_text(encoding="utf-8"))
+            report, _ = apply_baseline(report, baseline_data)
+        except (OSError, ValueError) as error:
+            typer.echo(f"Invalid baseline {baseline}: {error}", err=True)
+            raise typer.Exit(2) from error
+    if update_baseline is not None:
+        _write_output(update_baseline, create_baseline(report).model_dump_json(indent=2), create_parent=True)
     if output_format == OutputFormat.JSON:
         rendered = render_json(report)
     elif output_format == OutputFormat.HTML:
         rendered = render_html(report)
+    elif output_format == OutputFormat.SARIF:
+        rendered = render_sarif(report)
+    elif output_format == OutputFormat.GITHUB:
+        rendered = "\n".join(
+            f"::{('error' if item.severity == Severity.CRITICAL else 'warning')} "
+            f"file={item.file},line={item.line},title={item.rule_id}::{item.verdict.observed}"
+            for item in report.findings
+        )
     else:
         rendered = render_terminal(report)
     if output is not None:
         _write_output(output, rendered)
     else:
         typer.echo(rendered)
+    if verbose and report.metadata is not None:
+        typer.echo(f"Scan duration: {report.metadata.duration_ms} ms", err=True)
+    if fail_on_analysis_warning and report.analysis_warnings:
+        raise typer.Exit(1)
     if fail_on is not None and any(
         SEVERITY_ORDER[finding.severity] <= SEVERITY_ORDER[fail_on]
         for finding in report.findings
@@ -112,11 +192,29 @@ def review_command(
     approve_all: bool = typer.Option(False, "--approve-all"),
     reject: str | None = typer.Option(None, "--reject"),
     non_interactive: bool = typer.Option(False, "--non-interactive"),
+    reuse: Path | None = typer.Option(None, "--reuse"),
 ) -> None:
     """Record approval and rejection decisions for an existing report."""
     report = _read_report(report_path)
     approve_set = _selectors(approve)
     reject_set = _selectors(reject)
+    if reuse is not None:
+        try:
+            prior = ReviewManifest.model_validate_json(reuse.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as error:
+            typer.echo(f"Invalid reuse manifest {reuse}: {error}", err=True)
+            raise typer.Exit(2) from error
+        available = {finding.fingerprint for finding in report.findings}
+        unmatched = []
+        for decision in prior.decisions:
+            if decision.fingerprint not in available:
+                unmatched.append(decision.fingerprint)
+            elif decision.status == "approved":
+                approve_set.add(decision.fingerprint)
+            else:
+                reject_set.add(decision.fingerprint)
+        if unmatched:
+            typer.echo(f"Unmatched reused decisions: {', '.join(sorted(unmatched))}", err=True)
     if non_interactive and not (approve_all or approve_set or reject_set):
         typer.echo("Non-interactive review requires at least one decision", err=True)
         raise typer.Exit(2)
@@ -165,11 +263,15 @@ def plan_command(
 
 
 @app.command()
-def serve() -> None:
-    """Serve the five ArchAgent tools over MCP stdio."""
+def serve(
+    transport: str = typer.Option("stdio", "--transport"),
+    root: Path | None = typer.Option(None, "--root"),
+    mode: str = typer.Option("local", "--mode"),
+) -> None:
+    """Serve the typed ArchAgent catalog over local stdio or hosted HTTP."""
     from archagent_audit.mcp_server import run_server
 
-    run_server()
+    run_server(transport=transport, root=root, mode=mode)
 
 
 if __name__ == "__main__":

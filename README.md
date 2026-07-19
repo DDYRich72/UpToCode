@@ -2,7 +2,7 @@
 
 ArchAgent is a design-time architecture-quality scanner for Python agent applications. It finds missing execution bounds, run budgets, approvals, validation, resilience controls, evals, and observability; explains the evidence; and produces an approval-driven plan for Codex without rewriting source code.
 
-The product is deliberately narrower than a general agent-security scanner. The committed MVP recognizes OpenAI Agents SDK patterns, LangGraph limits, and conservative custom Python agent loops. Static scans are local and offline. Optional GPT‑5.6 judgment is explicit and code-sharing gated.
+The product is deliberately narrower than a general agent-security scanner. Version 1.0 recognizes OpenAI Agents SDK patterns, LangGraph limits, and conservative custom Python agent loops. Static scans are local and offline. Optional GPT‑5.6 judgment is explicit, bounded, redacted, and code-sharing gated.
 
 > The Python distribution and command are `archagent-audit`; the import package is `archagent_audit`. The bare `archagent` name already has active uses. Registry and trademark availability must be rechecked before any publication.
 
@@ -25,13 +25,18 @@ python scripts/acceptance.py
 ## Scan, review, plan
 
 ```text
-archagent-audit scan PATH [--format terminal|json|html|github] [--output FILE]
+archagent-audit scan PATH [--format terminal|json|html|github|sarif] [--output FILE]
                          [--judgment --send-code]
                          [--fail-on critical|warning|info]
+                         [--baseline FILE|--update-baseline FILE]
+                         [--changed-since REF] [--select RULES] [--ignore RULES]
+                         [--exclude GLOB] [--severity RULE=LEVEL]
+                         [--fail-on-analysis-warning] [--verbose]
 archagent-audit review REPORT [--approve IDS|--approve-all] [--reject IDS]
-                              [--non-interactive]
+                              [--reuse MANIFEST] [--non-interactive]
 archagent-audit plan REPORT --manifest MANIFEST [--output FIXPLAN.md]
-archagent-audit serve
+archagent-audit serve --transport stdio --root PATH
+archagent-audit serve --transport streamable-http --mode hosted
 ```
 
 The v1 workflow is non-mutating:
@@ -44,7 +49,7 @@ archagent-audit plan report.json --manifest .archagent-audit/manifest.json --out
 
 `review` binds decisions to the exact report fingerprint. `plan` refuses a mismatched manifest and includes only approved findings. Neither command edits the scanned repository.
 
-Exit codes are `0` for no configured threshold breach, `1` for a finding at or above `--fail-on`, and `2` for invalid configuration or an unrecoverable scan error. HTML requires `--output`. GitHub format is reserved stretch scope and currently returns exit 2.
+Exit codes are `0` for no configured threshold breach, `1` for a finding at or above `--fail-on` (or a requested analysis-warning gate), and `2` for invalid configuration or an unrecoverable scan error. HTML requires `--output`. GitHub workflow commands and SARIF 2.1.0 are supported.
 
 Example terminal output:
 
@@ -62,7 +67,7 @@ Findings: 10 | Warnings: 0 | Redactions: 3
 - `--judgment` is rejected unless `--send-code` is also present.
 - Judgment sends only normalized evidence and bounded, redacted excerpts, grouped once per candidate rule. Requests use `gpt-5.6`, Pydantic Structured Outputs, `store=false`, a 2,000-token output ceiling, a 30-second timeout, and a six-rule call budget.
 - Recognized OpenAI keys, AWS access keys, bearer tokens, email addresses, and US Social Security numbers are replaced before report or judgment output. Detection is intentionally narrow and is not a substitute for a dedicated secret/PII scanner.
-- `.gitignore`, default build/dependency/generated exclusions, `.archagent-audit.yml`, 1 MiB source limits, binary/non-Python exclusion, and `# archagent-audit: ignore AA001`-style suppressions are honored.
+- Nested `.gitignore` files, default build/dependency/generated exclusions, `.archagent-audit.yml`, 1 MiB per-file and 4 MiB aggregate limits, binary/non-Python exclusion, and explicit suppressions are honored. Production ArchAgent source is gated at zero suppressions.
 - Refusal, timeout, authentication failure, or API failure never deletes static results; the report records `partial` or `failed` judgment status and an analysis warning.
 
 No live API call is part of the offline test or acceptance suite. The submission smoke test requires a key and separate approval for paid usage.
@@ -99,10 +104,10 @@ Recognized evidence includes:
 Known limitations:
 
 - Python only. TypeScript and GitHub Actions output are not shipped.
-- Dynamic imports, aliased/unrecognized tool decorators, metaprogramming, indirect data flow, complex interprocedural flow, framework plugins, and runtime-only behavior may be inconclusive and produce coverage warnings when recognized.
+- Dynamic imports, metaprogramming, dispatch beyond the supported one-hop project call graph, and runtime-only behavior remain inconclusive and produce coverage warnings when recognized.
 - Static side-effect and schema analysis is conservative and can produce false positives; findings should be reviewed before planning.
 - Secret/PII recognition covers a small explicit pattern set, not arbitrary credentials or personal data.
-- No instruction-file linting, runtime tracing service, source-changing auto-fix, PR comments, public service, or package publication.
+- No instruction-file linting, runtime tracing service, source-changing auto-fix, browser repository upload, account system, or package publication.
 
 ## Configuration
 
@@ -133,7 +138,11 @@ Run the stdio server directly with `archagent-audit serve`, or register the modu
 }
 ```
 
-The server exposes `audit_file`, `audit_diff`, `check_tool_schema`, `check_loop`, and `get_rule`. Static behavior is the default; judgment-capable calls enforce the same `judgment=true, send_code=true` boundary. Malformed tool arguments return an MCP error without terminating the server.
+Local mode exposes repository/file/source/diff audits, strict schema and loop checks, the rule catalog, review, and FIXPLAN generation. It is bounded to the configured canonical workspace root, including symlink defense, and may load only explicitly trusted local rulepacks.
+
+Hosted Streamable HTTP mode registers only submitted-content tools. It has no repository or filesystem-path tools, never persists submitted code or results, and requires a private-beta bearer key configured as a SHA-256 digest in `ARCHAGENT_API_KEY_HASHES`. Both modes use the same `AuditService` pipeline and enforce `judgment=true, send_code=true` consent.
+
+The functional landing and connection generator live in `web/`. `/connect` generates local stdio or hosted Codex MCP configuration; bearer keys remain in the user's local environment and are never entered into or transmitted by the page.
 
 ## Project evidence
 
@@ -141,6 +150,9 @@ The server exposes `audit_file`, `audit_diff`, `check_tool_schema`, `check_loop`
 - [Goal prompt](GOAL.md)
 - [Progress and self-scan triage](PROGRESS.md)
 - [Validation report](tasks/validation-report.md)
+- [Architecture compliance matrix](docs/architecture-compliance.md)
+- [Reference production specification](specs/002-reference-production.md)
+- [Hosted operations and rollback](docs/operations.md)
 - [Under-three-minute demo script](docs/demo-script.md)
 
 No repository, package, video, deployment, or submission is published by this project workflow without explicit approval.

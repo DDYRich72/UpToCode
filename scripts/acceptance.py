@@ -62,6 +62,7 @@ MCP_PROBE = r'''
 import asyncio
 import json
 import sys
+from datetime import timedelta
 from pathlib import Path
 
 from mcp import ClientSession, StdioServerParameters
@@ -84,7 +85,9 @@ async def main():
         cwd=root,
     )
     async with stdio_client(parameters) as (read, write):
-        async with ClientSession(read, write) as session:
+        async with ClientSession(
+            read, write, read_timeout_seconds=timedelta(seconds=30)
+        ) as session:
             await session.initialize()
             first = payload(await session.call_tool(
                 "check_loop", {"snippet": "while True:\n    work()\n"}
@@ -94,7 +97,7 @@ async def main():
             assert malformed.isError
             second = payload(await session.call_tool(
                 "audit_diff",
-                {"diff": "+++ b/a.py\n+while True:\n+    work()\n"},
+                {"diff": "--- /dev/null\n+++ b/a.py\n@@ -0,0 +1,2 @@\n+while True:\n+    work()\n"},
             ))
             assert any(item["rule_id"] == "AA001" for item in second["findings"])
 

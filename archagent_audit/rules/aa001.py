@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-import hashlib
-
 from archagent_audit.adapters.python import LoopEvidence
+from archagent_audit.fingerprints import finding_fingerprint
 from archagent_audit.models import (
     AnalysisWarning,
     Citation,
     Evidence,
     Finding,
+    FindingContext,
     Remediation,
     Severity,
     Verdict,
@@ -26,11 +26,6 @@ PRACTICAL_GUIDE_CITATION = Citation(
     title="A practical guide to building agents",
     url="https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf",
 )
-
-
-def _fingerprint(file: str, line: int, evidence_kind: str) -> str:
-    value = f"AA001|{file}|{line}|{evidence_kind}".encode()
-    return hashlib.sha256(value).hexdigest()[:16]
 
 
 def evaluate_aa001(
@@ -65,7 +60,9 @@ def evaluate_aa001(
         title="Unbounded agent loop",
         file=file,
         line=loop.line,
-        fingerprint=_fingerprint(file, loop.line, evidence_kind),
+        fingerprint=finding_fingerprint(
+            "AA001", file, evidence_kind, detail=loop.detail, excerpt=excerpt
+        ),
         evidence=[Evidence(kind=evidence_kind, detail=loop.detail)],
         verdict=Verdict(
             observed=observed,
@@ -75,7 +72,7 @@ def evaluate_aa001(
         ),
         citations=[RUNNER_CITATION, PRACTICAL_GUIDE_CITATION],
         excerpt=excerpt,
-        context={"framework": loop.framework},
+        context=FindingContext(framework=loop.framework),
         remediation=Remediation(complexity="moderate"),
     )
     return finding, None

@@ -4,9 +4,17 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from enum import StrEnum
-from typing import Any, Literal
+from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+
+from archagent_audit import __version__
+
+
+class StrictModel(BaseModel):
+    """Reject unknown public fields so boundary drift fails closed."""
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class Severity(StrEnum):
@@ -22,31 +30,36 @@ SEVERITY_ORDER = {
 }
 
 
-class Evidence(BaseModel):
+class Evidence(StrictModel):
     kind: str
     detail: str
 
 
-class Verdict(BaseModel):
+class Verdict(StrictModel):
     observed: str
     implies: str
     recommended: str
     tradeoff: str
 
 
-class Citation(BaseModel):
+class Citation(StrictModel):
     vendor: str
     title: str
     url: str
 
 
-class Remediation(BaseModel):
+class Remediation(StrictModel):
     complexity: Literal["trivial", "moderate", "complex"]
     status: Literal["proposed", "approved", "rejected", "planned"] = "proposed"
     plan: str | None = None
 
 
-class Finding(BaseModel):
+class FindingContext(StrictModel):
+    framework: str | None = None
+    candidate_rule: str | None = None
+
+
+class Finding(StrictModel):
     rule_id: str
     severity: Severity
     tier: Literal["static", "judgment"]
@@ -58,27 +71,67 @@ class Finding(BaseModel):
     verdict: Verdict
     citations: list[Citation]
     excerpt: str
-    context: dict[str, Any] = Field(default_factory=dict)
+    context: FindingContext = Field(default_factory=FindingContext)
     remediation: Remediation
 
 
-class AnalysisWarning(BaseModel):
+class AnalysisWarning(StrictModel):
     code: str
     message: str
     file: str | None = None
     line: int | None = None
 
 
-class Coverage(BaseModel):
+class SkippedFile(StrictModel):
+    path: str
+    reason: str
+
+
+RuleStatus = Literal[
+    "passed",
+    "finding",
+    "suppressed",
+    "inconclusive",
+    "unsupported",
+    "not_applicable",
+    "not_requested",
+    "failed",
+]
+
+
+class RuleResult(StrictModel):
+    rule_id: str
+    status: RuleStatus
+    finding_count: int = 0
+    detail: str | None = None
+
+
+class Coverage(StrictModel):
     files_discovered: int = 0
     files_analyzed: int = 0
     files_skipped: int = 0
     frameworks_detected: list[str] = Field(default_factory=list)
     rules_evaluated: list[str] = Field(default_factory=list)
     rules_not_applicable: list[str] = Field(default_factory=list)
+    skipped_files: list[SkippedFile] = Field(default_factory=list)
+    baseline_findings: int = 0
 
 
-class RedactionCounts(BaseModel):
+class ScanMetadata(StrictModel):
+    duration_ms: int = Field(default=0, ge=0)
+    repository_revision: str | None = None
+    configuration_fingerprint: str
+    rulepack_fingerprint: str
+
+
+class JudgmentUsage(StrictModel):
+    model: str | None = None
+    input_tokens: int = Field(default=0, ge=0)
+    output_tokens: int = Field(default=0, ge=0)
+    requests: int = Field(default=0, ge=0)
+
+
+class RedactionCounts(StrictModel):
     secrets: int = 0
     pii: int = 0
 
@@ -87,9 +140,9 @@ class RedactionCounts(BaseModel):
         self.pii += other.pii
 
 
-class Report(BaseModel):
-    schema_version: str = "1.0"
-    tool_version: str = "0.1.0"
+class Report(StrictModel):
+    schema_version: str = "2.0"
+    tool_version: str = __version__
     scan_root: str
     generated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
@@ -102,19 +155,21 @@ class Report(BaseModel):
     ] = "not-requested"
     redactions: RedactionCounts = Field(default_factory=RedactionCounts)
     suppressions: int = 0
+    rule_results: list[RuleResult] = Field(default_factory=list)
+    metadata: ScanMetadata | None = None
+    judgment_usage: JudgmentUsage = Field(default_factory=JudgmentUsage)
 
 
-class ReviewDecision(BaseModel):
+class ReviewDecision(StrictModel):
     fingerprint: str
     status: Literal["approved", "rejected"]
     note: str | None = None
 
 
-class ReviewManifest(BaseModel):
-    schema_version: str = "1.0"
+class ReviewManifest(StrictModel):
+    schema_version: str = "2.0"
     report_fingerprint: str
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
     decisions: list[ReviewDecision]
-

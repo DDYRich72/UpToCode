@@ -166,7 +166,11 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
     facts.has_run_budget = any(
         isinstance(node, ast.If)
         and any(
-            isinstance(item, ast.Name) and item.id in budget_names
+            (
+                isinstance(item, ast.Name)
+                and (item.id in budget_names or "budget" in item.id.lower())
+            )
+            or (isinstance(item, ast.Attribute) and "budget" in item.attr.lower())
             for item in ast.walk(node.test)
         )
         for node in ast.walk(tree)
@@ -174,14 +178,33 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
     facts.has_eval_marker = "archagent-audit: eval agent" in source
     client_timeout = False
     client_retry = False
+    configured_clients: dict[str, tuple[bool, bool]] = {}
     environment_secrets: set[str] = set()
     for node in ast.walk(tree):
         if not isinstance(node, (ast.Assign, ast.AnnAssign)):
             continue
         value = node.value
+        if value is None:
+            continue
         is_environment = isinstance(value, ast.Subscript) and qualified_name(value.value).endswith("os.environ")
         is_getenv = isinstance(value, ast.Call) and qualified_name(value.func).endswith(("os.getenv", "getenv"))
         if not (is_environment or is_getenv):
+            option_call = next(
+                (
+                    item
+                    for item in ast.walk(value)
+                    if isinstance(item, ast.Call)
+                    and qualified_name(item.func).endswith("with_options")
+                ),
+                None,
+            )
+            if option_call is not None:
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                names = [target.id for target in targets if isinstance(target, ast.Name)]
+                has_timeout = any(keyword.arg == "timeout" for keyword in option_call.keywords)
+                has_retry = any(keyword.arg == "max_retries" for keyword in option_call.keywords)
+                for name in names:
+                    configured_clients[name] = (has_timeout, has_retry)
             continue
         targets = node.targets if isinstance(node, ast.Assign) else [node.target]
         environment_secrets.update(target.id for target in targets if isinstance(target, ast.Name))
@@ -204,6 +227,10 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
                 facts.agent_present = True
                 facts.first_agent_line = min(facts.first_agent_line, node.lineno) if facts.first_agent_line != 1 else node.lineno
             if is_model:
+                root_name = call_name.split(".", 1)[0]
+                configured_timeout, configured_retry = configured_clients.get(
+                    root_name, (False, False)
+                )
                 for keyword in node.keywords:
                     if keyword.arg not in {"input", "prompt", "messages"}:
                         continue
@@ -213,8 +240,8 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
                     ModelCallFact(
                         line=node.lineno,
                         has_output_limit=any(keyword.arg in {"max_output_tokens", "max_tokens"} for keyword in node.keywords),
-                        has_timeout=client_timeout or any(keyword.arg == "timeout" for keyword in node.keywords),
-                        has_retry=client_retry or any(keyword.arg in {"retry", "max_retries"} for keyword in node.keywords),
+                        has_timeout=client_timeout or configured_timeout or any(keyword.arg == "timeout" for keyword in node.keywords),
+                        has_retry=client_retry or configured_retry or any(keyword.arg in {"retry", "max_retries"} for keyword in node.keywords),
                     )
                 )
             terminal = call_name.rsplit(".", 1)[-1]

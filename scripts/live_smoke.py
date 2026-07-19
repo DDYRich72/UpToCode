@@ -16,9 +16,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from archagent_audit.judgment import run_judgment
-from archagent_audit.judgment_candidates import JudgmentCandidate
-from archagent_audit.models import Coverage, Report
+from archagent_audit.judgment import run_judgment  # noqa: E402
+from archagent_audit.judgment_candidates import JudgmentCandidate  # noqa: E402
+from archagent_audit.models import Coverage, Report  # noqa: E402
 
 
 def main() -> int:

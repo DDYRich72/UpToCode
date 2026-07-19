@@ -27,6 +27,12 @@ def _qualified_name(node: ast.AST) -> str:
     if isinstance(node, ast.Name):
         return node.id
     if isinstance(node, ast.Attribute):
+        if (
+            isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Name)
+            and node.value.func.id == "super"
+        ):
+            return f"super.{node.attr}"
         prefix = _qualified_name(node.value)
         return f"{prefix}.{node.attr}" if prefix else node.attr
     return ""
@@ -90,14 +96,16 @@ class EvidenceVisitor(ast.NodeVisitor):
         elif name.endswith((".invoke", ".ainvoke")):
             config = next((keyword.value for keyword in node.keywords if keyword.arg == "config"), None)
             if isinstance(config, ast.Dict):
-                for key, value in zip(config.keys, config.values, strict=False):
+                for key, recursion_value in zip(config.keys, config.values, strict=False):
                     if not isinstance(key, ast.Constant) or key.value != "recursion_limit":
                         continue
                     self.result.frameworks.add("langgraph")
-                    if isinstance(value, ast.Constant) and value.value is None:
+                    if isinstance(recursion_value, ast.Constant) and recursion_value.value is None:
                         kind, detail = "disabled", "recursion_limit=None"
-                    elif isinstance(value, ast.Constant) and isinstance(value.value, int):
-                        kind, detail = "explicit", f"recursion_limit={value.value}"
+                    elif isinstance(recursion_value, ast.Constant) and isinstance(
+                        recursion_value.value, int
+                    ):
+                        kind, detail = "explicit", f"recursion_limit={recursion_value.value}"
                     else:
                         kind, detail = "unknown", "recursion_limit is dynamically configured"
                     self.result.loops.append(LoopEvidence(node.lineno, "langgraph", kind, detail))
@@ -114,7 +122,11 @@ class EvidenceVisitor(ast.NodeVisitor):
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:  # noqa: N802
         recursive = any(
             isinstance(candidate, ast.Call)
-            and _qualified_name(candidate.func) == node.name
+            and _qualified_name(candidate.func) in {
+                node.name,
+                f"self.{node.name}",
+                f"cls.{node.name}",
+            }
             for candidate in ast.walk(node)
         )
         has_base_case = _has_recursive_base_case(node)
@@ -125,7 +137,24 @@ class EvidenceVisitor(ast.NodeVisitor):
             self.result.loops.append(LoopEvidence(node.lineno, "custom-python", kind, detail))
         self.generic_visit(node)
 
-    visit_AsyncFunctionDef = visit_FunctionDef
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:  # noqa: N802
+        recursive = any(
+            isinstance(candidate, ast.Call)
+            and _qualified_name(candidate.func)
+            in {node.name, f"self.{node.name}", f"cls.{node.name}"}
+            for candidate in ast.walk(node)
+        )
+        has_base_case = _has_recursive_base_case(node)
+        if recursive:
+            self.result.frameworks.add("custom-python")
+            kind = "custom" if has_base_case else "disabled"
+            detail = (
+                "recursive function has a base case"
+                if has_base_case
+                else "direct recursion has no base case"
+            )
+            self.result.loops.append(LoopEvidence(node.lineno, "custom-python", kind, detail))
+        self.generic_visit(node)
 
 
 def extract_python_evidence(source: str) -> PythonEvidence:
