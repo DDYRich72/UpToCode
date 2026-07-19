@@ -16,10 +16,10 @@ Resolved direct environment: pydantic 2.13.4, typer 0.27.0, rich 14.3.4, PyYAML 
 | Judgment failure matrix | PASS (mocked) | Structured success, refusal, timeout, unavailable authentication, partial failure, bounded/redacted payload, and static preservation pass |
 | Review and planning non-mutation | PASS | Temporary repository tests verify report fingerprinting, manifest decisions, deterministic FIXPLAN, and unchanged source files |
 | Standalone HTML structure | PASS | Inline-only HTML, CSP, semantic sections, fixed bar chart, escaped excerpts, redaction, and CLI output behavior pass |
-| Standalone HTML visual inspection | DEFERRED | In-app browser rejected local `file://` navigation under security policy; manual/local served inspection remains in Gate 4 |
+| Standalone HTML visual inspection | PASS | The user opened and approved `.archagent-audit/final-report.html`; automated standalone, semantic, CSP, escaping, and redaction checks also pass |
 | MCP integration | PASS | Five tools exposed; static default and consent boundary pass; AA001 detected through `check_loop` and `audit_diff`; malformed call followed by valid call passes |
 | Self-scan triage | PASS | `.archagent-audit/self-scan.json`; 39/39 project files, 19 expected fixture/test findings, zero production-code findings, zero analysis warnings; detailed classification in `PROGRESS.md` |
 | Cross-platform acceptance | PASS | Windows Python 3.13: 133-test acceptance PASS; Ubuntu/WSL Python 3.13: full acceptance PASS and 133 tests; Windows Python 3.11 baseline: 133 tests PASS |
-| Authorized GPT-5.6 live smoke | BLOCKED — APPROVAL | API key and paid-use approval required |
-| README/demo claims | PASS (offline review) | README documents positioning, install, exact CLI, privacy, rule URLs, MCP, limitations, and output; demo and unpublished Devpost drafts match Python MVP |
-| External actions | PASS | No deployment, publication, upload, external message, paid usage, or submission performed |
+| Authorized GPT-5.6 live smoke | PASS | User authorized exactly one paid request; `.archagent-audit/live-smoke.json` records `gpt-5.6`, request count 1, synthetic code only, completed structured output, one expected finding, and no analysis warnings at 2026-07-19T02:44:32Z |
+| README/demo claims | PASS | README documents positioning, install, exact CLI, privacy, rule URLs, MCP, limitations, and output; demo and unpublished Devpost drafts match the validated Python MVP |
+| External actions | PASS | No deployment, publication, upload, external message, or submission performed; the only paid usage was the single explicitly authorized GPT-5.6 smoke request |

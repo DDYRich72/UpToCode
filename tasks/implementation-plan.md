@@ -31,19 +31,19 @@
 - [x] README and demo/submission drafts.
 - [x] Cross-platform `scripts/acceptance.py`.
 - [x] Self-scan triage.
-- [ ] Full completion audit and validation report.
-- [ ] Ask for approval, then run one live GPT-5.6 smoke test.
+- [x] Full completion audit and validation report.
+- [x] Ask for approval, then run one live GPT-5.6 smoke test.
 
 ## Definition of Done mapping
 
 - [x] All completed active gate criteria are recorded in `tasks/validation-report.md`.
 - [x] Full offline suite passes.
 - [x] Bad/clean fixtures and temporary review/plan flow pass without canonical source mutation.
-- [ ] Standalone HTML opened and visually inspected (manual check pending; automated semantics pass).
+- [x] Standalone HTML opened and visually inspected; user approved it and automated semantics pass.
 - [x] MCP process integration and malformed-call survival pass.
 - [x] Self-scan findings and analysis gaps are triaged in `PROGRESS.md`.
-- [ ] One explicitly authorized live GPT-5.6 smoke test passes before submission.
-- [x] README and demo claims match the committed Python surface; final recheck remains part of completion audit.
+- [x] One explicitly authorized live GPT-5.6 smoke test passes before submission.
+- [x] README and demo claims match the committed and validated Python surface.
 - [x] No public repository, sharing, video, submission, package, deployment, or other external action has occurred.
 
 Stretch TypeScript and GitHub output are inactive and are not part of the active Definition of Done. Judgment-enabled MCP arguments are present behind the same explicit code-sharing boundary; static MCP remains the default.

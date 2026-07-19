@@ -13,16 +13,17 @@ Gate 4 — acceptance, documentation, demo, and final audit.
 - [x] Gate 2 rule engine, judgment candidate extraction, fixtures, goldens, and validation (`python -m pytest -q`: 49 passed).
 - [x] Gate 3 judgment, review/plan, standalone HTML, and MCP surfaces (`python -m pytest -q`: 71 passed).
 - [x] Gate 4 README, demo/submission drafts, cross-platform acceptance runner, and self-scan triage.
-- [ ] Rendered HTML visual inspection.
-- [ ] Approval-gated one-request GPT-5.6 live smoke.
-- [ ] Final clean-worktree completion audit.
+- [x] Rendered HTML visual inspection approved by the user.
+- [x] One explicitly authorized GPT-5.6 live smoke completed successfully.
+- [x] Final clean-worktree completion audit.
 
 ## Notes
 
 - Workspace began as an empty Git repository.
-- Live GPT-5.6 use remains approval-gated; offline work can proceed.
+- One paid GPT-5.6 smoke request was explicitly authorized and completed successfully; no further paid requests are authorized.
 - The static engine evaluates AA001/2/3/4/6/7/10/11/12 and records AA005/8/9 as judgment-only/not applicable during static scans.
-- Local `file://` report navigation was blocked by the in-app browser security policy. Semantic HTML, CSP, escaping, redaction, and standalone behavior pass automated tests; rendered visual inspection remains a Gate 4 manual validation item.
+- Semantic HTML, CSP, escaping, redaction, and standalone behavior pass automated tests; the user opened and approved the rendered final HTML report.
+- Live evidence: `.archagent-audit/live-smoke.json` records one synthetic-code request to `gpt-5.6`, a completed structured result, one expected finding, and no analysis warnings. The evidence contains no API key or submitted code.
 
 ## Self-scan triage
 
