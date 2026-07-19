@@ -13,15 +13,17 @@ path-bearing tool to it. Hosted access has bearer authorization, bounded per-key
 in-memory rate limiting, default-off global judgment, safe digest-prefix log
 attribution, payload limits, and temporary-directory cleanup.
 
-Phase 2 is preserved remotely as `v1.0.0-rc3`. The Phase 3 candidate adds a
+Phase 2 is preserved remotely as `v1.0.0-rc3`. Phase 3 is preserved remotely as
+`v1.0.0-rc4` at corrected commit `4fe8a61`; it adds a
 nine-cell Python matrix, isolated wheel dependency audit, site lint/type/build
 gates, container lifecycle smoke, SHA-pinned Actions, retained validation
 artifacts, weekly Dependabot, injection-safe GitHub annotations, bounded Markdown
 summaries, hardened SARIF, and a reusable upload-before-fail composite Action.
-The candidate passes 175 tests, acceptance and compliance, Ruff, strict mypy,
+The release candidate passes 175 tests, acceptance and compliance, Ruff, strict mypy,
 88% branch coverage, isolated wheel audit, and site lint/type/build tests. GitHub
-run `29703827878` passed all nine Python/OS cells plus the package/site, isolated
-wheel-audit, and container lifecycle jobs. No public hosted service or published
+the first burn-in run `29703827878` and exact rc4 tag run `29706598903` passed all nine
+Python/OS cells plus the package/site, isolated wheel-audit, and container lifecycle jobs.
+No public hosted service or published
 package is claimed.
 
 Deliberate bad fixtures and synthetic secret sentinels are test evidence, not

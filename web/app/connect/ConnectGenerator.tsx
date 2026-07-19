@@ -1,43 +1,65 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type KeyboardEvent, useMemo, useState } from "react";
 
 type Mode = "hosted" | "local";
 
 export function ConnectGenerator() {
-  const [mode, setMode] = useState<Mode>("hosted");
-  const [endpoint, setEndpoint] = useState("https://mcp.archagent.example/mcp");
+  const [mode, setMode] = useState<Mode>("local");
+  const [endpoint, setEndpoint] = useState("");
   const [root, setRoot] = useState("/absolute/path/to/repository");
-  const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   const config = useMemo(() => {
     if (mode === "local") {
       return `[mcp_servers.archagent]\ncommand = "uvx"\nargs = ["archagent-audit", "serve", "--transport", "stdio", "--root", "${root.replaceAll('"', '\\"')}"]\nrequired = true\nstartup_timeout_sec = 20\ntool_timeout_sec = 240`;
     }
-    return `[mcp_servers.archagent]\nurl = "${endpoint.replaceAll('"', '\\"')}"\nbearer_token_env_var = "ARCHAGENT_API_KEY"\nrequired = true\nstartup_timeout_sec = 20\ntool_timeout_sec = 240`;
+    const hostedUrl = endpoint.trim() || "<HOSTED_MCP_URL>";
+    return `[mcp_servers.archagent]\nurl = "${hostedUrl.replaceAll('"', '\\"')}"\nbearer_token_env_var = "ARCHAGENT_API_KEY"\nrequired = true\nstartup_timeout_sec = 20\ntool_timeout_sec = 240`;
   }, [endpoint, mode, root]);
 
   async function copyConfig() {
-    await navigator.clipboard.writeText(config);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1600);
+    try {
+      await navigator.clipboard.writeText(config);
+      setCopyStatus("copied");
+    } catch {
+      setCopyStatus("failed");
+    }
+    window.setTimeout(() => setCopyStatus("idle"), 1800);
+  }
+
+  function handleTabKey(event: KeyboardEvent<HTMLButtonElement>) {
+    const order: Mode[] = ["local", "hosted"];
+    const current = order.indexOf(mode);
+    let next = current;
+
+    if (event.key === "ArrowRight") next = (current + 1) % order.length;
+    if (event.key === "ArrowLeft") next = (current - 1 + order.length) % order.length;
+    if (event.key === "Home") next = 0;
+    if (event.key === "End") next = order.length - 1;
+    if (next === current) return;
+
+    event.preventDefault();
+    const nextMode = order[next];
+    setMode(nextMode);
+    document.getElementById(`${nextMode}-tab`)?.focus();
   }
 
   return (
     <div className="generator">
       <div className="tabs" role="tablist" aria-label="Connection mode">
-        <button type="button" role="tab" aria-selected={mode === "hosted"} onClick={() => setMode("hosted")}>Hosted MCP</button>
-        <button type="button" role="tab" aria-selected={mode === "local"} onClick={() => setMode("local")}>Local stdio</button>
+        <button id="local-tab" type="button" role="tab" aria-selected={mode === "local"} aria-controls="local-panel" tabIndex={mode === "local" ? 0 : -1} onClick={() => setMode("local")} onKeyDown={handleTabKey}>Local stdio</button>
+        <button id="hosted-tab" type="button" role="tab" aria-selected={mode === "hosted"} aria-controls="hosted-panel" tabIndex={mode === "hosted" ? 0 : -1} onClick={() => setMode("hosted")} onKeyDown={handleTabKey}>Hosted MCP</button>
       </div>
 
       {mode === "hosted" ? (
-        <div className="field">
+        <div id="hosted-panel" className="field" role="tabpanel" aria-labelledby="hosted-tab">
           <label htmlFor="endpoint">Hosted MCP endpoint</label>
-          <input id="endpoint" value={endpoint} onChange={(event) => setEndpoint(event.target.value)} spellCheck={false} />
-          <p className="hint">Set your issued key in the <code>ARCHAGENT_API_KEY</code> environment variable. It is not placed in the config file.</p>
+          <input id="endpoint" type="url" value={endpoint} placeholder="https://your-approved-endpoint/mcp" onChange={(event) => setEndpoint(event.target.value)} spellCheck={false} />
+          <p className="hint">No public endpoint is deployed. Enter the private-beta endpoint supplied by the operator and set its issued key in <code>ARCHAGENT_API_KEY</code>.</p>
         </div>
       ) : (
-        <div className="field">
+        <div id="local-panel" className="field" role="tabpanel" aria-labelledby="local-tab">
           <label htmlFor="root">Allowed repository root</label>
           <input id="root" value={root} onChange={(event) => setRoot(event.target.value)} spellCheck={false} />
           <p className="hint">ArchAgent resolves and enforces this boundary before any local path tool reads a file.</p>
@@ -46,7 +68,8 @@ export function ConnectGenerator() {
 
       <div className="codeBlock">
         <pre aria-label="Generated Codex MCP configuration"><code>{config}</code></pre>
-        <button className="copyButton" type="button" onClick={copyConfig}>{copied ? "Copied" : "Copy Codex config"}</button>
+        <button className="copyButton" type="button" onClick={copyConfig}>{copyStatus === "copied" ? "Copied" : "Copy Codex config"}</button>
+        <span className="copyStatus" role="status" aria-live="polite">{copyStatus === "failed" ? "Copy failed. Select the configuration text and copy it manually." : ""}</span>
       </div>
     </div>
   );

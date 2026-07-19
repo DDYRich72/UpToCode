@@ -17,7 +17,7 @@ const rules = [
 
 export default function Home() {
   return (
-    <main>
+    <main id="main-content">
       <nav className="nav" aria-label="Primary navigation">
         <Link className="brand" href="/">ArchAgent</Link>
         <div className="navLinks">
@@ -37,13 +37,13 @@ export default function Home() {
         </p>
         <div className="actions">
           <Link className="button" href="/connect">Connect the MCP</Link>
-          <a className="textLink" href="#install">Install locally →</a>
+          <a className="textLink" href="#install">Install locally</a>
         </div>
       </section>
 
       <section className="proof" aria-label="Product guarantees">
+        <article><strong>Audits itself</strong><span>Zero production findings, suppressions, or unexplained warnings.</span></article>
         <article><strong>Static first</strong><span>No network calls by default.</span></article>
-        <article><strong>Evidence backed</strong><span>Findings point to recognized syntax.</span></article>
         <article><strong>Fail closed</strong><span>Unsupported code is reported, never declared clean.</span></article>
         <article><strong>Non-mutating</strong><span>Review and planning never rewrite source.</span></article>
       </section>
@@ -62,7 +62,7 @@ export default function Home() {
           <article className="card">
             <h3>Hosted MCP</h3>
             <p>Stateless source, diff, loop, schema, rule, review, and plan tools. No server filesystem access or code history.</p>
-            <Link className="textLink" href="/connect">Generate connection config →</Link>
+            <Link className="textLink" href="/connect">Generate connection config</Link>
           </article>
         </div>
       </section>

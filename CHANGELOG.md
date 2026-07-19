@@ -2,9 +2,23 @@
 
 ## 1.0.0 - Unreleased
 
-- Introduce strict Report 2.0 contracts and stable content fingerprints.
-- Add bounded AuditService orchestration, baselines, SARIF, and hardened discovery.
-- Add typed local and hosted MCP modes with workspace and no-persistence boundaries.
-- Add trusted local rulepacks, production compliance evidence, CI, container, and landing site.
+- Add conservative Python architecture checks for AA001–AA012 with explicit coverage,
+  uncertainty, redaction, and direct evidence.
+- Ship terminal, JSON, standalone HTML, injection-safe GitHub annotations, bounded job
+  summaries, and no-null SARIF 2.1.0 reports with stable fingerprints.
+- Add baselines, changed-since scanning, rule selection, severity overrides, report-bound
+  review decisions, and approved-only non-mutating FIXPLAN generation.
+- Add an optional double-consent GPT-5.6 Structured Outputs judgment tier with bounded,
+  redacted requests and static-result preservation.
+- Add ten strict local MCP tools with canonical-root containment and a smaller hosted
+  submitted-content surface with bearer authentication, per-key in-memory rate limiting,
+  default-off hosted judgment, safe log attribution, and no persistence.
+- Add the reusable upload-before-fail GitHub Action, nine-cell Python CI matrix, isolated
+  wheel dependency audit, container lifecycle smoke tests, retained SBOM/SARIF artifacts,
+  and private-repository release-candidate workflow.
+- Add the two-route ArchAgent product site and connection generator, with keyboard tabs,
+  visible focus, reduced-motion handling, responsive layouts, and no credential collection.
+- Add a production dogfood compliance gate: ArchAgent audits itself with zero production
+  findings, suppressions, or unexplained analysis warnings.
 
 Report 1.0 remains readable but its fingerprints are not baseline-compatible with 2.0.

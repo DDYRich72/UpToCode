@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function ConnectPage() {
   return (
-    <main>
-      <nav className="nav">
+    <main id="main-content">
+      <nav className="nav" aria-label="Connection navigation">
         <Link className="brand" href="/">ArchAgent</Link>
         <Link className="textLink" href="/">Back to overview</Link>
       </nav>
@@ -18,11 +18,11 @@ export default function ConnectPage() {
         <div className="connectIntro">
           <p className="eyebrow">Connection setup</p>
           <h1>Choose where your code is analyzed.</h1>
-          <p className="lede">Local mode reads a bounded workspace on your machine. Hosted mode analyzes only content explicitly sent through an MCP tool call.</p>
+          <p className="lede">Local mode reads a bounded workspace on your machine. Hosted mode analyzes only content explicitly sent through an MCP tool call; no public hosted endpoint is currently deployed.</p>
         </div>
         <ConnectGenerator />
         <div className="callout">
-          Private-beta keys are issued separately. This page never asks for the key; Codex reads it from your local <code>ARCHAGENT_API_KEY</code> environment variable.
+          Private-beta endpoints and keys are issued separately. This page never asks for the key; Codex reads it from your local <code>ARCHAGENT_API_KEY</code> environment variable.
         </div>
         <section className="connectionChecks" aria-labelledby="verify-connection">
           <h2 id="verify-connection">Verify the connection</h2>

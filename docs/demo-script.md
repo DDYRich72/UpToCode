@@ -53,8 +53,9 @@ to the canonical root resolved when the server starts.
 Show SARIF, injection-safe GitHub annotations, the bounded job summary, the composite
 Action's upload-before-fail sequence, baselines, changed-since scanning, and rule selection
 from prepared outputs or help text. Run `python scripts/compliance.py`; show the zero-finding
-production self-scan and the offline acceptance PASS evidence. Claim the Action's green
-matrix and show recorded GitHub run `29703827878`—do not imply that the composite Action
+production self-scan and the offline acceptance PASS evidence. Say, “ArchAgent audits
+itself: zero production findings, suppressions, or unexplained warnings.” Show the selected
+rc4 verification run `29706598903`—do not imply that the composite Action
 itself publishes a package or deploys a service.
 
 ## Codex/GPT-5.6 development beat and close — 2:28–2:55

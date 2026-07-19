@@ -2,7 +2,7 @@
 
 ## Current gate
 
-Completion Plan v2 Phase 3 — GitHub and CI product surface for `v1.0.0-rc4`.
+Completion Plan v2 Phase 4 — design and product polish for `v1.0.0-rc5`.
 
 ## Status
 
@@ -65,9 +65,7 @@ Completion Plan v2 Phase 3 — GitHub and CI product surface for `v1.0.0-rc4`.
   upgraded isolated wheel-installed environment.
 - [x] CI concurrency cancellation and job timeouts added; coverage, validation,
   wheel, distribution, SBOM, and SARIF artifacts retained.
-- [x] Site ESLint and `tsc --noEmit` gates added and validated locally; the existing
-  Cloudflare starter contract now declares its required types explicitly pending
-  ratified Drizzle/D1 removal in Phase 4.
+- [x] Site ESLint and `tsc --noEmit` gates added and validated locally.
 - [x] Docker health, unauthorized MCP, and graceful-shutdown smoke steps added and
   passed on GitHub's Linux runner.
 - [x] Dedicated GitHub reporter escapes hostile message and property data and emits
@@ -83,8 +81,23 @@ Completion Plan v2 Phase 3 — GitHub and CI product surface for `v1.0.0-rc4`.
 - [x] Final clean-environment gate passed on Windows and POSIX, including the
   offline demo dry-run and clean post-gate trees.
 - [x] rc4 verification evidence committed locally.
-- [ ] Obtain operator approval before pushing the evidence commit or creating and
-  pushing `v1.0.0-rc4`.
+- [x] Operator approved and pushed the rc4 evidence commit and annotated tag.
+- [x] Private-repository artifact attestation deferral documented for Phase 7; corrected
+  commit `4fe8a61` and replacement `v1.0.0-rc4` tag pushed with operator approval.
+- [x] Exact rc4 tag workflows passed again: CI run `29706598903` and release-artifact
+  run `29706598904`.
+- [x] Unused Drizzle/D1 code, dependencies, migration hooks, examples, starter assets,
+  and starter documentation removed; Sites packaging retained without data bindings.
+- [x] Direct Cloudflare/Vite/Next/React packages safely updated; the production dependency
+  audit reduced from 14 records including six high to the two documented moderate
+  Next/PostCSS records.
+- [x] Site remains limited to `/` and `/connect`; fake hosted endpoint removed and local
+  setup made the honest default.
+- [x] Keyboard tabs, visible focus, skip navigation, reduced motion, copy failure status,
+  responsive generator layout, and synchronized connection copy implemented.
+- [x] 1.0 changelog and self-audit headline synchronized across README, demo, and Devpost.
+- [ ] Pass the complete Phase 4 gate and record exact rc5 evidence.
+- [ ] Obtain operator approval before any Phase 4 push or `v1.0.0-rc5` tag.
 
 ## Notes
 

@@ -217,6 +217,14 @@ procedure is documented in `docs/operations.md`.
 
 The functional landing and connection generator live in `web/`. `/connect` generates local stdio or hosted Codex MCP configuration; bearer keys remain in the user's local environment and are never entered into or transmitted by the page.
 
+## ArchAgent audits itself
+
+The release gate runs `python scripts/compliance.py` against ArchAgent's production Python
+source. The current verified result is zero findings, zero suppressions, and zero unexplained
+analysis warnings. Deliberately bad fixtures and synthetic redaction sentinels remain test
+evidence and are excluded from that production claim. This dogfood check is part of every
+release candidate, alongside the full offline suite and branch-coverage floor.
+
 ## Built with Codex and GPT-5.6
 
 Codex was the development collaborator throughout ArchAgent: it translated the product

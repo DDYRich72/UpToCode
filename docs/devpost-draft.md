@@ -29,6 +29,8 @@ ArchAgent finds architecture-quality risks that ordinary syntax checks miss: unb
 - Provides a separate hosted submitted-content surface with no filesystem-path tools.
 - Hardens hosted access with per-key in-memory rate limiting, a default-off global judgment
   gate, and payload-free short-digest attribution; local path tools share one resolved root.
+- Audits its own production source at every release gate: zero findings, zero suppressions,
+  and zero unexplained analysis warnings in the current verified build.
 
 ## How it was built
 

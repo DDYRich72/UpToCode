@@ -1,9 +1,9 @@
 # Validation Report
 
-Phase 3 implementation commit `790ef5d` passed the complete GitHub matrix in run
-`29703827878`: Python 3.11–3.13 on Ubuntu, Windows, and macOS plus package/site,
-isolated wheel audit, and container lifecycle jobs. Final exact-candidate Windows
-and Ubuntu/WSL clean-clone evidence is recorded below.
+Phase 3 is preserved as `v1.0.0-rc4` at corrected commit `4fe8a61`. Exact-tag CI run
+`29706598903` passed Python 3.11–3.13 on Ubuntu, Windows, and macOS plus package/site,
+isolated wheel audit, and container lifecycle jobs; release-artifact run `29706598904`
+also passed. Final Windows and Ubuntu/WSL clean-clone evidence is recorded below.
 
 ## Reference production gates
 
@@ -26,7 +26,7 @@ and Ubuntu/WSL clean-clone evidence is recorded below.
 | Packaging/release | PASS (artifact level) | non-root Dockerfile, Cloud Run limits/secrets/probes, protected release environment, retained wheel/distributions/SBOMs/compliance evidence, public-repository provenance workflow, operations/rollback runbook; private-repository attestation is deferred to Phase 7 |
 | Functional site | PASS | Fresh Windows and Ubuntu/WSL clones build `/` and `/connect`; both server-rendered route tests pass. The required Sites Vite plugin is now tracked outside ignored build output. |
 | Site dependency audit | PASS AT RELEASE THRESHOLD / REVIEW REQUIRED | Fresh `npm audit --omit=dev --audit-level=high` exits 0 and reports two moderate findings in Next's nested PostCSS; Phase 4 must upgrade or record accepted risk. |
-| Container lifecycle | PASS | GitHub run `29703827878`: build, health 200, unauthenticated MCP 401, and bounded graceful shutdown all passed |
+| Container lifecycle | PASS | Exact-tag GitHub run `29706598903`: build, health 200, unauthenticated MCP 401, and bounded graceful shutdown all passed |
 
 ## Safety and external actions
 
@@ -85,7 +85,7 @@ publication, and MCP registry submission are post-event Phase 7 work.
 - No paid model call, push, tag, remote-access change, deployment, credential
   distribution, publication, video upload, or submission occurred in Phase 2.
 
-## Phase 3 burn-in and rc4 candidate
+## Phase 3 burn-in and rc4
 
 - Phase 2 is remotely preserved as annotated tag `v1.0.0-rc3` at `f409771`; the
   repository remains private.

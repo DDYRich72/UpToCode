@@ -20,6 +20,9 @@ body {
 }
 a { color: inherit; }
 main { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+.skipLink { position: fixed; z-index: 20; top: 8px; left: 8px; padding: 10px 14px; background: var(--ink); color: white; transform: translateY(-160%); }
+.skipLink:focus { transform: translateY(0); }
+:where(a, button, input):focus-visible { outline: 3px solid #d08700; outline-offset: 3px; }
 .nav { min-height: 76px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
 .brand { font-weight: 760; text-decoration: none; letter-spacing: -.03em; font-size: 1.25rem; }
 .navLinks { display: flex; align-items: center; gap: 24px; }
@@ -64,6 +67,7 @@ footer { min-height: 100px; display: flex; align-items: center; justify-content:
 .codeBlock { margin-top: 24px; position: relative; }
 .codeBlock pre { margin: 0; min-height: 190px; padding: 20px; overflow: auto; color: #e7f5ee; background: #101715; border-radius: 6px; font: .83rem/1.6 var(--font-geist-mono), monospace; white-space: pre-wrap; }
 .copyButton { margin-top: 12px; border: 0; background: var(--accent); color: white; padding: 10px 14px; border-radius: 4px; cursor: pointer; font-weight: 650; }
+.copyStatus { display: inline-block; margin-left: 12px; color: #8b1d1d; font-size: .88rem; }
 .callout { margin-top: 24px; padding: 18px; border-left: 4px solid var(--accent); background: #e7eee9; color: #30423b; }
 .connectionChecks { margin-top: 52px; padding-top: 42px; border-top: 1px solid var(--line); color: var(--muted); line-height: 1.65; }
 .connectionChecks h2 { color: var(--ink); font-size: clamp(1.8rem, 3vw, 2.5rem); }
@@ -86,6 +90,12 @@ footer { min-height: 100px; display: flex; align-items: center; justify-content:
   .proof article { border-right: 0; border-bottom: 1px solid var(--line); }
   .proof article:last-child { border-bottom: 0; }
   footer { align-items: flex-start; flex-direction: column; justify-content: center; gap: 10px; }
+  .generator { padding: 20px; }
+  .tabs button { flex: 1; min-height: 44px; }
+  .copyStatus { display: block; margin: 10px 0 0; }
 }
 
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

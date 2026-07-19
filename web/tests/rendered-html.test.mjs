@@ -35,6 +35,9 @@ test("server-renders the functional ArchAgent landing page", async () => {
   assert.match(html, /Local stdio MCP/);
   assert.match(html, /Hosted MCP/);
   assert.match(html, /href="\/connect"/);
+  assert.match(html, /Audits itself/);
+  assert.match(html, /id="main-content"/);
+  assert.match(html, /Skip to main content/);
 });
 
 test("server-renders connection instructions without collecting a key", async () => {
@@ -44,7 +47,10 @@ test("server-renders connection instructions without collecting a key", async ()
   const html = await response.text();
   assert.match(html, /Choose where your code is analyzed/);
   assert.match(html, /ARCHAGENT_API_KEY/);
-  assert.match(html, /bearer_token_env_var/);
+  assert.match(html, /command = &quot;uvx&quot;/);
   assert.match(html, /Local stdio/);
+  assert.match(html, /no public hosted endpoint is currently deployed/i);
+  assert.match(html, /aria-label="Connection navigation"/);
+  assert.doesNotMatch(html, /mcp\.archagent\.example/);
   assert.doesNotMatch(html, /type="password"|name="api[_-]?key"/i);
 });
