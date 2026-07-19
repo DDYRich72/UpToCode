@@ -23,7 +23,7 @@ and Ubuntu/WSL clean-clone evidence is recorded below.
 | Local MCP | PASS | official SDK stdio lifecycle; ten typed tools; server-start canonical-root containment for every path surface; guarded FastMCP 1.28.1 strict-schema shim; malformed-call survival; progress; explicit judgment consent |
 | Hosted MCP | PASS | official SDK Streamable HTTP lifecycle; bearer authorization; per-key digest token buckets with monotonic refill, bounded eviction, `429` and `Retry-After`; judgment globally off by default; safe short-digest attribution; health/readiness; no path tools; submitted-source limits; output cap; no persistence |
 | Judgment boundary | PASS (mocked) | Structured Outputs, trusted metadata merge, redaction, bounded calls/tokens/retries/timeouts, consent, refusal/failure preservation, and prompt-injection cases |
-| Packaging/release | PASS (artifact level) | non-root Dockerfile, Cloud Run limits/secrets/probes, protected release environment, SBOM and provenance attestation workflow, operations/rollback runbook |
+| Packaging/release | PASS (artifact level) | non-root Dockerfile, Cloud Run limits/secrets/probes, protected release environment, retained wheel/distributions/SBOMs/compliance evidence, public-repository provenance workflow, operations/rollback runbook; private-repository attestation is deferred to Phase 7 |
 | Functional site | PASS | Fresh Windows and Ubuntu/WSL clones build `/` and `/connect`; both server-rendered route tests pass. The required Sites Vite plugin is now tracked outside ignored build output. |
 | Site dependency audit | PASS AT RELEASE THRESHOLD / REVIEW REQUIRED | Fresh `npm audit --omit=dev --audit-level=high` exits 0 and reports two moderate findings in Next's nested PostCSS; Phase 4 must upgrade or record accepted risk. |
 | Container lifecycle | PASS | GitHub run `29703827878`: build, health 200, unauthenticated MCP 401, and bounded graceful shutdown all passed |
@@ -126,4 +126,6 @@ publication, and MCP registry submission are post-event Phase 7 work.
   both route tests, then returned to a clean tree. Clean Windows Python evidence
   comes from the three successful Windows matrix cells in run `29703827878`.
 - PyPI publication was removed from the release-candidate workflow in accordance
-  with D006; tagged builds retain and attest artifacts without publishing them.
+  with D006. Tagged private-repository builds retain artifacts and SBOMs but skip
+  GitHub attestation because that feature is unavailable for user-owned private
+  repositories; signed/attested publication is deferred to Phase 7.

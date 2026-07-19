@@ -192,5 +192,8 @@ def test_release_workflow_retains_artifacts_without_publishing() -> None:
 
     assert "upload-artifact@" in release
     assert "attest-build-provenance@" in release
+    assert "if: github.event.repository.private == false" in release
+    assert "if: github.event.repository.private" in release
+    assert "signed/attested publication is deferred to Phase 7" in release
     assert "gh-action-pypi-publish" not in release
-    assert "PyPI publication is intentionally absent" in release
+    assert "PyPI publication and private-repository attestation are intentionally absent" in release

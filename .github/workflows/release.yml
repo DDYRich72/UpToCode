@@ -63,8 +63,18 @@ jobs:
           path: dist/*
           if-no-files-found: error
           retention-days: 30
-      - uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4
+      - name: Attest public-repository artifacts
+        if: github.event.repository.private == false
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4
         with:
           subject-path: "dist/*"
 
-      # PyPI publication is intentionally absent. D006 defers it to post-event Phase 7.
+      - name: Record private-repository attestation deferral
+        if: github.event.repository.private
+        run: |
+          echo "### Artifact attestation deferred" >> "$GITHUB_STEP_SUMMARY"
+          echo "GitHub artifact attestations are unavailable for user-owned private repositories." >> "$GITHUB_STEP_SUMMARY"
+          echo "The retained RC artifacts and SBOMs remain available; signed/attested publication is deferred to Phase 7." >> "$GITHUB_STEP_SUMMARY"
+
+      # PyPI publication and private-repository attestation are intentionally absent.
+      # D006 defers signed/attested publication to post-event Phase 7.

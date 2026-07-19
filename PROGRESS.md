@@ -165,5 +165,8 @@ acceptance run (generated and gitignored).
   and `tsc --noEmit`, the offline demo sequence, and a clean-tree check. A fresh
   Windows clone passed clean npm install, lint, type check, production build, and
   both rendered-route tests; GitHub supplied the clean Windows Python gates.
-- The repository remains private. No tag, deployment, access change, publication,
+- The repository remains private. No deployment, access change, publication,
   credential distribution, video upload, paid model call, or submission occurred.
+- GitHub artifact attestation is skipped while the repository is private because
+  the feature is unavailable for user-owned private repositories. RC artifacts and
+  SBOMs remain retained; signed/attested publication is deferred to Phase 7.
