@@ -2,8 +2,7 @@
 
 ## Current gate
 
-Completion Plan v2 Phase 1 — rules compliance and submission assets for
-`v1.0.0-rc2`.
+Completion Plan v2 Phase 2 — MCP hardening for `v1.0.0-rc3`.
 
 ## Status
 
@@ -40,8 +39,28 @@ Completion Plan v2 Phase 1 — rules compliance and submission assets for
 - [x] Phase 1 clean-clone gate passed on Windows and Ubuntu/WSL: 158 tests,
   acceptance, compliance, Ruff, strict mypy, 86% branch coverage, and two site tests.
 - [x] Phase 1 offline demo sequence dry-run successfully from the exact commit.
-- [ ] Operator captures the Codex Session ID outside the repository.
-- [ ] Obtain operator approval before pushing Phase 1 commits or the RC2 tag.
+- [x] Operator captured the Codex Session IDs outside the repository.
+- [x] Phase 1 commits and annotated `v1.0.0-rc2` pushed after explicit operator
+  approval; the private repository remains private.
+- [x] Effective local root resolved once per MCP server and enforced for every
+  file, repository, and diff-base path.
+- [x] FastMCP 1.28.1 strict-schema compatibility shim guarded with an exact SDK
+  canary and installed-version fail-closed diagnostics.
+- [x] Unused judgment parameters removed from `check_tool_schema`.
+- [x] Hosted per-key token-bucket limiting added with monotonic refill, bounded
+  idle eviction, `429`/`Retry-After`, and safe digest-prefix attribution.
+- [x] Hosted judgment defaults off and is accepted only when
+  `ARCHAGENT_HOSTED_JUDGMENT=true` globally.
+- [x] Package, runtime, and `server.json` version agreement enforced by tests and
+  compliance.
+- [x] Phase 2 containment, rate-limit, judgment-gate, log-safety, malformed-SDK,
+  and version-sync tests added.
+- [x] Phase 2 clean-clone gate passed on Windows and Ubuntu/WSL: 167 tests,
+  acceptance, compliance, Ruff, strict mypy, 87% branch coverage, clean site
+  installs, and two rendered-route tests.
+- [x] Phase 2 offline demo sequence dry-run successfully from the exact commit.
+- [ ] Obtain operator approval before pushing the Phase 2 commits or creating and
+  pushing the `v1.0.0-rc3` tag.
 
 ## Notes
 
@@ -92,3 +111,18 @@ acceptance run (generated and gitignored).
 - The exact demo sequence produced 10 deliberate fixture findings with three
   redactions, generated HTML/JSON, bound review decisions, generated the approved-only
   FIXPLAN, and passed compliance entirely offline.
+
+## Phase 2 evidence
+
+- Exact verified implementation commit: `0d07f71` (`feat(mcp): harden local and
+  hosted controls`).
+- Windows clean clone: Python 3.13.7, Node 24.14.1; 167 tests, acceptance,
+  compliance, Ruff, strict mypy over 29 files, 87% branch coverage, clean npm
+  install, production build, and two rendered-route tests all PASS.
+- Ubuntu/WSL clean clone: Python 3.13.12, Node 22.22.2; the same required gates,
+  clean npm install, production build, and two rendered-route tests all PASS.
+- The offline demo dry-run produced the expected 10 deliberate fixture findings
+  and three redactions; JSON, standalone HTML, review manifest, approved-only
+  FIXPLAN, and production compliance artifacts were generated without paid calls.
+- No remote, deployment, repository access, credential, publication, video, or
+  submission action occurred during Phase 2.
