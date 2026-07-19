@@ -5,10 +5,16 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 from openai import OpenAI
+
+# Allow this checked-in script to run from a source checkout before installation.
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from archagent_audit.judgment import run_judgment
 from archagent_audit.judgment_candidates import JudgmentCandidate
