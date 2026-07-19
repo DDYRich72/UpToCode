@@ -15,3 +15,16 @@ The OpenAI integration will be implemented and verified with mocks before any li
 ## D004 — Rule-slice test expectations
 
 Gate 1 AA001 tests originally asserted the entire report contained only AA001. Once Gate 2 legitimately added project-level AA011/AA012 findings, those assertions no longer isolated the behavior named by the tests. They now assert specifically on AA001 while Gate 2 fixture tests own whole-report expectations.
+
+## D005 — Firestore access-control plane deferred to 1.1 (2026-07-19)
+
+The proposed Firestore-backed beta-access system (public access-request endpoint, stored contact PII, key lifecycle records, transactional quotas, admin tooling, GCP provisioning) is deferred to 1.1. It was never part of the shipped program, its absence does not impede production readiness at manually provisioned private-beta scale, and judges receive credentials directly, so the flow is invisible to judging. 1.0 ships the minimal hosted controls instead: in-memory per-key rate limiting, an `ARCHAGENT_HOSTED_JUDGMENT` gate defaulting off, and safe key-prefix log attribution, on top of the existing `ARCHAGENT_API_KEY_HASHES` allowlist. Operator delegated this call; no Firestore code lands in 1.0 and no spec may record it as approved 1.0 scope.
+
+## D006 — Submission via private repository; publication decoupled (2026-07-19)
+
+Per the official rules (https://openai.devpost.com/rules), the submission repository may be private if shared with `testing@devpost.com` and `build-week-event@openai.com`. ArchAgent submits that way. PyPI publication, MCP registry submission, and the package-name recheck are post-event work and no longer gate the submission.
+
+## D007 — Always submission-ready (2026-07-19)
+
+Every phase in `tasks/completion-plan-v2.md` must exit through the Submission-Ready Gate: full offline suite, acceptance, compliance, lint, strict typing, coverage floor, site tests, claims exactly matching the shipped surface, a successful demo dry-run, a clean tree, and a tagged release candidate. If the deadline arrives mid-phase, the previous tag is submitted as-is.
+

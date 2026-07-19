@@ -12,3 +12,6 @@
 
 The detailed backlog and sequencing live in [gap-analysis.md](gap-analysis.md)
 and [the production feature spec](../specs/002-reference-production.md).
+The reviewed defect list lives in
+[the production work order](../tasks/production-workorder.md); the authoritative
+competition-first sequencing is [completion plan v2](../tasks/completion-plan-v2.md).
