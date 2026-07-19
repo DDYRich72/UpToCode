@@ -5,7 +5,7 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 
-from archagent_audit.analysis import DESTRUCTIVE_PREFIXES, qualified_name
+from archagent_audit.analysis import DESTRUCTIVE_PREFIXES, SIDE_EFFECT_NAMES, qualified_name
 
 
 @dataclass(frozen=True)
@@ -21,14 +21,38 @@ def _excerpt(lines: list[str], line: int) -> str:
     return "\n".join(lines[max(0, line - 2): min(len(lines), line + 1)])
 
 
+def _contains_raw_model_output(node: ast.AST) -> bool:
+    return any(
+        isinstance(item, ast.Attribute)
+        and item.attr in {"output_text", "content", "final_output"}
+        for item in ast.walk(node)
+    )
+
+
+def _contains_validation(node: ast.AST) -> bool:
+    return any(
+        isinstance(item, ast.Call)
+        and qualified_name(item.func).endswith(
+            ("model_validate", "parse_obj", "validate_python")
+        )
+        for item in ast.walk(node)
+    )
+
+
 def collect_judgment_candidates(
     sources: list[tuple[str, str]],
 ) -> list[JudgmentCandidate]:
     candidates: list[JudgmentCandidate] = []
     agent_locations: list[tuple[str, int, list[str]]] = []
     has_eval = any(
-        file.rsplit("/", 1)[-1].startswith("test_")
-        or "archagent-audit: eval agent" in source
+        "archagent-audit: eval agent" in source
+        or (
+            file.rsplit("/", 1)[-1].startswith("test_")
+            and any(
+                token in source
+                for token in ("Runner.run", "run_agent(", "agent.run(", "Agent(")
+            )
+        )
         for file, source in sources
     )
     for file, source in sources:
@@ -49,6 +73,22 @@ def collect_judgment_candidates(
                         for candidate in ast.walk(keyword.value)
                     ):
                         candidates.append(JudgmentCandidate("AA005", file, node.lineno, "External content flows directly to a model input.", _excerpt(lines, node.lineno)))
+            if isinstance(node, ast.Call):
+                terminal = qualified_name(node.func).rsplit(".", 1)[-1].lower()
+                if (
+                    terminal in SIDE_EFFECT_NAMES
+                    and _contains_raw_model_output(node)
+                    and not _contains_validation(node)
+                ):
+                    candidates.append(
+                        JudgmentCandidate(
+                            "AA010",
+                            file,
+                            node.lineno,
+                            "Raw model output reaches a write-like operation without recognized validation.",
+                            _excerpt(lines, node.lineno),
+                        )
+                    )
         for function in [node for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]:
             is_tool = any("function_tool" in qualified_name(item.func if isinstance(item, ast.Call) else item) for item in function.decorator_list)
             if not is_tool:
@@ -69,4 +109,3 @@ def collect_judgment_candidates(
         file, line, lines = agent_locations[0]
         candidates.append(JudgmentCandidate("AA011", file, line, "Agent code has no recognized eval artifact.", _excerpt(lines, line)))
     return sorted(candidates, key=lambda item: (item.rule_id, item.file, item.line))
-

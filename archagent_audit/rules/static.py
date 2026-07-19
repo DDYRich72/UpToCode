@@ -124,13 +124,23 @@ def evaluate_project(
     if not agent_entries:
         return []
     findings: list[Finding] = []
-    has_eval = any(facts.has_eval_marker or file.rsplit("/", 1)[-1].startswith("test_") for file, _, facts in entries)
+    has_eval = any(
+        facts.has_eval_marker
+        or (
+            file.rsplit("/", 1)[-1].startswith("test_")
+            and any(
+                token in "\n".join(lines)
+                for token in ("Runner.run", "run_agent(", "agent.run(", "Agent(")
+            )
+        )
+        for file, lines, facts in entries
+    )
     if not has_eval:
         file, lines, facts = agent_entries[0]
         line = facts.first_agent_line
         findings.append(_finding("AA011", "No agent eval coverage", Severity.WARNING, file, line, "missing-eval", "Supported agent code has no recognized test or eval artifact.", "\n".join(lines[max(0, line - 2):line + 1]), "Add representative evals that exercise the agent entrypoint.", [OPENAI_EVALS]))
     for file, lines, facts in agent_entries:
-        if facts.has_observability:
+        if any(abs(line - facts.first_agent_line) <= 25 for line in facts.observability_lines):
             continue
         line = facts.first_agent_line
         findings.append(_finding("AA012", "No agent observability", Severity.INFO, file, line, "missing-observability", "Agent code has no recognized logging or tracing evidence.", "\n".join(lines[max(0, line - 2):line + 1]), "Log or trace loop decisions and tool execution without sensitive payloads.", [OPENAI_TRACING]))

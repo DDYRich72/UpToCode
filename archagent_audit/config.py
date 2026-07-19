@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 DEFAULT_EXCLUDES = [
     ".git/",
     ".venv/",
+    ".venv*/",
     "venv/",
     "node_modules/",
     "__pycache__/",
@@ -19,6 +20,10 @@ DEFAULT_EXCLUDES = [
     "build/",
     "dist/",
     "*.egg-info/",
+    "generated/",
+    "**/generated/",
+    "*.generated.py",
+    "*_pb2.py",
 ]
 
 
@@ -45,9 +50,12 @@ def discover_python_files(root: Path, config: ScanConfig) -> tuple[list[Path], i
     skipped = 0
     for path in sorted(root.rglob("*.py")):
         relative = path.relative_to(root).as_posix()
-        if spec.match_file(relative) or path.stat().st_size > config.max_file_size:
+        if (
+            spec.match_file(relative)
+            or path.stat().st_size > config.max_file_size
+            or b"\x00" in path.read_bytes()[:4096]
+        ):
             skipped += 1
             continue
         included.append(path)
     return included, skipped
-

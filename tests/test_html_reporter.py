@@ -24,6 +24,9 @@ def test_html_is_standalone_semantic_and_redacted() -> None:
     assert "Coverage" in rendered
     assert "Judgment: not-requested" in rendered
     assert "AA001" in rendered
+    assert "Observed:" in rendered
+    assert "Tradeoff:" in rendered
+    assert "Remediation complexity:" in rendered
     assert "https://" in rendered
     assert "<style>" in rendered
     assert "<script src=" not in rendered
@@ -58,3 +61,14 @@ def test_cli_writes_html_and_requires_output(tmp_path: Path) -> None:
     assert written.exit_code == 0, written.output
     assert output.read_text(encoding="utf-8").startswith("<!doctype html>")
 
+
+def test_scan_output_write_failure_is_exit_two(tmp_path: Path) -> None:
+    (tmp_path / "agent.py").write_text("print('ok')\n", encoding="utf-8")
+
+    result = runner.invoke(
+        app,
+        ["scan", str(tmp_path), "--format", "json", "--output", str(tmp_path)],
+    )
+
+    assert result.exit_code == 2
+    assert "Could not write output" in result.output

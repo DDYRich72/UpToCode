@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -147,6 +148,20 @@ def test_payload_is_bounded() -> None:
     run_judgment(empty_report(), [long_candidate], client=client)
 
     assert len(str(client.responses.calls[0]["input"])) < 10_000
+
+
+def test_secret_is_absent_from_failure_logs_and_checked_in_goldens(caplog) -> None:
+    client = FakeClient([TimeoutError(SECRET)])
+
+    run_judgment(empty_report(), [candidate()], client=client)
+
+    assert SECRET not in caplog.text
+    golden_root = Path(__file__).parent / "golden"
+    assert all(
+        SECRET not in path.read_text(encoding="utf-8")
+        for path in golden_root.glob("*")
+        if path.is_file()
+    )
 
 
 def test_scan_path_requires_explicit_code_sharing(tmp_path) -> None:

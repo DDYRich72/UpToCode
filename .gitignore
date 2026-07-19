@@ -4,6 +4,7 @@ __pycache__/
 .coverage
 htmlcov/
 .venv/
+.venv*/
 venv/
 dist/
 build/
@@ -11,4 +12,3 @@ build/
 .archagent-audit/
 report.html
 out.json
-

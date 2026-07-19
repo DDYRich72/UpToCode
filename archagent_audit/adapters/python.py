@@ -32,8 +32,30 @@ def _qualified_name(node: ast.AST) -> str:
     return ""
 
 
-def _has_break(node: ast.While) -> bool:
-    return any(isinstance(candidate, ast.Break) for candidate in ast.walk(node))
+def _contains_exit(node: ast.AST) -> bool:
+    if isinstance(node, (ast.Break, ast.Return, ast.Raise)):
+        return True
+    if isinstance(node, (ast.For, ast.AsyncFor, ast.While, ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+        return False
+    return any(_contains_exit(child) for child in ast.iter_child_nodes(node))
+
+
+def _has_loop_exit(node: ast.While) -> bool:
+    return any(_contains_exit(statement) for statement in node.body)
+
+
+def _has_recursive_base_case(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    for candidate in ast.walk(node):
+        if not isinstance(candidate, ast.If):
+            continue
+        branch_has_exit = any(_contains_exit(statement) for statement in candidate.body)
+        branch_recurses = any(
+            isinstance(item, ast.Call) and _qualified_name(item.func) == node.name
+            for item in ast.walk(candidate)
+        )
+        if branch_has_exit and not branch_recurses:
+            return True
+    return False
 
 
 class EvidenceVisitor(ast.NodeVisitor):
@@ -84,7 +106,7 @@ class EvidenceVisitor(ast.NodeVisitor):
     def visit_While(self, node: ast.While) -> None:  # noqa: N802
         if isinstance(node.test, ast.Constant) and node.test.value is True:
             self.result.frameworks.add("custom-python")
-            kind = "custom" if _has_break(node) else "disabled"
+            kind = "custom" if _has_loop_exit(node) else "disabled"
             detail = "loop contains an exit" if kind == "custom" else "while True has no exit"
             self.result.loops.append(LoopEvidence(node.lineno, "custom-python", kind, detail))
         self.generic_visit(node)
@@ -95,7 +117,7 @@ class EvidenceVisitor(ast.NodeVisitor):
             and _qualified_name(candidate.func) == node.name
             for candidate in ast.walk(node)
         )
-        has_base_case = any(isinstance(candidate, ast.If) for candidate in ast.walk(node))
+        has_base_case = _has_recursive_base_case(node)
         if recursive:
             self.result.frameworks.add("custom-python")
             kind = "custom" if has_base_case else "disabled"

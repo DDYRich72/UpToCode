@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import ast
 from pathlib import Path
 from typing import Any
 
 from archagent_audit import __version__
-from archagent_audit.analysis import FileFacts, analyze_source
+from archagent_audit.analysis import FileFacts, analyze_source, qualified_name
 from archagent_audit.adapters.python import extract_python_evidence
 from archagent_audit.config import discover_python_files, load_config
 from archagent_audit.judgment import run_judgment
@@ -61,9 +62,8 @@ def scan_path(
         try:
             source = path.read_text(encoding="utf-8")
             evidence = extract_python_evidence(source)
-            import ast
-
-            facts = analyze_source(ast.parse(source), source)
+            tree = ast.parse(source)
+            facts = analyze_source(tree, source)
         except (UnicodeDecodeError, SyntaxError) as error:
             line = error.lineno if isinstance(error, SyntaxError) else None
             report.analysis_warnings.append(
@@ -75,8 +75,66 @@ def scan_path(
                 )
             )
             continue
+        if (
+            ("tools=" in source or "tools =" in source or "@tool" in source)
+            and "@function_tool" not in source
+            and any(token in source for token in ("Agent", "graph", "langgraph"))
+        ):
+            report.analysis_warnings.append(
+                AnalysisWarning(
+                    code="UNSUPPORTED_TOOL_WIRING",
+                    message=(
+                        "Tool wiring is not a recognized OpenAI function_tool construct; "
+                        "AA003, AA004, and AA009 coverage may be incomplete."
+                    ),
+                    file=relative,
+                )
+            )
         report.coverage.files_analyzed += 1
         judgment_sources.append((relative, source))
+        has_agent_reference = any(
+            isinstance(node, (ast.Name, ast.Attribute))
+            and any(
+                token in qualified_name(node)
+                for token in ("Agent", "Runner", "responses", "function_tool", "graph")
+            )
+            for node in ast.walk(tree)
+        )
+        has_dynamic_dispatch = any(
+            isinstance(node, ast.Call)
+            and (
+                (
+                    qualified_name(node.func) in {"exec", "eval"}
+                    and has_agent_reference
+                )
+                or (
+                    qualified_name(node.func) in {"getattr", "setattr"}
+                    and bool(node.args)
+                    and any(
+                        token in qualified_name(node.args[0])
+                        for token in (
+                            "Agent",
+                            "Runner",
+                            "responses",
+                            "function_tool",
+                            "graph",
+                        )
+                    )
+                )
+            )
+            for node in ast.walk(tree)
+        )
+        if has_dynamic_dispatch and has_agent_reference:
+            report.analysis_warnings.append(
+                AnalysisWarning(
+                    code="UNSUPPORTED_DYNAMIC_AGENT_SYNTAX",
+                    message=(
+                        "Dynamic agent construction or dispatch is outside static coverage; "
+                        "applicable rule results may be incomplete."
+                    ),
+                    file=relative,
+                )
+            )
         frameworks.update(evidence.frameworks)
         lines = source.splitlines()
         project_facts.append((relative, lines, facts))
@@ -126,7 +184,19 @@ def scan_path(
         key=lambda item: (item.file or "", item.line or 0, item.code)
     )
     if judgment:
-        candidates = collect_judgment_candidates(judgment_sources)
+        source_lines = {
+            file: source.splitlines() for file, source in judgment_sources
+        }
+        candidates = []
+        for candidate in collect_judgment_candidates(judgment_sources):
+            if _is_suppressed(
+                source_lines.get(candidate.file, []),
+                candidate.line,
+                candidate.rule_id,
+            ):
+                report.suppressions += 1
+                continue
+            candidates.append(candidate)
         if judgment_client is None:
             try:
                 from openai import OpenAI

@@ -28,9 +28,15 @@ Gate 4 — acceptance, documentation, demo, and final audit.
 
 Latest output: `.archagent-audit/self-scan.json` (generated and gitignored).
 
-- Coverage: 38/38 Python files analyzed, zero analysis warnings, one documented suppression.
+- Coverage: 39/39 project Python files analyzed, zero analysis warnings, one documented suppression. The latest cross-platform run also counted 6,242 excluded files inside ignored local test environments.
 - Expected bad-fixture findings: AA001, AA002, AA003, AA004, AA006, two AA007 subchecks, AA010, and AA012 in `fixtures/bad_python/agent.py`. These are deliberate demo/golden defects; no action.
 - Expected test sentinels: AA006 secret/PII literals in redaction, static-rule, HTML, and judgment tests. Values are synthetic and verify that raw sentinels never reach reports; no production credential or personal data is present.
-- Conservative AA004 false positives: internal AST/list processing in `archagent_audit/analysis.py` and `judgment_candidates.py`, subprocess orchestration in `scripts/acceptance.py`, and analyzer regression tests. These do not accept model-controlled production input at a sensitive sink; retain as known static precision limits.
-- Action taken: explicit GPT-5.6 output ceiling, request timeout, bounded client retry policy, six-rule call budget, `store=false`, request metadata, and failure logging removed the prior self-scan findings in the judgment path. The remaining AA007 retry suppression documents a current cross-file evidence limitation: the client retry configuration lives in `engine.py`, while the call site lives in `judgment.py`.
-- Final count after action: 24 findings (9 deliberate bad-fixture findings, 10 synthetic AA006 test findings, and 5 conservative AA004 false positives), zero unexplained analysis warnings.
+- Action taken: AA004 now requires recognized `@function_tool` provenance instead of parameter-name heuristics, eliminating the previous scanner-internal false positives. AA001 exit/base-case evidence, AA003 side-effect evidence, AA011 eval evidence, and AA012 nearby-observability evidence were also tightened. Explicit GPT-5.6 output, timeout, retry, call-budget, storage, metadata, and logging controls remain in place.
+- The one suppression documents a cross-file AA007 evidence limitation: the bounded client retry configuration lives in `engine.py`, while the model call lives in `judgment.py`.
+- Final count after action: 19 findings (9 deliberate bad-fixture findings and 10 synthetic AA006 test findings), zero production-code findings and zero unexplained analysis warnings.
+
+## Compatibility evidence
+
+- Windows Python 3.13.7: full acceptance PASS, 133 tests.
+- Windows Python 3.11.15 baseline: 133 tests PASS in an isolated environment.
+- Ubuntu/WSL Python 3.13.12: 133 tests PASS; the full acceptance runner also passes, including stdio MCP and worktree/fixture invariants.

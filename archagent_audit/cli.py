@@ -21,6 +21,16 @@ app = typer.Typer(
 )
 
 
+def _write_output(path: Path, content: str, *, create_parent: bool = False) -> None:
+    try:
+        if create_parent:
+            path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+    except OSError as error:
+        typer.echo(f"Could not write output {path}: {error}", err=True)
+        raise typer.Exit(2) from error
+
+
 @app.callback()
 def main() -> None:
     """Run ArchAgent commands."""
@@ -74,7 +84,7 @@ def scan(
     else:
         rendered = render_terminal(report)
     if output is not None:
-        output.write_text(rendered, encoding="utf-8")
+        _write_output(output, rendered)
     else:
         typer.echo(rendered)
     if fail_on is not None and any(
@@ -119,15 +129,18 @@ def review_command(
                 approve_set.add(finding.fingerprint)
             else:
                 reject_set.add(finding.fingerprint)
-    manifest = create_manifest(
-        report,
-        approve=approve_set,
-        reject=reject_set,
-        approve_all=approve_all,
-    )
+    try:
+        manifest = create_manifest(
+            report,
+            approve=approve_set,
+            reject=reject_set,
+            approve_all=approve_all,
+        )
+    except ValueError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(2) from error
     output = report_path.parent / ".archagent-audit" / "manifest.json"
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(manifest.model_dump_json(indent=2), encoding="utf-8")
+    _write_output(output, manifest.model_dump_json(indent=2), create_parent=True)
     typer.echo(str(output))
 
 
@@ -147,7 +160,7 @@ def plan_command(
     except (OSError, ValueError) as error:
         typer.echo(str(error), err=True)
         raise typer.Exit(2) from error
-    output.write_text(rendered, encoding="utf-8")
+    _write_output(output, rendered)
     typer.echo(str(output))
 
 

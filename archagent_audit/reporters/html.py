@@ -41,8 +41,11 @@ def render_html(report: Report) -> str:
             f'<p class="location">{_text(finding.file)}:{finding.line}</p>'
             f'<pre>{_text(finding.excerpt)}</pre>'
             f'<h3>Evidence</h3><ul>{evidence}</ul>'
+            f'<p><strong>Observed:</strong> {_text(finding.verdict.observed)}</p>'
             f'<p><strong>Why it matters:</strong> {_text(finding.verdict.implies)}</p>'
             f'<p><strong>Recommended:</strong> {_text(finding.verdict.recommended)}</p>'
+            f'<p><strong>Tradeoff:</strong> {_text(finding.verdict.tradeoff)}</p>'
+            f'<p><strong>Remediation complexity:</strong> {_text(finding.remediation.complexity)}</p>'
             f'<details><summary>Primary references</summary><ul>{citations}</ul></details>'
             "</article>"
         )

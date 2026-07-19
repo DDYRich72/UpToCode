@@ -51,7 +51,7 @@ def test_hardcoded_pii_is_reported_and_redacted(tmp_path: Path) -> None:
     [
         ('client.responses.create(model="gpt", input="x")', "AA002"),
         ('@function_tool\ndef delete_user(value):\n    database.delete(value)', "AA003"),
-        ('def tool(arg):\n    subprocess.run(arg)', "AA004"),
+        ('@function_tool\ndef tool(arg):\n    subprocess.run(arg)', "AA004"),
         ('API_KEY="sk-proj-abcdefghijklmnopqrstuvwxyz123456"\nprompt=f"{API_KEY}"', "AA006"),
         ('client.responses.create(model="gpt", input="x")', "AA007"),
         ('save(response.output_text)', "AA010"),
@@ -69,8 +69,9 @@ def test_static_rule_positive_cases(tmp_path: Path, source: str, expected_rule: 
 
 def test_rule_suppression_is_generic(tmp_path: Path) -> None:
     (tmp_path / "agent.py").write_text(
-        "# archagent-audit: ignore AA004\n"
-        "subprocess.run(model_arg)\n",
+        "@function_tool  # archagent-audit: ignore AA004\n"
+        "def tool(model_arg):\n"
+        "    subprocess.run(model_arg)\n",
         encoding="utf-8",
     )
 
@@ -111,6 +112,23 @@ def test_custom_exclude_and_size_limit_are_reported(tmp_path: Path) -> None:
 
     assert report.coverage.files_discovered == 0
     assert report.coverage.files_skipped == 2
+
+
+def test_generated_and_binary_python_files_are_excluded(tmp_path: Path) -> None:
+    (tmp_path / "generated").mkdir()
+    (tmp_path / "generated" / "agent.py").write_text(
+        "while True:\n    work()\n", encoding="utf-8"
+    )
+    (tmp_path / "schema_pb2.py").write_text(
+        "while True:\n    work()\n", encoding="utf-8"
+    )
+    (tmp_path / "binary.py").write_bytes(b"while True:\x00\n")
+
+    report = scan_path(tmp_path)
+
+    assert report.coverage.files_discovered == 0
+    assert report.coverage.files_skipped == 3
+    assert report.analysis_warnings == []
 
 
 def test_terminal_report_is_human_readable_and_redacted() -> None:

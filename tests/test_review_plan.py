@@ -108,3 +108,31 @@ def test_noninteractive_review_requires_decisions(tmp_path: Path) -> None:
     assert result.exit_code == 2
     assert "decision" in result.output.lower()
 
+
+def test_review_rejects_unknown_or_conflicting_selectors() -> None:
+    report = bad_report()
+    finding = report.findings[0]
+
+    with pytest.raises(ValueError, match="Unknown finding selectors"):
+        create_manifest(report, approve={"AA999"})
+    with pytest.raises(ValueError, match="both approval and rejection"):
+        create_manifest(
+            report,
+            approve={finding.fingerprint},
+            reject={finding.rule_id},
+        )
+
+
+def test_reject_selector_overrides_approve_all() -> None:
+    report = bad_report()
+    rejected = report.findings[0]
+
+    manifest = create_manifest(
+        report,
+        approve_all=True,
+        reject={rejected.fingerprint},
+    )
+
+    decisions = {item.fingerprint: item.status for item in manifest.decisions}
+    assert decisions[rejected.fingerprint] == "rejected"
+    assert set(decisions.values()) == {"approved", "rejected"}

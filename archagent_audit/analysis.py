@@ -70,6 +70,7 @@ class FileFacts:
     secret_prompt_exposures: list[int] = field(default_factory=list)
     has_run_budget: bool = False
     has_observability: bool = False
+    observability_lines: list[int] = field(default_factory=list)
     has_eval_marker: bool = False
 
 
@@ -88,11 +89,30 @@ def _is_tool(function: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
 
 
 def _function_has_validation(function: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
-    return any(isinstance(node, (ast.If, ast.Assert, ast.Raise)) for node in ast.walk(function))
+    parameters = {argument.arg for argument in function.args.args}
+    for node in ast.walk(function):
+        expression: ast.AST | None = None
+        if isinstance(node, (ast.If, ast.Assert)):
+            expression = node.test
+        elif isinstance(node, ast.Call) and qualified_name(node.func).endswith(
+            ("model_validate", "validate_python")
+        ):
+            expression = node
+        if expression is not None and any(
+            isinstance(item, ast.Name) and item.id in parameters
+            for item in ast.walk(expression)
+        ):
+            return True
+    return False
 
 
 def _call_uses_parameter(call: ast.Call, parameters: set[str]) -> bool:
-    return any(isinstance(node, ast.Name) and node.id in parameters for arg in call.args for node in ast.walk(arg))
+    values = list(call.args) + [keyword.value for keyword in call.keywords]
+    return any(
+        isinstance(node, ast.Name) and node.id in parameters
+        for value in values
+        for node in ast.walk(value)
+    )
 
 
 def _contains_raw_model_output(node: ast.AST) -> bool:
@@ -115,17 +135,41 @@ def _is_side_effect_call(call_name: str) -> bool:
     if "Runner.run" in call_name or "responses." in call_name:
         return False
     terminal = call_name.rsplit(".", 1)[-1].lower()
-    return terminal in SIDE_EFFECT_NAMES or terminal.startswith(DESTRUCTIVE_PREFIXES + ("save",))
+    is_http_sink = call_name.startswith(("requests.", "httpx.", "aiohttp.")) and terminal in {
+        "get",
+        "post",
+        "put",
+        "patch",
+        "delete",
+        "request",
+    }
+    return (
+        call_name == "open"
+        or is_http_sink
+        or terminal in SIDE_EFFECT_NAMES
+        or terminal.startswith(DESTRUCTIVE_PREFIXES + ("save",))
+    )
 
 
 def analyze_source(tree: ast.Module, source: str) -> FileFacts:
     facts = FileFacts()
-    facts.has_run_budget = "BUDGET" in source and any(
-        isinstance(node, (ast.Compare, ast.If)) for node in ast.walk(tree)
-    )
-    facts.has_observability = any(
-        token in source
-        for token in ("logging.", "logger.", "trace(", "tracing", "start_span")
+    budget_names: set[str] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Assign, ast.AnnAssign)):
+            continue
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+        budget_names.update(
+            target.id
+            for target in targets
+            if isinstance(target, ast.Name) and "budget" in target.id.lower()
+        )
+    facts.has_run_budget = any(
+        isinstance(node, ast.If)
+        and any(
+            isinstance(item, ast.Name) and item.id in budget_names
+            for item in ast.walk(node.test)
+        )
+        for node in ast.walk(tree)
     )
     facts.has_eval_marker = "archagent-audit: eval agent" in source
     client_timeout = False
@@ -145,6 +189,12 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
     for node in ast.walk(tree):
         if isinstance(node, ast.Call):
             call_name = qualified_name(node.func)
+            terminal_name = call_name.rsplit(".", 1)[-1]
+            if (
+                terminal_name in {"debug", "info", "warning", "error", "exception", "critical", "trace", "start_span"}
+                or "tracing" in call_name
+            ):
+                facts.observability_lines.append(node.lineno)
             if call_name.endswith("OpenAI"):
                 client_timeout |= any(keyword.arg == "timeout" for keyword in node.keywords)
                 client_retry |= any(keyword.arg in {"max_retries", "retry"} for keyword in node.keywords)
@@ -171,13 +221,6 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
             if _is_side_effect_call(call_name) and _contains_raw_model_output(node) and not _contains_validation(node):
                 facts.raw_output_sinks.append(SinkFact(node.lineno, terminal))
             parameterized_sql = terminal == "execute" and len(node.args) >= 2
-            if _is_side_effect_call(call_name) and not parameterized_sql and any(
-                isinstance(candidate, ast.Name)
-                and ("arg" in candidate.id.lower() or "model" in candidate.id.lower())
-                for argument in node.args
-                for candidate in ast.walk(argument)
-            ):
-                facts.risky_sinks.append(SinkFact(node.lineno, terminal))
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
             if node.value.startswith("sk-") and len(node.value) >= 20:
                 facts.hardcoded_secrets.append(node.lineno)
@@ -190,7 +233,8 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
             facts.agent_present = True
         parameters = {argument.arg for argument in function.args.args}
         validation = _function_has_validation(function)
-        destructive = function.name.lower().startswith(DESTRUCTIVE_PREFIXES)
+        destructive_name = function.name.lower().startswith(DESTRUCTIVE_PREFIXES)
+        has_side_effect = False
         argument_risk = False
         for candidate in ast.walk(function):
             if not isinstance(candidate, ast.Call):
@@ -198,8 +242,14 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
             call_name = qualified_name(candidate.func)
             terminal = call_name.rsplit(".", 1)[-1]
             if _is_side_effect_call(call_name):
+                has_side_effect = True
                 parameterized_sql = terminal == "execute" and len(candidate.args) >= 2
-                if _call_uses_parameter(candidate, parameters) and not validation and not parameterized_sql:
+                if (
+                    is_tool
+                    and _call_uses_parameter(candidate, parameters)
+                    and not validation
+                    and not parameterized_sql
+                ):
                     argument_risk = True
                     facts.risky_sinks.append(SinkFact(candidate.lineno, terminal))
         if is_tool:
@@ -207,9 +257,10 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
                 ToolFact(
                     line=function.lineno,
                     name=function.name,
-                    destructive=destructive,
+                    destructive=destructive_name and has_side_effect,
                     approval=any(_decorator_approval(item) for item in function.decorator_list),
                     argument_risk=argument_risk,
                 )
             )
+    facts.has_observability = bool(facts.observability_lines)
     return facts

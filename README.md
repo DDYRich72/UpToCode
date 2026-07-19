@@ -62,7 +62,7 @@ Findings: 10 | Warnings: 0 | Redactions: 3
 - `--judgment` is rejected unless `--send-code` is also present.
 - Judgment sends only normalized evidence and bounded, redacted excerpts, grouped once per candidate rule. Requests use `gpt-5.6`, Pydantic Structured Outputs, `store=false`, a 2,000-token output ceiling, a 30-second timeout, and a six-rule call budget.
 - Recognized OpenAI keys, AWS access keys, bearer tokens, email addresses, and US Social Security numbers are replaced before report or judgment output. Detection is intentionally narrow and is not a substitute for a dedicated secret/PII scanner.
-- `.gitignore`, default build/dependency exclusions, `.archagent-audit.yml`, 1 MiB source limits, binary/non-Python exclusion, and `# archagent-audit: ignore AA001`-style suppressions are honored.
+- `.gitignore`, default build/dependency/generated exclusions, `.archagent-audit.yml`, 1 MiB source limits, binary/non-Python exclusion, and `# archagent-audit: ignore AA001`-style suppressions are honored.
 - Refusal, timeout, authentication failure, or API failure never deletes static results; the report records `partial` or `failed` judgment status and an analysis warning.
 
 No live API call is part of the offline test or acceptance suite. The submission smoke test requires a key and separate approval for paid usage.
@@ -94,12 +94,12 @@ Recognized evidence includes:
 - LangGraph `recursion_limit` when statically resolvable.
 - `while True` loops with detectable exits, constant bounds, and simple recursive base cases.
 - OpenAI Responses model calls, output caps, client/call timeouts, bounded client retries, and simple source-level run budgets.
-- `@function_tool` approvals, model-controlled arguments reaching common SQL/shell/file/network sinks, basic Pydantic validation, eval markers/tests, and logging/tracing markers.
+- `@function_tool` approvals, its model-controlled parameters reaching common SQL/shell/file/network sinks, parameter-linked validation, agent eval markers/tests, and nearby logging/tracing evidence.
 
 Known limitations:
 
 - Python only. TypeScript and GitHub Actions output are not shipped.
-- Dynamic imports, aliases, decorators, metaprogramming, indirect data flow, complex interprocedural flow, framework plugins, and runtime-only behavior may be inconclusive.
+- Dynamic imports, aliased/unrecognized tool decorators, metaprogramming, indirect data flow, complex interprocedural flow, framework plugins, and runtime-only behavior may be inconclusive and produce coverage warnings when recognized.
 - Static side-effect and schema analysis is conservative and can produce false positives; findings should be reviewed before planning.
 - Secret/PII recognition covers a small explicit pattern set, not arbitrary credentials or personal data.
 - No instruction-file linting, runtime tracing service, source-changing auto-fix, PR comments, public service, or package publication.

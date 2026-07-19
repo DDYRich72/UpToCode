@@ -27,19 +27,37 @@ def create_manifest(
 ) -> ReviewManifest:
     approve = approve or set()
     reject = reject or set()
+    matched_approve: set[str] = set()
+    matched_reject: set[str] = set()
     decisions: list[ReviewDecision] = []
     for finding in report.findings:
-        if approve_all or _selected(finding.fingerprint, finding.rule_id, approve):
-            status = "approved"
-        elif _selected(finding.fingerprint, finding.rule_id, reject):
+        is_approved = _selected(finding.fingerprint, finding.rule_id, approve)
+        is_rejected = _selected(finding.fingerprint, finding.rule_id, reject)
+        if is_approved:
+            matched_approve.update(
+                item for item in approve if item in {finding.fingerprint, finding.rule_id}
+            )
+        if is_rejected:
+            matched_reject.update(
+                item for item in reject if item in {finding.fingerprint, finding.rule_id}
+            )
+        if is_approved and is_rejected:
+            raise ValueError(
+                f"Finding {finding.fingerprint} is selected for both approval and rejection"
+            )
+        if is_rejected:
             status = "rejected"
+        elif approve_all or is_approved:
+            status = "approved"
         else:
             continue
         decisions.append(
             ReviewDecision(fingerprint=finding.fingerprint, status=status)
         )
+    unknown = sorted((approve - matched_approve) | (reject - matched_reject))
+    if unknown:
+        raise ValueError(f"Unknown finding selectors: {', '.join(unknown)}")
     return ReviewManifest(
         report_fingerprint=report_fingerprint(report),
         decisions=decisions,
     )
-
