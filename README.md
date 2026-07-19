@@ -22,6 +22,37 @@ python -m pytest -q
 python scripts/acceptance.py
 ```
 
+## Judge test build
+
+The judging accounts must first be granted access to this private repository. No package
+publication, hosted credential, or paid model call is required for the test build.
+
+```text
+git clone https://github.com/DDYRich72/UpToCode.git
+cd UpToCode
+python -m venv .venv
+```
+
+Activate the environment with `.venv\Scripts\activate` on Windows PowerShell or
+`source .venv/bin/activate` on POSIX, then run:
+
+```text
+python -m pip install --upgrade pip
+python -m pip install -e ".[test]"
+archagent-audit scan fixtures/bad_python --fail-on critical
+archagent-audit scan fixtures/bad_python --format json --output report.json
+archagent-audit review report.json --approve AA001,AA003 --reject AA012 --non-interactive
+archagent-audit plan report.json --manifest .archagent-audit/manifest.json --output FIXPLAN.md
+python scripts/acceptance.py
+```
+
+The first scan intentionally exits `1` because the fixture contains critical findings.
+The remaining commands produce a report-bound review manifest and an approved-only
+`FIXPLAN.md`; they do not edit the fixture. To inspect the local MCP surface, run
+`archagent-audit serve --transport stdio --root .` from an MCP client or use the JSON
+registration under [MCP registration](#mcp-registration). `python scripts/acceptance.py`
+also launches a real stdio server, lists all ten tools, and calls `check_loop` offline.
+
 ## Scan, review, plan
 
 ```text
@@ -145,6 +176,23 @@ Hosted Streamable HTTP mode registers only submitted-content tools. It has no re
 
 The functional landing and connection generator live in `web/`. `/connect` generates local stdio or hosted Codex MCP configuration; bearer keys remain in the user's local environment and are never entered into or transmitted by the page.
 
+## Built with Codex and GPT-5.6
+
+Codex was the development collaborator throughout ArchAgent: it translated the product
+specification into vertical slices, implemented and reviewed the scanner, CLI, reports,
+MCP servers, site, and tests, fixed clean-clone defects, and ran the Windows/POSIX
+submission gates. ArchAgent also produces a report-bound `FIXPLAN.md` with a copy-paste
+Codex hand-off, so approval—not automatic source mutation—connects analysis to coding.
+The competition-first work order, decisions, progress log, and validation report remain
+in the repository as an auditable record of that collaboration.
+
+GPT-5.6 powers the optional judgment tier through OpenAI Responses Structured Outputs.
+It evaluates only bounded, redacted evidence for candidate rules that need contextual
+judgment. The feature is opt-in twice (`--judgment --send-code`), uses `store=false`, and
+never replaces or deletes deterministic static findings when a request fails or is
+refused. Ordinary tests, the judge test build, and the demo dry-run are entirely offline;
+any live paid call requires separate operator approval.
+
 ## Project evidence
 
 - [Implementation specification](SPEC.md)
@@ -155,5 +203,7 @@ The functional landing and connection generator live in `web/`. `/connect` gener
 - [Reference production specification](specs/002-reference-production.md)
 - [Hosted operations and rollback](docs/operations.md)
 - [Under-three-minute demo script](docs/demo-script.md)
+- [Event rules and evidence checklist](docs/event-rules.md)
+- [Submission evidence index](docs/submission-evidence/README.md)
 
 No repository, package, video, deployment, or submission is published by this project workflow without explicit approval.

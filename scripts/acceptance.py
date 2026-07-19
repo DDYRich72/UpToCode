@@ -89,6 +89,20 @@ async def main():
             read, write, read_timeout_seconds=timedelta(seconds=30)
         ) as session:
             await session.initialize()
+            tools = await session.list_tools()
+            tool_names = sorted(tool.name for tool in tools.tools)
+            assert tool_names == [
+                "audit_diff",
+                "audit_file",
+                "audit_repo",
+                "audit_source",
+                "check_loop",
+                "check_tool_schema",
+                "generate_fixplan",
+                "get_rule",
+                "list_rules",
+                "review_findings",
+            ]
             first = payload(await session.call_tool(
                 "check_loop", {"snippet": "while True:\n    work()\n"}
             ))
@@ -100,6 +114,12 @@ async def main():
                 {"diff": "--- /dev/null\n+++ b/a.py\n@@ -0,0 +1,2 @@\n+while True:\n+    work()\n"},
             ))
             assert any(item["rule_id"] == "AA001" for item in second["findings"])
+            print(json.dumps({
+                "transport": "stdio",
+                "tools": tool_names,
+                "check_loop": first,
+                "malformed_call_is_error": malformed.isError,
+            }, sort_keys=True))
 
 
 asyncio.run(main())
@@ -160,7 +180,8 @@ def main() -> int:
         for marker in ("<!doctype html>", "Findings by category", "Coverage", "AA001", "<style>"):
             assert marker in html_text, f"HTML marker missing: {marker}"
 
-        run([PYTHON, "-c", MCP_PROBE, str(ROOT)])
+        mcp_probe = run([PYTHON, "-c", MCP_PROBE, str(ROOT)])
+        print(f"MCP_PROBE: {mcp_probe.stdout.strip()}")
 
     self_scan = ROOT / ".archagent-audit" / "self-scan.json"
     self_scan.parent.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,16 @@
+Command: archagent-audit scan fixtures/bad_python --fail-on critical
+Expected exit: 1 (the synthetic fixture intentionally breaches the critical threshold)
+
+ArchAgent scan
+Coverage: 1/1 files analyzed
+Findings: 10 | Warnings: 0 | Redactions: 3
+[CRITICAL] AA006 agent.py:7 - Secret exposure
+[CRITICAL] AA003 agent.py:11 - Ungated destructive action
+[CRITICAL] AA004 agent.py:11 - Unvalidated tool arguments
+[CRITICAL] AA001 agent.py:21 - Unbounded agent loop
+[CRITICAL] AA002 agent.py:22 - Missing run budget control
+[WARNING] AA011 agent.py:6 - No agent eval coverage
+[WARNING] AA007 agent.py:22 - Missing model-call timeout
+[WARNING] AA007 agent.py:22 - Missing safe retry policy
+[WARNING] AA010 agent.py:26 - Unvalidated model output before side effect
+[INFO] AA012 agent.py:6 - No agent observability

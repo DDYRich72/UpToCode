@@ -1,0 +1,9 @@
+Command: python scripts/acceptance.py
+Environment: Windows clean-compatible offline runner
+
+158 passed
+MCP_PROBE: real stdio server initialized; 10 expected tools discovered; check_loop returned AA001; malformed call returned an MCP error.
+PASS: ArchAgent offline acceptance; self-scan: <repo>/.archagent-audit/self-scan.json
+
+The complete structured MCP capture is in mcp-check-loop.json. The path above is sanitized
+to keep the committed evidence environment-independent.

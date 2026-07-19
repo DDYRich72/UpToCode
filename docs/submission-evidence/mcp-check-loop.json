@@ -1,0 +1,53 @@
+{
+  "transport": "stdio",
+  "tools": [
+    "audit_diff",
+    "audit_file",
+    "audit_repo",
+    "audit_source",
+    "check_loop",
+    "check_tool_schema",
+    "generate_fixplan",
+    "get_rule",
+    "list_rules",
+    "review_findings"
+  ],
+  "request": {
+    "tool": "check_loop",
+    "arguments": {
+      "snippet": "while True:\n    work()\n"
+    }
+  },
+  "response": {
+    "analysis_warnings": [],
+    "findings": [
+      {
+        "rule_id": "AA001",
+        "severity": "critical",
+        "tier": "static",
+        "title": "Unbounded agent loop",
+        "file": "snippet.py",
+        "line": 1,
+        "fingerprint": "020eb24dec985ceea28ba385",
+        "evidence": [
+          {
+            "kind": "custom-loop-no-exit",
+            "detail": "while True has no exit"
+          }
+        ],
+        "excerpt": "while True:\n    work()",
+        "verdict": {
+          "observed": "A custom while-True agent loop has no detectable exit.",
+          "implies": "A failed tool interaction can continue without a turn ceiling.",
+          "recommended": "Set a turn cap and preserve partial results when the cap is reached.",
+          "tradeoff": "A cap can truncate legitimately long tasks."
+        }
+      }
+    ],
+    "redactions": {
+      "pii": 0,
+      "secrets": 0
+    }
+  },
+  "malformed_call_is_error": true
+}

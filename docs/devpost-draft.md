@@ -16,6 +16,8 @@ ArchAgent finds architecture-quality risks that ordinary syntax checks miss: unb
 
 - Scans OpenAI Agents SDK, LangGraph, and recognizable custom Python loops.
 - Produces terminal, versioned JSON, and standalone HTML reports with coverage and direct primary-source citations.
+- Produces GitHub workflow annotations and SARIF 2.1.0 for CI integrations.
+- Supports report baselines, changed-since scans, rule selection/ignores, and severity overrides.
 - Redacts recognized secrets and narrow PII forms before output or optional judgment payloads.
 - Records approvals/rejections in a report-bound manifest.
 - Generates a Codex-ready implementation plan without changing source.
@@ -25,19 +27,34 @@ ArchAgent finds architecture-quality risks that ordinary syntax checks miss: unb
 
 ## How it was built
 
-Python 3.11+, AST-based evidence extraction, Pydantic contracts, Typer, OpenAI Responses Structured Outputs with `gpt-5.6`, and the official Python MCP SDK. The gated build and cross-platform acceptance runner exercise the CLI workflow, real stdio and hosted MCP lifecycles, redaction, goldens, fixture non-mutation, and self-scan.
+Codex collaborated throughout development: turning the specification into vertical slices,
+building and reviewing the scanner, CLI, report formats, MCP surfaces, site, and tests, then
+running clean-clone Windows and Linux release gates. ArchAgent’s review workflow also emits
+an approved-only, report-bound `FIXPLAN.md` designed as a safe Codex implementation hand-off.
+
+The implementation uses Python 3.11+, AST-based evidence extraction, Pydantic contracts,
+Typer, OpenAI Responses Structured Outputs with `gpt-5.6`, and the official Python MCP SDK.
+GPT-5.6 is the optional double-consent judgment tier for bounded, redacted contextual
+evidence. The offline gated build and cross-platform acceptance runner exercise the CLI,
+real stdio and hosted MCP lifecycles, redaction, goldens, fixture non-mutation, and self-scan.
 
 ## Responsible behavior
 
 Static analysis is offline. Judgment requires explicit code-sharing consent, sends bounded redacted evidence, disables storage, and preserves static results on failure. The repository has no source-changing auto-fix, public service, or automatic external action.
 
-## Evidence to capture after approval
+## Submission evidence
 
-- Terminal scan of `fixtures/bad_python`.
-- Standalone HTML header, coverage panel, bar chart, and one finding.
-- Redacted AA006 excerpt.
-- Review manifest and approved-only `FIXPLAN.md`.
-- MCP `check_loop` AA001 response.
-- Acceptance runner PASS line and final validation matrix.
+Sanitized captures are checked in under `docs/submission-evidence/`: the terminal bad-fixture
+scan, standalone HTML report, redacted AA006 output, review manifest, approved-only FIXPLAN,
+MCP `check_loop` response, acceptance PASS, and validation matrix. Exact private-clone judge
+instructions are in the README. The Codex Session ID, public YouTube URL, repository sharing,
+and any optional hosted credentials remain operator-only submission fields.
+
+## Current limitations
+
+Version 1.0 analyzes Python, not TypeScript. It has no source-changing auto-fix, PR comment
+bot, package publication, or public hosted service. The local MCP has ten tools; hosted mode
+is a smaller bearer-authenticated submitted-content surface. A reusable composite GitHub
+Action is planned for Phase 3 and is not part of the current RC.
 
 This file is submission copy only. It does not authorize creating a Devpost entry, repository, upload, video, deployment, or package release.

@@ -1,0 +1,11 @@
+{
+  "fixture": "synthetic checked-in example",
+  "rule_id": "AA006",
+  "severity": "critical",
+  "title": "Secret exposure",
+  "file": "agent.py",
+  "line": 7,
+  "evidence": "A hardcoded API credential is present in source.",
+  "excerpt": "agent = Agent(name=\"operator\")\nAPI_KEY = \"[REDACTED:openai-api-key]\"\n",
+  "redaction_verified": true
+}

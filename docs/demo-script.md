@@ -1,63 +1,75 @@
 # ArchAgent Demo Script — Under Three Minutes
 
-## 0:00–0:25 — Problem and position
+Target runtime: **2:50–2:55**, including pauses. Narration audio is required.
 
-“Agent code can be syntactically valid and still ship with an unbounded loop, no budget, an ungated destructive tool, or no eval coverage. ArchAgent is a Python-first architecture-quality scanner. It uses deterministic evidence first, optional GPT‑5.6 judgment second, and never auto-rewrites the repository.”
+## Beat 1 — 0:00–0:18 — Problem and position
 
-Show the README positioning and the `scan → review → plan` flow.
+“Agent code can be syntactically valid and still ship with an unbounded loop, no budget,
+an ungated destructive tool, or no eval coverage. ArchAgent is a Python-first
+architecture-quality scanner. It uses deterministic evidence first, optional GPT-5.6
+judgment second, and never auto-rewrites the repository.”
 
-## 0:25–1:05 — Bad fixture and coverage-aware report
+Show only the ArchAgent README and the `scan → review → plan` flow.
+
+## Beat 2 — 0:18–0:48 — Bad fixture and coverage-aware report
+
+Run `archagent-audit scan fixtures/bad_python --fail-on critical`, then open the prepared
+standalone HTML report. Show AA001, AA003, the redacted AA006 excerpt, analyzed-file
+coverage, judgment status, citations, and the absence of a fabricated quality score.
+
+## Beat 3 — 0:48–1:08 — Deterministic and judgment evidence
+
+Explain that an omitted OpenAI Agents SDK `max_turns` is bounded by the SDK default,
+whereas explicit `max_turns=None` is a static finding. Show the prepared, redacted GPT-5.6
+Structured Outputs result for a contextual candidate. State that judgment is double opt-in,
+bounded, redacted, uses `store=false`, and cannot erase static findings. Do not make a live
+paid request during recording.
+
+## Beat 4 — 1:08–1:38 — Review and plan without mutation
 
 Run:
 
 ```text
-archagent-audit scan fixtures/bad_python --fail-on critical
-archagent-audit scan fixtures/bad_python --format html --output report.html
-```
-
-Show AA001 at the unbounded loop, AA003 at the destructive tool, and the redacted API key. Open `report.html`; point out files analyzed, judgment status, redaction count, findings bar chart, direct citations, and the absence of a fabricated quality score.
-
-## 1:05–1:35 — Deterministic and judgment evidence
-
-Explain that omitted `Runner.run(max_turns=...)` is clean because the SDK supplies a bounded default, while explicit `max_turns=None` is a static finding. Then show one pre-authorized GPT‑5.6 judgment result for a tool-schema candidate. State that only redacted, bounded excerpts were sent and that static findings survive refusal or API failure.
-
-Do not run the live request during recording unless cost and code-sharing approval have already been recorded.
-
-## 1:35–2:10 — Review and plan, without source mutation
-
-Run:
-
-```text
-archagent-audit scan fixtures/bad_python --format json --output report.json
 archagent-audit review report.json --approve AA001,AA003 --reject AA012 --non-interactive
 archagent-audit plan report.json --manifest .archagent-audit/manifest.json --output FIXPLAN.md
 ```
 
-Open `FIXPLAN.md`. Show the objective, evidence, likely files, ordered steps, acceptance checks, risks, and copy-paste Codex prompt. Emphasize that the fixture and git worktree remain unchanged.
+Show the report fingerprint binding, approved-only findings, evidence, ordered steps,
+acceptance checks, risks, and copy-paste Codex prompt. Show that the fixture is unchanged.
 
-## 2:10–2:35 — MCP guardrail
+## Beat 5 — 1:38–2:03 — MCP guardrail
 
-Show a coding agent calling:
+Show a coding agent calling `check_loop` with `while True:\n    work()` and receiving AA001
+before code is written. Name the ten-tool local surface:
+`audit_source`, `audit_file`, `audit_repo`, `audit_diff`, `check_tool_schema`, `check_loop`,
+`list_rules`, `get_rule`, `review_findings`, and `generate_fixplan`. Hosted mode exposes
+only submitted-content tools—never repository or filesystem-path tools.
 
-```json
-{"tool":"check_loop","arguments":{"snippet":"while True:\n    work()"}}
-```
+## Beat 6 — 2:03–2:28 — Delivery surfaces and self-audit
 
-Show AA001 before code is written. Name the complete ten-tool local surface:
-`audit_source`, `audit_file`, `audit_repo`, `audit_diff`, `check_tool_schema`,
-`check_loop`, `list_rules`, `get_rule`, `review_findings`, and `generate_fixplan`.
-Hosted mode deliberately exposes only the submitted-content subset and no path tools.
+Show SARIF, GitHub annotations, baselines, changed-since scanning, and rule selection from
+prepared outputs or help text. Run `python scripts/compliance.py`; show the zero-finding
+production self-scan and the offline acceptance PASS evidence. Do not claim a reusable
+GitHub Action until Phase 3 ships it.
 
-## 2:35–2:55 — Evidence and close
+## Codex/GPT-5.6 development beat and close — 2:28–2:55
 
-Run `python scripts/acceptance.py` and show the passing suite, real stdio MCP probe, self-scan path, and unchanged worktree assertion.
+“Codex collaborated throughout: turning the specification into vertical slices, building
+the scanner, reports, MCP, site, and tests, fixing clean-clone defects, and enforcing the
+Windows and Linux gates. GPT-5.6 powers the explicitly consented Structured Outputs
+judgment tier. ArchAgent completes that loop by turning cited findings and human approvals
+into a Codex-ready FIXPLAN—before production and before source mutation.”
 
-Close: “ArchAgent turns architecture concerns into cited evidence, explicit approvals, and a Codex-ready plan—before production and before source mutation.”
+Show the “Built with Codex and GPT-5.6” README section and the validation matrix.
 
 ## Recording guardrails
 
-- Do not display API keys, environment values, private code, account identifiers, or hidden browser content.
-- Use only checked-in fixtures and generated redacted reports.
+- Final exported video must be **less than 3:00** and include clear narration audio.
+- Use only ArchAgent-owned UI, checked-in fixtures, generated redacted reports, and plain
+  terminal/browser chrome; show no third-party logos, trademarks, copyrighted clips, or
+  music.
+- Do not display API keys, environment values, private source outside this repository,
+  account identifiers, the Codex Session ID, or hidden browser content.
 - Record or upload nothing until the applicable operator approval is explicit.
-- Keep claims aligned with README limitations: Python MVP; no TypeScript analysis,
-  composite GitHub Action, auto-fix, PR comment, or public service.
+- Keep claims aligned with the shipped surface: Python 1.0; no TypeScript analysis,
+  source-changing auto-fix, PR comment bot, package publication, or public service.

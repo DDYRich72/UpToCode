@@ -1,0 +1,22 @@
+{
+  "schema_version": "2.0",
+  "report_fingerprint": "943ea47dd499c7b55235b3cfe196c817a74a7376c1733f647e6cc2c0b330f615",
+  "created_at": "2026-07-19T17:11:15.903895Z",
+  "decisions": [
+    {
+      "fingerprint": "8502169c0c07fcc71a5dbcb0",
+      "status": "approved",
+      "note": null
+    },
+    {
+      "fingerprint": "d5e085372a107c27efaa8b1d",
+      "status": "approved",
+      "note": null
+    },
+    {
+      "fingerprint": "4bccfc30ec9befb00b086be9",
+      "status": "rejected",
+      "note": null
+    }
+  ]
+}

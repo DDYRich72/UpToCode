@@ -1,0 +1,508 @@
+{
+  "schema_version": "2.0",
+  "tool_version": "1.0.0",
+  "scan_root": "<repo>/fixtures/bad_python",
+  "generated_at": "2026-07-19T17:07:29.332438Z",
+  "findings": [
+    {
+      "rule_id": "AA006",
+      "severity": "critical",
+      "tier": "static",
+      "title": "Secret exposure",
+      "file": "agent.py",
+      "line": 7,
+      "fingerprint": "e529db308cff0c2d511ad646",
+      "evidence": [
+        {
+          "kind": "hardcoded-secret",
+          "detail": "A hardcoded API credential is present in source."
+        }
+      ],
+      "verdict": {
+        "observed": "A hardcoded API credential is present in source.",
+        "implies": "The architecture exhibits secret exposure.",
+        "recommended": "Load the secret from a protected runtime environment and keep it out of prompts and logs.",
+        "tradeoff": "The control adds implementation and maintenance overhead."
+      },
+      "citations": [
+        {
+          "vendor": "OpenAI",
+          "title": "Safety in building agents",
+          "url": "https://developers.openai.com/api/docs/guides/agent-builder-safety"
+        }
+      ],
+      "excerpt": "agent = Agent(name=\"operator\")\nAPI_KEY = \"[REDACTED:openai-api-key]\"\n",
+      "context": {
+        "framework": null,
+        "candidate_rule": null
+      },
+      "remediation": {
+        "complexity": "moderate",
+        "status": "proposed",
+        "plan": null
+      }
+    },
+    {
+      "rule_id": "AA003",
+      "severity": "critical",
+      "tier": "static",
+      "title": "Ungated destructive action",
+      "file": "agent.py",
+      "line": 11,
+      "fingerprint": "8502169c0c07fcc71a5dbcb0",
+      "evidence": [
+        {
+          "kind": "missing-approval",
+          "detail": "Tool delete_user can change state without a recognized approval gate."
+        }
+      ],
+      "verdict": {
+        "observed": "Tool delete_user can change state without a recognized approval gate.",
+        "implies": "The architecture exhibits ungated destructive action.",
+        "recommended": "Require an explicit approval mechanism before execution.",
+        "tradeoff": "The control adds implementation and maintenance overhead."
+      },
+      "citations": [
+        {
+          "vendor": "OpenAI",
+          "title": "Safety in building agents",
+          "url": "https://developers.openai.com/api/docs/guides/agent-builder-safety"
+        }
+      ],
+      "excerpt": "@function_tool\ndef delete_user(user_id: str) -> str:\n    subprocess.run(user_id)",
+      "context": {
+        "framework": null,
+        "candidate_rule": null
+      },
+      "remediation": {
+        "complexity": "moderate",
+        "status": "proposed",
+        "plan": null
+      }
+    },
+    {
+      "rule_id": "AA004",
+      "severity": "critical",
+      "tier": "static",
+      "title": "Unvalidated tool arguments",
+      "file": "agent.py",
+      "line": 11,
+      "fingerprint": "a88a9d4c144ba1a374fe0758",
+      "evidence": [
+        {
+          "kind": "model-arg-to-sensitive-sink",
+          "detail": "Tool delete_user sends an argument to a sensitive sink without recognized validation."
+        }
+      ],
+      "verdict": {
+        "observed": "Tool delete_user sends an argument to a sensitive sink without recognized validation.",
+        "implies": "The architecture exhibits unvalidated tool arguments.",
+        "recommended": "Validate and constrain arguments before the sink.",
+        "tradeoff": "The control adds implementation and maintenance overhead."
+      },
+      "citations": [
+        {
+          "vendor": "OpenAI",
+          "title": "Function calling",
+          "url": "https://developers.openai.com/api/docs/guides/function-calling"
+        }
+      ],
+      "excerpt": "@function_tool\ndef delete_user(user_id: str) -> str:\n    subprocess.run(user_id)",
+      "context": {
+        "framework": null,
+        "candidate_rule": null
+      },
+      "remediation": {
+        "complexity": "moderate",
+        "status": "proposed",
+        "plan": null
+      }
+    },
+    {
+      "rule_id": "AA001",
+      "severity": "critical",
+      "tier": "static",
+      "title": "Unbounded agent loop",
+      "file": "agent.py",
+      "line": 21,
+      "fingerprint": "d5e085372a107c27efaa8b1d",
+      "evidence": [
+        {
+          "kind": "custom-loop-no-exit",
+          "detail": "while True has no exit"
+        }
+      ],
+      "verdict": {
+        "observed": "A custom while-True agent loop has no detectable exit.",
+        "implies": "A failed tool interaction can continue without a turn ceiling.",
+        "recommended": "Set a turn cap and preserve partial results when the cap is reached.",
+        "tradeoff": "A cap can truncate legitimately long tasks."
+      },
+      "citations": [
+        {
+          "vendor": "OpenAI",
+          "title": "OpenAI Agents SDK runner reference",
+          "url": "https://openai.github.io/openai-agents-python/ref/run/"
+        },
+        {
+          "vendor": "OpenAI",
+          "title": "A practical guide to building agents",
+          "url": "https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf"
+        }
+      ],
+      "excerpt": "async def run(task: str) -> None:\n    while True:\n        response = client.responses.create(",
+      "context": {
+        "framework": "custom-python",
+        "candidate_rule": null
+      },
+      "remediation": {
+        "complexity": "moderate",
+        "status": "proposed",
+        "plan": null
+      }
+    },
+    {
+      "rule_id": "AA002",
+      "severity": "critical",
+      "tier": "static",
+      "title": "Missing run budget control",
+      "file": "agent.py",
+      "line": 22,
+      "fingerprint": "367b78114625e653713c74aa",
+      "evidence": [
+        {
+          "kind": "missing-budget-controls",
+          "detail": "Missing output-token ceiling, whole-run budget."
+        }
+      ],
+      "verdict": {
+        "observed": "Missing output-token ceiling, whole-run budget.",
+        "implies": "The architecture exhibits missing run budget control.",
+        "recommended": "Enforce both an output cap and a whole-run budget.",
+        "tradeoff": "The control adds implementation and maintenance overhead."
+      },
+      "citations": [
+        {
+          "vendor": "OpenAI",
+          "title": "A practical guide to building agents",
+          "url": "https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf"
+        }
+      ],
+      "excerpt": "    while True:\n        response = client.responses.create(\n            model=\"gpt-5.6\",",
+      "context": {
+        "framework": null,
+        "candidate_rule": null
+      },
+      "remediation": {
+        "complexity": "moderate",
+        "status": "proposed",
+        "plan": null
+      }
+    },
+    {
+      "rule_id": "AA011",
+      "severity": "warning",
+      "tier": "static",
+      "title": "No agent eval coverage",
+      "file": "agent.py",
+      "line": 6,
+      "fingerprint": "d67816a82d5f804822329cdc",
+      "evidence": [
+        {
+          "kind": "missing-eval",
+          "detail": "Supported agent code has no recognized test or eval artifact."
+        }
+      ],
+      "verdict": {
+        "observed": "Supported agent code has no recognized test or eval artifact.",
+        "implies": "The architecture exhibits no agent eval coverage.",
+        "recommended": "Add representative evals that exercise the agent entrypoint.",
+        "tradeoff": "The control adds implementation and maintenance overhead."
+      },
+      "citations": [
+        {
+          "vendor": "OpenAI",
+          "title": "Working with evals",
+          "url": "https://developers.openai.com/api/docs/guides/evals"
+        }
+      ],
+      "excerpt": "client = OpenAI()\nagent = Agent(name=\"operator\")\nAPI_KEY = \"[REDACTED:openai-api-key]\"",
+      "context": {
+        "framework": null,
+        "candidate_rule": null
+      },
+      "remediation": {
+        "complexity": "moderate",
+        "status": "proposed",
+        "plan": null
+      }
+    },
+    {
+      "rule_id": "AA007",
+      "severity": "warning",
+      "tier": "static",
+      "title": "Missing model-call timeout",
+      "file": "agent.py",
+      "line": 22,
+      "fingerprint": "58d3ca4b867d29413411fba7",
+      "evidence": [
+        {
+          "kind": "missing-timeout",
+          "detail": "Model call has no recognized timeout."
+        }
+      ],
+      "verdict": {
+        "observed": "Model call has no recognized timeout.",
+        "implies": "The architecture exhibits missing model-call timeout.",
+        "recommended": "Set a bounded request timeout.",
+        "tradeoff": "The control adds implementation and maintenance overhead."
+      },
+      "citations": [
+        {
+          "vendor": "OpenAI",
+          "title": "A practical guide to building agents",
+          "url": "https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf"
+        }
+      ],
+      "excerpt": "    while True:\n        response = client.responses.create(\n            model=\"gpt-5.6\",",
+      "context": {
+        "framework": null,
+        "candidate_rule": null
+      },
+      "remediation": {
+        "complexity": "moderate",
+        "status": "proposed",
+        "plan": null
+      }
+    },
+    {
+      "rule_id": "AA007",
+      "severity": "warning",
+      "tier": "static",
+      "title": "Missing safe retry policy",
+      "file": "agent.py",
+      "line": 22,
+      "fingerprint": "8481563e71e3cab214a8d0a0",
+      "evidence": [
+        {
+          "kind": "missing-retry",
+          "detail": "Model call has no recognized bounded retry policy."
+        }
+      ],
+      "verdict": {
+        "observed": "Model call has no recognized bounded retry policy.",
+        "implies": "The architecture exhibits missing safe retry policy.",
+        "recommended": "Add bounded backoff only when replay is safe.",
+        "tradeoff": "The control adds implementation and maintenance overhead."
+      },
+      "citations": [
+        {
+          "vendor": "OpenAI",
+          "title": "A practical guide to building agents",
+          "url": "https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf"
+        }
+      ],
+      "excerpt": "    while True:\n        response = client.responses.create(\n            model=\"gpt-5.6\",",
+      "context": {
+        "framework": null,
+        "candidate_rule": null
+      },
+      "remediation": {
+        "complexity": "moderate",
+        "status": "proposed",
+        "plan": null
+      }
+    },
+    {
+      "rule_id": "AA010",
+      "severity": "warning",
+      "tier": "static",
+      "title": "Unvalidated model output before side effect",
+      "file": "agent.py",
+      "line": 26,
+      "fingerprint": "4018ce6ba0ab0708b381ad50",
+      "evidence": [
+        {
+          "kind": "raw-output-to-side-effect",
+          "detail": "Raw model output reaches save_result without schema validation."
+        }
+      ],
+      "verdict": {
+        "observed": "Raw model output reaches save_result without schema validation.",
+        "implies": "The architecture exhibits unvalidated model output before side effect.",
+        "recommended": "Validate model output against a strict schema and domain rules first.",
+        "tradeoff": "The control adds implementation and maintenance overhead."
+      },
+      "citations": [
+        {
+          "vendor": "OpenAI",
+          "title": "Function calling",
+          "url": "https://developers.openai.com/api/docs/guides/function-calling"
+        }
+      ],
+      "excerpt": "        )\n        save_result(response.output_text)\n",
+      "context": {
+        "framework": null,
+        "candidate_rule": null
+      },
+      "remediation": {
+        "complexity": "moderate",
+        "status": "proposed",
+        "plan": null
+      }
+    },
+    {
+      "rule_id": "AA012",
+      "severity": "info",
+      "tier": "static",
+      "title": "No agent observability",
+      "file": "agent.py",
+      "line": 6,
+      "fingerprint": "4bccfc30ec9befb00b086be9",
+      "evidence": [
+        {
+          "kind": "missing-observability",
+          "detail": "Agent code has no recognized logging or tracing evidence."
+        }
+      ],
+      "verdict": {
+        "observed": "Agent code has no recognized logging or tracing evidence.",
+        "implies": "The architecture exhibits no agent observability.",
+        "recommended": "Log or trace loop decisions and tool execution without sensitive payloads.",
+        "tradeoff": "The control adds implementation and maintenance overhead."
+      },
+      "citations": [
+        {
+          "vendor": "OpenAI",
+          "title": "Agents SDK tracing",
+          "url": "https://openai.github.io/openai-agents-python/tracing/"
+        }
+      ],
+      "excerpt": "client = OpenAI()\nagent = Agent(name=\"operator\")\nAPI_KEY = \"[REDACTED:openai-api-key]\"",
+      "context": {
+        "framework": null,
+        "candidate_rule": null
+      },
+      "remediation": {
+        "complexity": "moderate",
+        "status": "proposed",
+        "plan": null
+      }
+    }
+  ],
+  "coverage": {
+    "files_discovered": 1,
+    "files_analyzed": 1,
+    "files_skipped": 0,
+    "frameworks_detected": [
+      "custom-python"
+    ],
+    "rules_evaluated": [
+      "AA001",
+      "AA002",
+      "AA003",
+      "AA004",
+      "AA006",
+      "AA007",
+      "AA010",
+      "AA011",
+      "AA012"
+    ],
+    "rules_not_applicable": [],
+    "skipped_files": [],
+    "baseline_findings": 0
+  },
+  "analysis_warnings": [],
+  "judgment_status": "not-requested",
+  "redactions": {
+    "secrets": 3,
+    "pii": 0
+  },
+  "suppressions": 0,
+  "rule_results": [
+    {
+      "rule_id": "AA001",
+      "status": "finding",
+      "finding_count": 1,
+      "detail": null
+    },
+    {
+      "rule_id": "AA002",
+      "status": "finding",
+      "finding_count": 1,
+      "detail": null
+    },
+    {
+      "rule_id": "AA003",
+      "status": "finding",
+      "finding_count": 1,
+      "detail": null
+    },
+    {
+      "rule_id": "AA004",
+      "status": "finding",
+      "finding_count": 1,
+      "detail": null
+    },
+    {
+      "rule_id": "AA005",
+      "status": "not_requested",
+      "finding_count": 0,
+      "detail": null
+    },
+    {
+      "rule_id": "AA006",
+      "status": "finding",
+      "finding_count": 1,
+      "detail": null
+    },
+    {
+      "rule_id": "AA007",
+      "status": "finding",
+      "finding_count": 2,
+      "detail": null
+    },
+    {
+      "rule_id": "AA008",
+      "status": "not_requested",
+      "finding_count": 0,
+      "detail": null
+    },
+    {
+      "rule_id": "AA009",
+      "status": "not_requested",
+      "finding_count": 0,
+      "detail": null
+    },
+    {
+      "rule_id": "AA010",
+      "status": "finding",
+      "finding_count": 1,
+      "detail": null
+    },
+    {
+      "rule_id": "AA011",
+      "status": "finding",
+      "finding_count": 1,
+      "detail": null
+    },
+    {
+      "rule_id": "AA012",
+      "status": "finding",
+      "finding_count": 1,
+      "detail": null
+    }
+  ],
+  "metadata": {
+    "duration_ms": 8,
+    "repository_revision": null,
+    "configuration_fingerprint": "64d74a3808d9d16f21e337b9da1b5cb59ad73f46294bd842d6b664d272bd5e53",
+    "rulepack_fingerprint": "2666e381bef97dfa2882ec9771250d42e317f1fd9c6a8622abfc657fc976aebe"
+  },
+  "judgment_usage": {
+    "model": null,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "requests": 0
+  }
+}
