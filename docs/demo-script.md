@@ -43,7 +43,10 @@ Show a coding agent calling `check_loop` with `while True:\n    work()` and rece
 before code is written. Name the ten-tool local surface:
 `audit_source`, `audit_file`, `audit_repo`, `audit_diff`, `check_tool_schema`, `check_loop`,
 `list_rules`, `get_rule`, `review_findings`, and `generate_fixplan`. Hosted mode exposes
-only submitted-content tools—never repository or filesystem-path tools.
+only submitted-content tools—never repository or filesystem-path tools. Its bearer-key
+boundary applies an in-memory per-key limit, defaults hosted judgment off, and logs only a
+short credential-digest prefix. Local file, repository, and diff-base tools remain contained
+to the canonical root resolved when the server starts.
 
 ## Beat 6 — 2:03–2:28 — Delivery surfaces and self-audit
 

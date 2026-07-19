@@ -24,6 +24,8 @@ ArchAgent finds architecture-quality risks that ordinary syntax checks miss: unb
 - Exposes ten typed local MCP tools spanning source/file/repository/diff audits, focused
   loop and schema checks, the rule catalog, review decisions, and FIXPLAN generation.
 - Provides a separate hosted submitted-content surface with no filesystem-path tools.
+- Hardens hosted access with per-key in-memory rate limiting, a default-off global judgment
+  gate, and payload-free short-digest attribution; local path tools share one resolved root.
 
 ## How it was built
 
@@ -54,7 +56,8 @@ and any optional hosted credentials remain operator-only submission fields.
 
 Version 1.0 analyzes Python, not TypeScript. It has no source-changing auto-fix, PR comment
 bot, package publication, or public hosted service. The local MCP has ten tools; hosted mode
-is a smaller bearer-authenticated submitted-content surface. A reusable composite GitHub
-Action is planned for Phase 3 and is not part of the current RC.
+is a smaller bearer-authenticated submitted-content surface with a default 30-request/minute
+per-key process-local limit. A reusable composite GitHub Action is planned for Phase 3 and
+is not part of the current RC.
 
 This file is submission copy only. It does not authorize creating a Devpost entry, repository, upload, video, deployment, or package release.

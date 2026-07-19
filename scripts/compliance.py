@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sys
+import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -30,11 +31,38 @@ EVIDENCE = {
 }
 
 
+def version_contract() -> dict[str, object]:
+    from archagent_audit import __version__
+
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    manifest = json.loads((ROOT / "server.json").read_text(encoding="utf-8"))
+    package_versions = sorted({item["version"] for item in manifest["packages"]})
+    values = {
+        "project": project["project"]["version"],
+        "runtime": __version__,
+        "server": manifest["version"],
+        "server_packages": package_versions,
+    }
+    values["status"] = (
+        "passed"
+        if values["project"] == values["runtime"] == values["server"]
+        and package_versions == [__version__]
+        else "failed"
+    )
+    return values
+
+
 def main() -> int:
     from archagent_audit.engine import scan_path
 
     report = scan_path(ROOT / "archagent_audit")
-    production_clean = not report.findings and not report.analysis_warnings and report.suppressions == 0
+    versions = version_contract()
+    production_clean = (
+        not report.findings
+        and not report.analysis_warnings
+        and report.suppressions == 0
+        and versions["status"] == "passed"
+    )
     controls = [
         {
             "rule_id": rule_id,
@@ -52,6 +80,7 @@ def main() -> int:
             "warnings": len(report.analysis_warnings),
             "suppressions": report.suppressions,
         },
+        "version_contract": versions,
         "controls": controls,
     }
     canonical = json.dumps(evidence, sort_keys=True, separators=(",", ":"))

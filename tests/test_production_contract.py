@@ -21,6 +21,7 @@ from archagent_audit.mcp_server import (
     MAX_SOURCE_BYTES,
     _workspace_diff_bases,
     BearerKeyMiddleware,
+    TokenBucketLimiter,
     audit_file,
     audit_source,
     create_server,
@@ -271,6 +272,7 @@ def test_hosted_logs_are_payload_and_credential_free(caplog: pytest.LogCaptureFi
     middleware = BearerKeyMiddleware(
         application,
         {hashlib.sha256(token.encode()).hexdigest()},
+        TokenBucketLimiter(),
     )
     caplog.set_level("INFO", logger="archagent_audit.mcp_server")
     asyncio.run(
@@ -289,6 +291,9 @@ def test_hosted_logs_are_payload_and_credential_free(caplog: pytest.LogCaptureFi
     assert token not in caplog.text
     assert "example.com" not in caplog.text
     assert "correlation_id=" in caplog.text
+    digest = hashlib.sha256(token.encode()).hexdigest()
+    assert f"key_id={digest[:8]}" in caplog.text
+    assert digest not in caplog.text
 
 
 def test_local_diff_reads_only_contained_workspace_bases(tmp_path: Path) -> None:

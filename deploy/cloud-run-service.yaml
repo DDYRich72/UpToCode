@@ -23,6 +23,10 @@ spec:
               cpu: "1"
               memory: 1Gi
           env:
+            - name: ARCHAGENT_RATE_LIMIT_PER_MINUTE
+              value: "30"
+            - name: ARCHAGENT_HOSTED_JUDGMENT
+              value: "false"
             - name: ARCHAGENT_API_KEY_HASHES
               valueFrom:
                 secretKeyRef:

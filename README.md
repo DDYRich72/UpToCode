@@ -172,7 +172,20 @@ Run the stdio server directly with `archagent-audit serve`, or register the modu
 
 Local mode exposes repository/file/source/diff audits, strict schema and loop checks, the rule catalog, review, and FIXPLAN generation. It is bounded to the configured canonical workspace root, including symlink defense, and may load only explicitly trusted local rulepacks.
 
-Hosted Streamable HTTP mode registers only submitted-content tools. It has no repository or filesystem-path tools, never persists submitted code or results, and requires a private-beta bearer key configured as a SHA-256 digest in `ARCHAGENT_API_KEY_HASHES`. Both modes use the same `AuditService` pipeline and enforce `judgment=true, send_code=true` consent.
+Hosted Streamable HTTP mode registers only submitted-content tools. It has no repository or
+filesystem-path tools, never persists submitted code or results, and requires private-beta
+bearer keys configured as SHA-256 digests in `ARCHAGENT_API_KEY_HASHES`. Authenticated
+requests use an in-memory per-key token bucket (`ARCHAGENT_RATE_LIMIT_PER_MINUTE`, default
+`30`); excess requests return `429` with `Retry-After`. Logs attribute traffic only to an
+eight-character digest prefix. Hosted judgment is rejected unless
+`ARCHAGENT_HOSTED_JUDGMENT=true`; the default is `false`. The double-consent
+`judgment=true, send_code=true` rule still applies when the global gate is enabled.
+
+Local mode resolves its canonical workspace root once when the server is created. Relative
+and absolute file, repository, and diff-base paths are all contained against that same root,
+including symlink resolution. The pinned MCP SDK compatibility guard fails server startup
+with the installed SDK version if the strict-schema private contract changes; the upgrade
+procedure is documented in `docs/operations.md`.
 
 The functional landing and connection generator live in `web/`. `/connect` generates local stdio or hosted Codex MCP configuration; bearer keys remain in the user's local environment and are never entered into or transmitted by the page.
 

@@ -6,8 +6,10 @@ import asyncio
 from contextlib import asynccontextmanager
 import hashlib
 import hmac
+from importlib.metadata import PackageNotFoundError, version as package_version
 import json
 import logging
+import math
 import os
 import secrets
 import tempfile
@@ -15,7 +17,7 @@ import threading
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from pathlib import Path
-from typing import Annotated, Protocol, cast
+from typing import Annotated, Any, Protocol, cast
 
 from mcp.server.fastmcp import Context, FastMCP
 from mcp.types import ToolAnnotations
@@ -45,6 +47,11 @@ MAX_SOURCE_BYTES = 1024 * 1024
 MAX_REQUEST_SOURCE_BYTES = 4 * 1024 * 1024
 MAX_REPORT_FINDINGS = 1_000
 MAX_SOURCE_FILES = 256
+MCP_FASTMCP_COMPAT_VERSION = "1.28.1"
+DEFAULT_RATE_LIMIT_PER_MINUTE = 30
+MAX_RATE_LIMIT_BUCKETS = 1_024
+RATE_LIMIT_IDLE_SECONDS = 600.0
+KEY_ID_PREFIX_LENGTH = 8
 READ_ONLY = ToolAnnotations(
     readOnlyHint=True,
     destructiveHint=False,
@@ -52,6 +59,11 @@ READ_ONLY = ToolAnnotations(
     openWorldHint=False,
 )
 logger = logging.getLogger(__name__)
+
+try:
+    MCP_SDK_VERSION = package_version("mcp")
+except PackageNotFoundError:  # pragma: no cover - package dependency is required at runtime
+    MCP_SDK_VERSION = "not-installed"
 
 ASGIMessage = dict[str, object]
 ASGIScope = dict[str, object]
@@ -188,9 +200,13 @@ def _bounded_text(value: str, *, name: str, maximum: int = MAX_SOURCE_BYTES) -> 
 
 
 def _contained_path(path: str | Path, root: Path | None) -> Path:
-    resolved = Path(path).resolve(strict=True)
+    candidate = Path(path)
     if root is not None:
         allowed = root.resolve(strict=True)
+        if not candidate.is_absolute():
+            candidate = allowed / candidate
+    resolved = candidate.resolve(strict=True)
+    if root is not None:
         try:
             resolved.relative_to(allowed)
         except ValueError as error:
@@ -343,12 +359,8 @@ def _workspace_diff_bases(diff: str, workspace_root: Path) -> dict[str, str]:
 
 def check_tool_schema(
     schema_json: JsonInput,
-    judgment: JudgmentFlag = False,
-    send_code: SendCodeFlag = False,
 ) -> ToolSchemaResult:
     """Validate a strict function-tool descriptor and JSON Schema 2020-12 input."""
-    if judgment and not send_code:
-        raise ValueError("judgment=true requires send_code=true")
     _bounded_text(schema_json, name="schema_json")
     try:
         schema = json.loads(schema_json)
@@ -356,10 +368,7 @@ def check_tool_schema(
         return ToolSchemaResult.model_validate(
             {"valid": False, "issues": [{"field": "$", "message": str(error)}]}
         )
-    result = validate_tool_schema(schema)
-    if judgment:
-        result.judgment_status = "not-applicable"
-    return result
+    return validate_tool_schema(schema)
 
 
 def check_loop(snippet: SourceInput) -> LoopCheckResult:
@@ -443,9 +452,26 @@ def generate_fixplan(report_json: JsonInput, manifest_json: JsonInput) -> Markdo
     return MarkdownResult(markdown=build_fixplan(report, manifest))
 
 
-def create_server(*, mode: str = "local", workspace_root: Path | None = None) -> FastMCP:
+def _hosted_judgment_guard(*, judgment: bool, enabled: bool) -> None:
+    if judgment and not enabled:
+        raise ValueError(
+            "Hosted judgment is disabled; set ARCHAGENT_HOSTED_JUDGMENT=true explicitly"
+        )
+
+
+def create_server(
+    *,
+    mode: str = "local",
+    workspace_root: Path | None = None,
+    hosted_judgment_enabled: bool = False,
+) -> FastMCP:
     if mode not in {"local", "hosted"}:
         raise ValueError("MCP mode must be local or hosted")
+    effective_root: Path | None = None
+    if mode == "local":
+        effective_root = (workspace_root or Path.cwd()).resolve(strict=True)
+        if not effective_root.is_dir():
+            raise ValueError(f"MCP workspace root must be a directory: {effective_root}")
     mcp = FastMCP(
         f"ArchAgent {__version__}",
         instructions=(
@@ -455,9 +481,45 @@ def create_server(*, mode: str = "local", workspace_root: Path | None = None) ->
         json_response=True,
         stateless_http=mode == "hosted",
     )
-    mcp.add_tool(audit_source, annotations=READ_ONLY)
     if mode == "hosted":
-        mcp.add_tool(audit_diff, annotations=READ_ONLY)
+        def audit_source_hosted(
+            source: SourceInput,
+            filename: FilenameInput = "snippet.py",
+            judgment: JudgmentFlag = False,
+            send_code: SendCodeFlag = False,
+        ) -> Report:
+            """Audit one explicitly submitted Python source document."""
+            _hosted_judgment_guard(
+                judgment=judgment,
+                enabled=hosted_judgment_enabled,
+            )
+            return audit_source(source, filename, judgment, send_code)
+
+        def audit_diff_hosted(
+            diff: DiffInput,
+            base_files: BaseFilesInput = None,
+            judgment: JudgmentFlag = False,
+            send_code: SendCodeFlag = False,
+        ) -> Report:
+            """Reconstruct and audit explicitly submitted Python diff content."""
+            _hosted_judgment_guard(
+                judgment=judgment,
+                enabled=hosted_judgment_enabled,
+            )
+            return audit_diff(diff, base_files, judgment, send_code)
+
+        mcp.add_tool(
+            audit_source_hosted,
+            name="audit_source",
+            annotations=READ_ONLY,
+        )
+        mcp.add_tool(
+            audit_diff_hosted,
+            name="audit_diff",
+            annotations=READ_ONLY,
+        )
+    else:
+        mcp.add_tool(audit_source, annotations=READ_ONLY)
     mcp.add_tool(check_tool_schema, annotations=READ_ONLY)
     mcp.add_tool(check_loop, annotations=READ_ONLY)
     mcp.add_tool(list_rules, annotations=READ_ONLY)
@@ -471,14 +533,15 @@ def create_server(*, mode: str = "local", workspace_root: Path | None = None) ->
         return list_rules().model_dump_json(indent=2)
 
     if mode == "local":
+        assert effective_root is not None
+
         def audit_diff_local(
             diff: DiffInput,
             judgment: JudgmentFlag = False,
             send_code: SendCodeFlag = False,
         ) -> Report:
-            root = (workspace_root or Path.cwd()).resolve(strict=True)
             logger.info("Local diff audit started")
-            bases = _workspace_diff_bases(diff, root)
+            bases = _workspace_diff_bases(diff, effective_root)
             logger.info("Local diff bases resolved: %d", len(bases))
             result = audit_diff(
                 diff,
@@ -501,7 +564,7 @@ def create_server(*, mode: str = "local", workspace_root: Path | None = None) ->
                 path,
                 judgment,
                 send_code,
-                workspace_root=workspace_root,
+                workspace_root=effective_root,
             )
             await ctx.report_progress(1, 1, "Audit complete")
             return result
@@ -513,7 +576,7 @@ def create_server(*, mode: str = "local", workspace_root: Path | None = None) ->
             send_code: SendCodeFlag = False,
         ) -> Report:
             await ctx.report_progress(0, 1, "Scanning bounded workspace")
-            repository = _contained_path(path, workspace_root)
+            repository = _contained_path(path, effective_root)
             if not repository.is_dir():
                 raise ValueError(f"Repository directory not found: {repository}")
             cancelled = threading.Event()
@@ -542,23 +605,121 @@ def create_server(*, mode: str = "local", workspace_root: Path | None = None) ->
 
 
 def _harden_tool_contracts(mcp: FastMCP) -> None:
-    """Make SDK-generated argument models reject and advertise unknown fields."""
-    for tool in mcp._tool_manager._tools.values():
-        argument_model = tool.fn_metadata.arg_model
-        argument_model.model_config["extra"] = "forbid"
-        argument_model.model_rebuild(force=True)
-        tool.parameters = argument_model.model_json_schema()
+    """Fail closed if the pinned SDK's private tool-model contract changes."""
+    manager = getattr(mcp, "_tool_manager", None)
+    registry = getattr(manager, "_tools", None)
+    if not isinstance(registry, dict):
+        raise RuntimeError(
+            "FastMCP strict-schema compatibility failure for installed mcp SDK "
+            f"{MCP_SDK_VERSION}: expected _tool_manager._tools mapping"
+        )
+
+    argument_models: list[Any] = []
+    for name, tool in registry.items():
+        metadata = getattr(tool, "fn_metadata", None)
+        argument_model = getattr(metadata, "arg_model", None)
+        model_config = getattr(argument_model, "model_config", None)
+        model_rebuild = getattr(argument_model, "model_rebuild", None)
+        model_json_schema = getattr(argument_model, "model_json_schema", None)
+        if (
+            not isinstance(model_config, dict)
+            or not callable(model_rebuild)
+            or not callable(model_json_schema)
+            or not hasattr(tool, "parameters")
+        ):
+            raise RuntimeError(
+                "FastMCP strict-schema compatibility failure for installed mcp SDK "
+                f"{MCP_SDK_VERSION}: tool {name!r} no longer exposes the expected "
+                "fn_metadata.arg_model contract"
+            )
+        argument_models.append(argument_model)
+
+    try:
+        for tool, argument_model in zip(registry.values(), argument_models, strict=True):
+            argument_model.model_config["extra"] = "forbid"
+            argument_model.model_rebuild(force=True)
+            tool.parameters = argument_model.model_json_schema()
+    except Exception as error:
+        raise RuntimeError(
+            "FastMCP strict-schema compatibility failure for installed mcp SDK "
+            f"{MCP_SDK_VERSION}: private argument-model hardening failed"
+        ) from error
 
 
 server = create_server()
 
 
+class TokenBucketLimiter:
+    """Bounded, in-memory per-credential token bucket using monotonic time."""
+
+    def __init__(
+        self,
+        rate_per_minute: int = DEFAULT_RATE_LIMIT_PER_MINUTE,
+        *,
+        max_buckets: int = MAX_RATE_LIMIT_BUCKETS,
+        idle_seconds: float = RATE_LIMIT_IDLE_SECONDS,
+        clock: Callable[[], float] = time.monotonic,
+    ) -> None:
+        if rate_per_minute < 1:
+            raise ValueError("Hosted rate limit must be at least 1 request per minute")
+        if max_buckets < 1 or idle_seconds <= 0:
+            raise ValueError("Hosted rate-limit bounds must be positive")
+        self.rate_per_minute = rate_per_minute
+        self.capacity = float(rate_per_minute)
+        self.refill_per_second = float(rate_per_minute) / 60.0
+        self.max_buckets = max_buckets
+        self.idle_seconds = idle_seconds
+        self._clock = clock
+        self._buckets: dict[str, tuple[float, float]] = {}
+        self._lock = threading.Lock()
+
+    @property
+    def bucket_count(self) -> int:
+        with self._lock:
+            return len(self._buckets)
+
+    def allow(self, credential_digest: str) -> tuple[bool, int]:
+        now = self._clock()
+        with self._lock:
+            stale = [
+                key
+                for key, (_, last_seen) in self._buckets.items()
+                if now - last_seen >= self.idle_seconds
+            ]
+            for key in stale:
+                del self._buckets[key]
+
+            if credential_digest not in self._buckets and len(self._buckets) >= self.max_buckets:
+                oldest = min(self._buckets, key=lambda key: self._buckets[key][1])
+                del self._buckets[oldest]
+
+            tokens, last_seen = self._buckets.get(
+                credential_digest,
+                (self.capacity, now),
+            )
+            elapsed = max(0.0, now - last_seen)
+            tokens = min(self.capacity, tokens + elapsed * self.refill_per_second)
+            if tokens >= 1.0:
+                self._buckets[credential_digest] = (tokens - 1.0, now)
+                return True, 0
+
+            self._buckets[credential_digest] = (tokens, now)
+            retry_after = max(1, math.ceil((1.0 - tokens) / self.refill_per_second))
+            return False, retry_after
+
+
 class BearerKeyMiddleware:
     """Small payload-blind ASGI authorization boundary for private beta access."""
 
-    def __init__(self, app: ASGIApplication, hashes: set[str]) -> None:
+    def __init__(
+        self,
+        app: ASGIApplication,
+        hashes: set[str],
+        rate_limiter: TokenBucketLimiter,
+    ) -> None:
         self.app = app
         self.hashes = hashes
+        self.rate_limiter = rate_limiter
 
     async def __call__(
         self,
@@ -573,6 +734,7 @@ class BearerKeyMiddleware:
         state = cast(dict[str, object], scope.setdefault("state", {}))
         state["correlation_id"] = correlation_id
         status = 500
+        key_id = "health"
 
         async def send_with_correlation(message: ASGIMessage) -> None:
             nonlocal status
@@ -591,6 +753,7 @@ class BearerKeyMiddleware:
             digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
             matches = [hmac.compare_digest(digest, item) for item in self.hashes]
             if not token or not any(matches):
+                key_id = "unauthorized"
                 await send_with_correlation(
                     {
                         "type": "http.response.start",
@@ -608,10 +771,36 @@ class BearerKeyMiddleware:
                     round((time.monotonic() - started) * 1000),
                 )
                 return
+            key_id = digest[:KEY_ID_PREFIX_LENGTH]
+            allowed, retry_after = self.rate_limiter.allow(digest)
+            if not allowed:
+                await send_with_correlation(
+                    {
+                        "type": "http.response.start",
+                        "status": 429,
+                        "headers": [
+                            (b"content-type", b"application/json"),
+                            (b"retry-after", str(retry_after).encode("ascii")),
+                        ],
+                    }
+                )
+                await send_with_correlation(
+                    {"type": "http.response.body", "body": b'{"error":"rate_limited"}'}
+                )
+                logger.info(
+                    "Hosted request completed correlation_id=%s key_id=%s status=%d "
+                    "duration_ms=%d",
+                    correlation_id,
+                    key_id,
+                    status,
+                    round((time.monotonic() - started) * 1000),
+                )
+                return
         await self.app(scope, receive, send_with_correlation)
         logger.info(
-            "Hosted request completed correlation_id=%s status=%d duration_ms=%d",
+            "Hosted request completed correlation_id=%s key_id=%s status=%d duration_ms=%d",
             correlation_id,
+            key_id,
             status,
             round((time.monotonic() - started) * 1000),
         )
@@ -633,7 +822,24 @@ def hosted_app() -> ASGIApplication:
     )
     if invalid_hash:
         raise ValueError("ARCHAGENT_API_KEY_HASHES must contain only hexadecimal SHA-256 digests")
-    hosted = create_server(mode="hosted")
+    rate_limit_raw = os.getenv(
+        "ARCHAGENT_RATE_LIMIT_PER_MINUTE",
+        str(DEFAULT_RATE_LIMIT_PER_MINUTE),
+    ).strip()
+    try:
+        rate_limit = int(rate_limit_raw)
+    except ValueError as error:
+        raise ValueError("ARCHAGENT_RATE_LIMIT_PER_MINUTE must be a positive integer") from error
+    if rate_limit < 1:
+        raise ValueError("ARCHAGENT_RATE_LIMIT_PER_MINUTE must be a positive integer")
+
+    judgment_raw = os.getenv("ARCHAGENT_HOSTED_JUDGMENT", "false").strip().lower()
+    if judgment_raw not in {"true", "false"}:
+        raise ValueError("ARCHAGENT_HOSTED_JUDGMENT must be true or false")
+    hosted = create_server(
+        mode="hosted",
+        hosted_judgment_enabled=judgment_raw == "true",
+    )
 
     async def health(_: object) -> JSONResponse:
         return JSONResponse({"status": "ok", "version": __version__})
@@ -651,7 +857,11 @@ def hosted_app() -> ASGIApplication:
         ],
         lifespan=lifespan,
     )
-    return BearerKeyMiddleware(cast(ASGIApplication, app), hashes)
+    return BearerKeyMiddleware(
+        cast(ASGIApplication, app),
+        hashes,
+        TokenBucketLimiter(rate_limit),
+    )
 
 
 def run_server(
