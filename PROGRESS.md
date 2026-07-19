@@ -96,7 +96,15 @@ Completion Plan v2 Phase 4 — design and product polish for `v1.0.0-rc5`.
 - [x] Keyboard tabs, visible focus, skip navigation, reduced motion, copy failure status,
   responsive generator layout, and synchronized connection copy implemented.
 - [x] 1.0 changelog and self-audit headline synchronized across README, demo, and Devpost.
-- [ ] Pass the complete Phase 4 gate and record exact rc5 evidence.
+- [x] Exact Phase 4 implementation commit `6e396ea` passed the complete Windows and
+  Ubuntu/WSL gate: 175 tests, acceptance, compliance, Ruff, strict mypy over 30 files,
+  88% branch coverage, clean npm installs, and five site tests.
+- [x] Exact Phase 4 offline demo sequence passed on Windows and Ubuntu/WSL with ten
+  deliberate findings, three redactions, report-bound review, FIXPLAN, and clean trees.
+- [x] Worker-delivered `/` and `/connect` verified in a real browser at desktop and
+  375px mobile widths: assets 200, no console errors or overflow, keyboard tabs and
+  focus movement correct, and no fabricated endpoint or credential field.
+- [x] Phase 4 gate evidence recorded for the rc5 candidate.
 - [ ] Obtain operator approval before any Phase 4 push or `v1.0.0-rc5` tag.
 
 ## Notes
@@ -109,18 +117,19 @@ Completion Plan v2 Phase 4 — design and product polish for `v1.0.0-rc5`.
 
 ## Self-scan triage
 
-Latest output: `.archagent-audit/self-scan.json` from the Phase 0 clean-clone
+Latest output: `.archagent-audit/self-scan.json` from the Phase 4 clean-clone
 acceptance run (generated and gitignored).
 
-- Coverage: 50/50 project Python files analyzed, 11 excluded-directory records, and
-  zero analysis warnings. The production-only compliance scan separately confirms
-  zero findings and zero suppressions.
+- Coverage: 53/53 project Python files analyzed with nine excluded-directory records.
+  The single whole-repository analysis warning is the known synthetic MCP wiring in
+  `scripts/acceptance.py`; the production-only compliance scan separately confirms zero
+  findings, warnings, and suppressions.
 - Expected bad-fixture findings: AA001, AA002, AA003, AA004, AA006, two AA007 subchecks, AA010, and AA012 in `fixtures/bad_python/agent.py`. These are deliberate demo/golden defects; no action.
 - Expected test sentinels: AA006 secret/PII literals in redaction, static-rule, HTML, and judgment tests. Values are synthetic and verify that raw sentinels never reach reports; no production credential or personal data is present.
 - Action taken: AA004 now requires recognized `@function_tool` provenance instead of parameter-name heuristics, eliminating the previous scanner-internal false positives. AA001 exit/base-case evidence, AA003 side-effect evidence, AA011 eval evidence, and AA012 nearby-observability evidence were also tightened. Explicit GPT-5.6 output, timeout, retry, call-budget, storage, metadata, and logging controls remain in place.
-- Final whole-repository count: 20 expected findings (9 deliberate bad-fixture
-  findings and 11 synthetic AA006 test sentinels), zero production-code findings,
-  and zero unexplained analysis warnings.
+- Final whole-repository count: 20 expected findings (9 deliberate bad-fixture findings
+  and 11 synthetic test sentinels), zero production-code findings, and zero unexplained
+  analysis warnings.
 
 ## Compatibility evidence
 

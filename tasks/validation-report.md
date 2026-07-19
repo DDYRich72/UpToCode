@@ -1,9 +1,9 @@
 # Validation Report
 
-Phase 3 is preserved as `v1.0.0-rc4` at corrected commit `4fe8a61`. Exact-tag CI run
-`29706598903` passed Python 3.11–3.13 on Ubuntu, Windows, and macOS plus package/site,
-isolated wheel audit, and container lifecycle jobs; release-artifact run `29706598904`
-also passed. Final Windows and Ubuntu/WSL clean-clone evidence is recorded below.
+Phase 4 implementation commit `6e396ea` passed the complete Windows and Ubuntu/WSL
+clean-clone gate and offline demo dry-run. Phase 3 remains preserved as `v1.0.0-rc4` at
+corrected commit `4fe8a61`; exact-tag CI run `29706598903` and release-artifact run
+`29706598904` passed. The complete evidence is recorded below.
 
 ## Reference production gates
 
@@ -24,8 +24,8 @@ also passed. Final Windows and Ubuntu/WSL clean-clone evidence is recorded below
 | Hosted MCP | PASS | official SDK Streamable HTTP lifecycle; bearer authorization; per-key digest token buckets with monotonic refill, bounded eviction, `429` and `Retry-After`; judgment globally off by default; safe short-digest attribution; health/readiness; no path tools; submitted-source limits; output cap; no persistence |
 | Judgment boundary | PASS (mocked) | Structured Outputs, trusted metadata merge, redaction, bounded calls/tokens/retries/timeouts, consent, refusal/failure preservation, and prompt-injection cases |
 | Packaging/release | PASS (artifact level) | non-root Dockerfile, Cloud Run limits/secrets/probes, protected release environment, retained wheel/distributions/SBOMs/compliance evidence, public-repository provenance workflow, operations/rollback runbook; private-repository attestation is deferred to Phase 7 |
-| Functional site | PASS | Fresh Windows and Ubuntu/WSL clones build `/` and `/connect`; both server-rendered route tests pass. The required Sites Vite plugin is now tracked outside ignored build output. |
-| Site dependency audit | PASS AT RELEASE THRESHOLD / REVIEW REQUIRED | Fresh `npm audit --omit=dev --audit-level=high` exits 0 and reports two moderate findings in Next's nested PostCSS; Phase 4 must upgrade or record accepted risk. |
+| Functional site | PASS | Fresh Windows and Ubuntu/WSL clones build `/` and `/connect`; five rendered/contract tests pass. Real Worker delivery was browser-verified at desktop and 375px mobile widths with CSS/JS assets returning 200, no console errors or overflow, and working keyboard tabs. |
+| Site dependency audit | PASS WITH DATED ACCEPTED RISK | Direct patched dependencies remove all high/critical records. `npm audit --omit=dev --audit-level=high` exits 0 with the two Next/nested-PostCSS records for GHSA-qx2v-qp2m-jg93; exposure, rationale, and 2026-08-02 review date are in `SECURITY.md`. |
 | Container lifecycle | PASS | Exact-tag GitHub run `29706598903`: build, health 200, unauthenticated MCP 401, and bounded graceful shutdown all passed |
 
 ## Safety and external actions
@@ -101,8 +101,8 @@ publication, and MCP registry submission are post-event Phase 7 work.
   levels.
 - A clean WSL npm install added 508 packages. ESLint, `tsc --noEmit`, the
   production build for `/` and `/connect`, and both rendered-route tests pass.
-  The required Cloudflare Worker types are explicit until the ratified Drizzle/D1
-  removal in Phase 4.
+  This is historical Phase 3 evidence; Phase 4 subsequently removed the unused
+  Drizzle/D1 starter surface and refreshed the site dependency tree.
 - Workflow YAML and Action contracts parse under PyYAML and are covered by hostile
   command-data, summary-bound, no-null SARIF, SHA-pin, audit-isolation, Docker-smoke,
   artifact-retention, and upload-before-fail tests.
@@ -129,3 +129,30 @@ publication, and MCP registry submission are post-event Phase 7 work.
   with D006. Tagged private-repository builds retain artifacts and SBOMs but skip
   GitHub attestation because that feature is unavailable for user-owned private
   repositories; signed/attested publication is deferred to Phase 7.
+
+## Phase 4 submission-ready evidence
+
+- Implementation commits `b07a34a` (`feat(web): polish competition surface`) and
+  `6e396ea` (`fix(web): ignore TypeScript build state`) were verified from fresh clones.
+- Windows (Python 3.13.7, Node 22.19.0) and Ubuntu/WSL (Python 3.13.12, Node 22.22.2)
+  each passed 175 tests, offline acceptance, production compliance, Ruff, strict mypy
+  over 30 files, and 88% branch coverage.
+- Both clean clones completed `npm ci`, ESLint, `tsc --noEmit`, the production build for
+  exactly `/` and `/connect`, and five rendered/contract tests. Windows installed 493
+  packages; WSL installed 494 because of platform-specific optional dependencies.
+- Drizzle/D1 packages, source, binding configuration, migration hooks, examples, starter
+  assets, and generic starter documentation are absent. The tracked Sites plugin remains
+  and packages only the empty hosting manifest.
+- Patched Cloudflare/Vite releases eliminate the six previously reported high audit
+  records. The production audit has no high or critical findings; its two moderate
+  Next/PostCSS records are the dated accepted risk in `SECURITY.md`.
+- Browser verification used Wrangler 4.102.0's real asset binding. `/`, `/connect`, RSC,
+  CSS, and JavaScript requests returned 200; desktop and 375px mobile views had no error
+  overlay, console error, or horizontal overflow. Arrow-key tabs moved selection and focus
+  from Local stdio to Hosted MCP, which displayed `<HOSTED_MCP_URL>` rather than a fake
+  deployment. No password/key input exists.
+- The offline demo sequence passed in both exact-commit clones. The deliberate bad fixture
+  produced ten findings and three redactions; JSON, standalone HTML, report-bound review,
+  approved-only FIXPLAN, and compliance commands succeeded. Both Git trees remained clean.
+- No push, tag, deployment, repository access change, publication, credential distribution,
+  video upload, paid model call, or submission occurred during Phase 4.

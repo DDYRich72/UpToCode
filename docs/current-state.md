@@ -19,12 +19,19 @@ nine-cell Python matrix, isolated wheel dependency audit, site lint/type/build
 gates, container lifecycle smoke, SHA-pinned Actions, retained validation
 artifacts, weekly Dependabot, injection-safe GitHub annotations, bounded Markdown
 summaries, hardened SARIF, and a reusable upload-before-fail composite Action.
-The release candidate passes 175 tests, acceptance and compliance, Ruff, strict mypy,
+The rc4 release candidate passes 175 tests, acceptance and compliance, Ruff, strict mypy,
 88% branch coverage, isolated wheel audit, and site lint/type/build tests. GitHub
-the first burn-in run `29703827878` and exact rc4 tag run `29706598903` passed all nine
+run `29703827878` was the first full burn-in; exact rc4 tag run `29706598903` also
+passed all nine
 Python/OS cells plus the package/site, isolated wheel-audit, and container lifecycle jobs.
-No public hosted service or published
-package is claimed.
+No public hosted service or published package is claimed.
+
+The Phase 4 rc5 candidate removes the unused Drizzle/D1 starter surface, safely updates
+the direct Cloudflare/Vite and framework patch dependencies, and documents the remaining
+Next/PostCSS advisory risk. The site remains exactly `/` and `/connect`, defaults to honest
+local setup, uses an explicit hosted placeholder, and now has keyboard tabs, visible focus,
+skip navigation, reduced-motion handling, and responsive desktop/mobile evidence. Fresh
+Windows and Ubuntu/WSL clones pass five site tests and the complete release gate.
 
 Deliberate bad fixtures and synthetic secret sentinels are test evidence, not
 production exceptions. The production compliance scan has zero findings,
