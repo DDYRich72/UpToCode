@@ -103,7 +103,8 @@ Recognized evidence includes:
 
 Known limitations:
 
-- Python only. TypeScript and GitHub Actions output are not shipped.
+- Python only. TypeScript analysis is deferred to 1.1. GitHub workflow annotations and
+  SARIF are available, but a reusable composite GitHub Action is not yet shipped.
 - Dynamic imports, metaprogramming, dispatch beyond the supported one-hop project call graph, and runtime-only behavior remain inconclusive and produce coverage warnings when recognized.
 - Static side-effect and schema analysis is conservative and can produce false positives; findings should be reviewed before planning.
 - Secret/PII recognition covers a small explicit pattern set, not arbitrary credentials or personal data.

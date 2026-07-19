@@ -43,7 +43,10 @@ Show a coding agent calling:
 {"tool":"check_loop","arguments":{"snippet":"while True:\n    work()"}}
 ```
 
-Show AA001 before code is written. Mention the other static tools: `audit_file`, `audit_diff`, `check_tool_schema`, and `get_rule`.
+Show AA001 before code is written. Name the complete ten-tool local surface:
+`audit_source`, `audit_file`, `audit_repo`, `audit_diff`, `check_tool_schema`,
+`check_loop`, `list_rules`, `get_rule`, `review_findings`, and `generate_fixplan`.
+Hosted mode deliberately exposes only the submitted-content subset and no path tools.
 
 ## 2:35–2:55 — Evidence and close
 
@@ -55,5 +58,6 @@ Close: “ArchAgent turns architecture concerns into cited evidence, explicit ap
 
 - Do not display API keys, environment values, private code, account identifiers, or hidden browser content.
 - Use only checked-in fixtures and generated redacted reports.
-- Record or upload nothing until publication approval is explicit.
-- Keep claims aligned with README limitations: Python MVP; no TypeScript, GitHub output, auto-fix, PR comment, or public service.
+- Record or upload nothing until the applicable operator approval is explicit.
+- Keep claims aligned with README limitations: Python MVP; no TypeScript analysis,
+  composite GitHub Action, auto-fix, PR comment, or public service.

@@ -19,11 +19,13 @@ ArchAgent finds architecture-quality risks that ordinary syntax checks miss: unb
 - Redacts recognized secrets and narrow PII forms before output or optional judgment payloads.
 - Records approvals/rejections in a report-bound manifest.
 - Generates a Codex-ready implementation plan without changing source.
-- Exposes five static-first MCP tools for file, diff, loop, schema, and rule checks.
+- Exposes ten typed local MCP tools spanning source/file/repository/diff audits, focused
+  loop and schema checks, the rule catalog, review decisions, and FIXPLAN generation.
+- Provides a separate hosted submitted-content surface with no filesystem-path tools.
 
 ## How it was built
 
-Python 3.11+, AST-based evidence extraction, Pydantic contracts, Typer, OpenAI Responses Structured Outputs with `gpt-5.6`, and the official Python MCP SDK. The build follows four verified gates and a cross-platform acceptance runner that exercises the CLI workflow, real stdio MCP transport, redaction, goldens, fixture non-mutation, and self-scan.
+Python 3.11+, AST-based evidence extraction, Pydantic contracts, Typer, OpenAI Responses Structured Outputs with `gpt-5.6`, and the official Python MCP SDK. The gated build and cross-platform acceptance runner exercise the CLI workflow, real stdio and hosted MCP lifecycles, redaction, goldens, fixture non-mutation, and self-scan.
 
 ## Responsible behavior
 
