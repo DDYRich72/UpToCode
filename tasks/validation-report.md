@@ -1,7 +1,7 @@
 # Validation Report
 
-Phase 0 fresh-clone environments: Windows Python 3.13.7 / Node 24.14.1 and
-Ubuntu/WSL Python 3.13.12 / Node 22.22.2. The configured GitHub matrix targets
+Phase 1 exact-commit fresh-clone environments: Windows Python 3.13.7 / Node 22.19.0
+and Ubuntu/WSL Python 3.13.12 / Node 22.22.2. The configured GitHub matrix targets
 Python 3.11–3.13 on Ubuntu, Windows, and macOS; workflow burn-in continues in Phase 3.
 
 ## Reference production gates
@@ -36,13 +36,24 @@ Python 3.11–3.13 on Ubuntu, Windows, and macOS; workflow burn-in continues in 
   release, submission, or new paid model request was performed.
 - The historical single authorized synthetic GPT-5.6 smoke remains recorded in `.archagent-audit/live-smoke.json`; a post-build/post-deploy smoke requires fresh explicit approval.
 
-## Phase 0 submission-ready evidence
+## Phase 1 submission-ready evidence
 
 - Demo commands for terminal, HTML, JSON, review, manifest-bound FIXPLAN, and
-  acceptance all completed from the fresh Windows clone. The critical scan returned
+  compliance all completed from exact commit `846c7f7` in the fresh Windows clone.
+  The critical scan returned
   the expected exit code 1; all artifact-producing commands returned 0.
-- The Phase 0 implementation and planning commits are local only. No push or RC tag
-  has been performed; both require operator approval.
+- The checked-in evidence under `docs/submission-evidence/` contains only synthetic
+  fixtures and sanitized paths. The sanitized report and review manifest regenerate
+  the approved-only FIXPLAN successfully.
+- Fresh Windows and Ubuntu/WSL clones each passed 158 tests, acceptance, compliance,
+  Ruff, strict mypy over 29 files, 86% branch coverage, clean npm installation,
+  production site build, and two rendered-route tests.
+- The Windows npm install emitted one non-fatal cleanup warning for an optional nested
+  WASM directory; it exited 0, and the build and rendered-route tests passed. The Ubuntu
+  install was clean.
+- Phase 0 is remotely preserved as `v1.0.0-rc1`. The Phase 1 commit and evidence update
+  remain local; pushing and creating/pushing `v1.0.0-rc2` require operator approval.
+- The operator must capture the Codex Session ID outside the repository before submission.
 - GitHub Actions is not yet claimed green. The first burn-in run failed only in the
   site job (now-fixed ignored plugin) and Python 3.11 dependency-audit environment;
   workflow isolation is explicit Phase 3 work.

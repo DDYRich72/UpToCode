@@ -2,7 +2,8 @@
 
 ## Current gate
 
-Completion Plan v2 Phase 0 — preserve and verify for `v1.0.0-rc1`.
+Completion Plan v2 Phase 1 — rules compliance and submission assets for
+`v1.0.0-rc2`.
 
 ## Status
 
@@ -24,7 +25,23 @@ Completion Plan v2 Phase 0 — preserve and verify for `v1.0.0-rc1`.
   acceptance, compliance, Ruff, strict mypy, 86% branch coverage, and two site tests.
 - [x] Phase 0 offline demo commands dry-run successfully.
 - [x] Phase 0 evidence recorded for the verification commit.
-- [ ] Obtain operator approval before pushing Phase 0 commits or the RC tag.
+- [x] Phase 0 commits pushed and annotated `v1.0.0-rc1` published after explicit
+  operator approval; the private repository remains private.
+- [x] Event-rules ownership/evidence checklist added.
+- [x] README judge test-build instructions and “Built with Codex and GPT-5.6”
+  disclosure added.
+- [x] Sub-three-minute demo script synchronized to six product beats plus the
+  explicit Codex/GPT-5.6 development beat, narration, and IP guardrails.
+- [x] Devpost draft synchronized to the ten-tool local MCP, hosted subset, SARIF,
+  baselines, changed-since, rule selection, review, and FIXPLAN surfaces.
+- [x] Sanitized submission evidence committed: terminal/HTML/JSON reports, AA006
+  redaction, bound review manifest, FIXPLAN, real stdio MCP response, acceptance,
+  and validation matrix.
+- [x] Phase 1 clean-clone gate passed on Windows and Ubuntu/WSL: 158 tests,
+  acceptance, compliance, Ruff, strict mypy, 86% branch coverage, and two site tests.
+- [x] Phase 1 offline demo sequence dry-run successfully from the exact commit.
+- [ ] Operator captures the Codex Session ID outside the repository.
+- [ ] Obtain operator approval before pushing Phase 1 commits or the RC2 tag.
 
 ## Notes
 
@@ -60,3 +77,18 @@ acceptance run (generated and gitignored).
 - The configured GitHub Actions matrix remains in burn-in: its first run proved the
   Docker build and six Python cells, but Python 3.11 dependency-audit isolation and
   the previously missing site plugin require the planned Phase 3 workflow repair.
+
+## Phase 1 evidence
+
+- Exact verified commit: `846c7f7` (`docs: prepare competition submission assets`).
+- Windows clean clone: Python 3.13.7, Node 22.19.0; 158 tests, acceptance,
+  compliance, Ruff, strict mypy over 29 files, 86% branch coverage, clean npm
+  install, production build, and two rendered-route tests all PASS.
+- Ubuntu/WSL clean clone: Python 3.13.12, Node 22.22.2; the same Python gates,
+  coverage, clean npm install, build, and two rendered-route tests all PASS.
+- The Windows npm install emitted one best-effort cleanup warning for a nested
+  optional WASM directory but exited 0; the subsequent production build and route
+  tests passed. Ubuntu installed cleanly.
+- The exact demo sequence produced 10 deliberate fixture findings with three
+  redactions, generated HTML/JSON, bound review decisions, generated the approved-only
+  FIXPLAN, and passed compliance entirely offline.
