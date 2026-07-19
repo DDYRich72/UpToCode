@@ -68,8 +68,8 @@ Completion Plan v2 Phase 3 — GitHub and CI product surface for `v1.0.0-rc4`.
 - [x] Site ESLint and `tsc --noEmit` gates added and validated locally; the existing
   Cloudflare starter contract now declares its required types explicitly pending
   ratified Drizzle/D1 removal in Phase 4.
-- [x] Docker health, unauthorized MCP, and graceful-shutdown smoke steps added;
-  execution awaits GitHub's Docker runner because Docker is unavailable locally.
+- [x] Docker health, unauthorized MCP, and graceful-shutdown smoke steps added and
+  passed on GitHub's Linux runner.
 - [x] Dedicated GitHub reporter escapes hostile message and property data and emits
   a bounded Markdown job summary.
 - [x] SARIF omits absent keys and JSON nulls, declares per-rule default levels, and
@@ -77,9 +77,14 @@ Completion Plan v2 Phase 3 — GitHub and CI product surface for `v1.0.0-rc4`.
 - [x] Composite Action supports `path`, `fail-on`, `version`, and `upload-sarif`,
   uploads SARIF with `always()` before returning the captured scanner exit code.
 - [x] External Actions SHA-pinned and weekly Actions/pip/npm Dependabot configured.
-- [ ] Complete the full local Phase 3 validation and commit the burn-in candidate.
-- [ ] Obtain operator approval before pushing the burn-in commit; record the first
-  fully green run URL and matrix evidence before the rc4 gate.
+- [x] Full local Phase 3 validation completed and the burn-in candidate committed.
+- [x] Operator-approved burn-in completed: all nine Python cells and the package,
+  isolated-wheel-audit, and container jobs passed in GitHub run `29703827878`.
+- [x] Final clean-environment gate passed on Windows and POSIX, including the
+  offline demo dry-run and clean post-gate trees.
+- [x] rc4 verification evidence committed locally.
+- [ ] Obtain operator approval before pushing the evidence commit or creating and
+  pushing `v1.0.0-rc4`.
 
 ## Notes
 
@@ -112,9 +117,9 @@ acceptance run (generated and gitignored).
 - Ubuntu/WSL Python 3.13.12 clean clone: 158 tests PASS; acceptance, compliance,
   Ruff, strict mypy, and 86% branch coverage PASS. Node 22.22.2 site build and two
   rendered route tests PASS.
-- The configured GitHub Actions matrix remains in burn-in: its first run proved the
-  Docker build and six Python cells, but Python 3.11 dependency-audit isolation and
-  the previously missing site plugin require the planned Phase 3 workflow repair.
+- The repaired GitHub Actions workflow passed all nine Python 3.11-3.13 cells on
+  Ubuntu, Windows, and macOS plus package/site, isolated wheel audit, and container
+  lifecycle jobs in run `29703827878`.
 
 ## Phase 1 evidence
 
@@ -145,3 +150,20 @@ acceptance run (generated and gitignored).
   FIXPLAN, and production compliance artifacts were generated without paid calls.
 - No remote, deployment, repository access, credential, publication, video, or
   submission action occurred during Phase 2.
+
+## Phase 3 burn-in evidence
+
+- Implementation commit `6fdb102` and Phase 3-only corrections `1e8dff2` and
+  `790ef5d` were pushed under explicit operator approval.
+- GitHub run `29703827878` at `790ef5d` completed successfully with all 12 jobs:
+  the nine-cell Python 3.11-3.13 matrix on Ubuntu, Windows, and macOS; package,
+  SBOM, SARIF, and site; isolated wheel dependency audit; and container health,
+  unauthorized-MCP, and graceful-shutdown smoke checks.
+- Each matrix cell passed 175 tests, offline acceptance, production compliance,
+  Ruff, strict mypy, and 88% branch coverage. The run produced no CI annotations.
+- A fresh Ubuntu/WSL clone at `790ef5d` passed the full §3 command set, site lint
+  and `tsc --noEmit`, the offline demo sequence, and a clean-tree check. A fresh
+  Windows clone passed clean npm install, lint, type check, production build, and
+  both rendered-route tests; GitHub supplied the clean Windows Python gates.
+- The repository remains private. No tag, deployment, access change, publication,
+  credential distribution, video upload, paid model call, or submission occurred.

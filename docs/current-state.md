@@ -18,10 +18,11 @@ nine-cell Python matrix, isolated wheel dependency audit, site lint/type/build
 gates, container lifecycle smoke, SHA-pinned Actions, retained validation
 artifacts, weekly Dependabot, injection-safe GitHub annotations, bounded Markdown
 summaries, hardened SARIF, and a reusable upload-before-fail composite Action.
-The local candidate passes 175 tests, acceptance and compliance, Ruff, strict
-mypy, 88% branch coverage, isolated wheel audit, and site lint/type/build tests.
-The first fully green GitHub burn-in remains pending and is not claimed. No public
-hosted service or published package is claimed.
+The candidate passes 175 tests, acceptance and compliance, Ruff, strict mypy,
+88% branch coverage, isolated wheel audit, and site lint/type/build tests. GitHub
+run `29703827878` passed all nine Python/OS cells plus the package/site, isolated
+wheel-audit, and container lifecycle jobs. No public hosted service or published
+package is claimed.
 
 Deliberate bad fixtures and synthetic secret sentinels are test evidence, not
 production exceptions. The production compliance scan has zero findings,

@@ -54,7 +54,8 @@ Show SARIF, injection-safe GitHub annotations, the bounded job summary, the comp
 Action's upload-before-fail sequence, baselines, changed-since scanning, and rule selection
 from prepared outputs or help text. Run `python scripts/compliance.py`; show the zero-finding
 production self-scan and the offline acceptance PASS evidence. Claim the Action's green
-matrix only after the Phase 3 burn-in URL is recorded.
+matrix and show recorded GitHub run `29703827878`—do not imply that the composite Action
+itself publishes a package or deploys a service.
 
 ## Codex/GPT-5.6 development beat and close — 2:28–2:55
 
