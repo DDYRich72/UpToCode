@@ -25,7 +25,7 @@ Python 3.11–3.13 on Ubuntu, Windows, and macOS; workflow burn-in continues in 
 | Packaging/release | PASS (artifact level) | non-root Dockerfile, Cloud Run limits/secrets/probes, protected release environment, SBOM and provenance attestation workflow, operations/rollback runbook |
 | Functional site | PASS | Fresh Windows and Ubuntu/WSL clones build `/` and `/connect`; both server-rendered route tests pass. The required Sites Vite plugin is now tracked outside ignored build output. |
 | Site dependency audit | PASS AT RELEASE THRESHOLD / REVIEW REQUIRED | Fresh `npm audit --omit=dev --audit-level=high` exits 0 and reports two moderate findings in Next's nested PostCSS; Phase 4 must upgrade or record accepted risk. |
-| Container build | PASS IN FIRST CI / SMOKE PENDING | GitHub run `29691320624` built the container successfully; the Phase 3 health/401 smoke is not yet implemented. |
+| Container build | PASS IN FIRST CI / NEW SMOKE BURN-IN PENDING | GitHub run `29691320624` built the container successfully. Phase 3 now defines health 200, unauthenticated MCP 401, and bounded shutdown checks; execution awaits the approved burn-in push. |
 
 ## Safety and external actions
 
@@ -84,3 +84,31 @@ publication, and MCP registry submission are post-event Phase 7 work.
   fixture scan exited 1 as designed; every artifact-producing command exited 0.
 - No paid model call, push, tag, remote-access change, deployment, credential
   distribution, publication, video upload, or submission occurred in Phase 2.
+
+## Phase 3 local burn-in candidate
+
+- Phase 2 is remotely preserved as annotated tag `v1.0.0-rc3` at `f409771`; the
+  repository remains private.
+- Local Python validation passes 175 tests, offline acceptance, production
+  compliance, Ruff, strict mypy over 30 source files, and 88% branch coverage.
+- The isolated wheel environment upgrades pip, setuptools, and wheel, installs
+  `archagent_audit-1.0.0-py3-none-any.whl`, passes `pip check`, and reports no known
+  dependency vulnerabilities. The unpublished ArchAgent package itself is
+  correctly reported as unavailable for registry audit.
+- A source install matching the composite Action's `version: source` path built
+  successfully. Its bad-fixture scan generated ten SARIF results, preserved the
+  expected threshold exit code 1, emitted no JSON null, and declared rule default
+  levels.
+- A clean WSL npm install added 508 packages. ESLint, `tsc --noEmit`, the
+  production build for `/` and `/connect`, and both rendered-route tests pass.
+  The required Cloudflare Worker types are explicit until the ratified Drizzle/D1
+  removal in Phase 4.
+- Workflow YAML and Action contracts parse under PyYAML and are covered by hostile
+  command-data, summary-bound, no-null SARIF, SHA-pin, audit-isolation, Docker-smoke,
+  artifact-retention, and upload-before-fail tests.
+- Docker and `actionlint` are unavailable on the local Windows host. The first
+  fully green GitHub run, nine-cell matrix, Linux container lifecycle, and native
+  workflow interpretation therefore remain unverified until an operator-approved
+  burn-in push. No green-run claim is made yet.
+- PyPI publication was removed from the release-candidate workflow in accordance
+  with D006; tagged builds retain and attest artifacts without publishing them.

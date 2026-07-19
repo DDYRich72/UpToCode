@@ -2,7 +2,7 @@
 
 ## Current gate
 
-Completion Plan v2 Phase 2 — MCP hardening for `v1.0.0-rc3`.
+Completion Plan v2 Phase 3 — GitHub and CI product surface for `v1.0.0-rc4`.
 
 ## Status
 
@@ -59,8 +59,27 @@ Completion Plan v2 Phase 2 — MCP hardening for `v1.0.0-rc3`.
   acceptance, compliance, Ruff, strict mypy, 87% branch coverage, clean site
   installs, and two rendered-route tests.
 - [x] Phase 2 offline demo sequence dry-run successfully from the exact commit.
-- [ ] Obtain operator approval before pushing the Phase 2 commits or creating and
-  pushing the `v1.0.0-rc3` tag.
+- [x] Phase 2 commits pushed and annotated `v1.0.0-rc3` published after explicit
+  operator approval; the private repository remains private.
+- [x] Dependency auditing separated from the nine-cell test matrix and moved to an
+  upgraded isolated wheel-installed environment.
+- [x] CI concurrency cancellation and job timeouts added; coverage, validation,
+  wheel, distribution, SBOM, and SARIF artifacts retained.
+- [x] Site ESLint and `tsc --noEmit` gates added and validated locally; the existing
+  Cloudflare starter contract now declares its required types explicitly pending
+  ratified Drizzle/D1 removal in Phase 4.
+- [x] Docker health, unauthorized MCP, and graceful-shutdown smoke steps added;
+  execution awaits GitHub's Docker runner because Docker is unavailable locally.
+- [x] Dedicated GitHub reporter escapes hostile message and property data and emits
+  a bounded Markdown job summary.
+- [x] SARIF omits absent keys and JSON nulls, declares per-rule default levels, and
+  retains stable fingerprints.
+- [x] Composite Action supports `path`, `fail-on`, `version`, and `upload-sarif`,
+  uploads SARIF with `always()` before returning the captured scanner exit code.
+- [x] External Actions SHA-pinned and weekly Actions/pip/npm Dependabot configured.
+- [ ] Complete the full local Phase 3 validation and commit the burn-in candidate.
+- [ ] Obtain operator approval before pushing the burn-in commit; record the first
+  fully green run URL and matrix evidence before the rc4 gate.
 
 ## Notes
 

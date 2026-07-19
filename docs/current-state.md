@@ -1,6 +1,6 @@
 # Current State
 
-ArchAgent 1.0.0 is a Python-first architecture-quality scanner with 167 offline
+ArchAgent 1.0.0 is a Python-first architecture-quality scanner with 175 offline
 tests, deterministic terminal/JSON/HTML/GitHub/SARIF reports, optional GPT-5.6
 Structured Outputs judgment, approval-bound FIXPLAN generation, and ten local
 stdio MCP tools.
@@ -13,12 +13,15 @@ path-bearing tool to it. Hosted access has bearer authorization, bounded per-key
 in-memory rate limiting, default-off global judgment, safe digest-prefix log
 attribution, payload limits, and temporary-directory cleanup.
 
-The Phase 2 implementation is submission-ready locally as candidate
-`v1.0.0-rc3`: Windows and Ubuntu/WSL clean clones pass 167 tests, offline
-acceptance and compliance, Ruff, strict mypy, 87% branch coverage, clean site
-installs, production builds, and both rendered routes. The reusable composite
-Action and fully green CI burn-in remain Phase 3 scope; no public hosted service
-or published package is claimed.
+Phase 2 is preserved remotely as `v1.0.0-rc3`. The Phase 3 candidate adds a
+nine-cell Python matrix, isolated wheel dependency audit, site lint/type/build
+gates, container lifecycle smoke, SHA-pinned Actions, retained validation
+artifacts, weekly Dependabot, injection-safe GitHub annotations, bounded Markdown
+summaries, hardened SARIF, and a reusable upload-before-fail composite Action.
+The local candidate passes 175 tests, acceptance and compliance, Ruff, strict
+mypy, 88% branch coverage, isolated wheel audit, and site lint/type/build tests.
+The first fully green GitHub burn-in remains pending and is not claimed. No public
+hosted service or published package is claimed.
 
 Deliberate bad fixtures and synthetic secret sentinels are test evidence, not
 production exceptions. The production compliance scan has zero findings,

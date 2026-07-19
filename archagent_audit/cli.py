@@ -1,6 +1,7 @@
 """Command-line interface for ArchAgent."""
 
 from enum import StrEnum
+import os
 import subprocess
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from archagent_audit.models import Report, ReviewManifest
 from archagent_audit.planner import generate_fixplan
 from archagent_audit.reporters.json import render_json
 from archagent_audit.reporters.html import render_html
+from archagent_audit.reporters.github import render_github, render_github_summary
 from archagent_audit.reporters.terminal import render_terminal
 from archagent_audit.reporters.sarif import render_sarif
 from archagent_audit.review import create_manifest
@@ -38,6 +40,16 @@ def _write_output(path: Path, content: str, *, create_parent: bool = False) -> N
         path.write_text(content, encoding="utf-8")
     except OSError as error:
         typer.echo(f"Could not write output {path}: {error}", err=True)
+        raise typer.Exit(2) from error
+
+
+def _append_output(path: Path, content: str) -> None:
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8", newline="\n") as stream:
+            stream.write(content)
+    except OSError as error:
+        typer.echo(f"Could not append GitHub summary {path}: {error}", err=True)
         raise typer.Exit(2) from error
 
 
@@ -81,6 +93,7 @@ def scan(
     exclude: list[str] | None = typer.Option(None, "--exclude"),
     severity: list[str] | None = typer.Option(None, "--severity", metavar="RULE=LEVEL"),
     fail_on_analysis_warning: bool = typer.Option(False, "--fail-on-analysis-warning"),
+    github_summary: Path | None = typer.Option(None, "--github-summary"),
     verbose: bool = typer.Option(False, "--verbose"),
 ) -> None:
     """Scan a Python repository for architecture-quality findings."""
@@ -152,17 +165,18 @@ def scan(
     elif output_format == OutputFormat.SARIF:
         rendered = render_sarif(report)
     elif output_format == OutputFormat.GITHUB:
-        rendered = "\n".join(
-            f"::{('error' if item.severity == Severity.CRITICAL else 'warning')} "
-            f"file={item.file},line={item.line},title={item.rule_id}::{item.verdict.observed}"
-            for item in report.findings
-        )
+        rendered = render_github(report)
     else:
         rendered = render_terminal(report)
     if output is not None:
         _write_output(output, rendered)
     else:
         typer.echo(rendered)
+    summary_destination = github_summary
+    if summary_destination is None and os.environ.get("GITHUB_STEP_SUMMARY"):
+        summary_destination = Path(os.environ["GITHUB_STEP_SUMMARY"])
+    if summary_destination is not None:
+        _append_output(summary_destination, render_github_summary(report))
     if verbose and report.metadata is not None:
         typer.echo(f"Scan duration: {report.metadata.duration_ms} ms", err=True)
     if fail_on_analysis_warning and report.analysis_warnings:

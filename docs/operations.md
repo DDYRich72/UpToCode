@@ -52,6 +52,26 @@ To evaluate an SDK upgrade:
 5. If FastMCP internals changed, adapt the guarded compatibility layer and its malformed-SDK
    test in the same commit. Do not ship an unguarded fallback or `extra="ignore"` behavior.
 
+## CI and composite Action operations
+
+The nine Python compatibility cells never perform dependency auditing. The dedicated audit
+job builds the application wheel, creates an isolated environment, upgrades pip,
+setuptools, and wheel there, installs the wheel plus its dependencies, then runs `pip check`
+and `pip-audit`. This keeps an environment-specific audit defect from obscuring compatibility
+test results.
+
+Every CI job has a timeout and branch/ref concurrency cancellation. Artifacts retain matrix
+coverage/compliance evidence, the application wheel, distributions, Python and site SBOMs,
+and SARIF. The container smoke must prove `/healthz` 200, unauthenticated `/mcp` 401, and a
+bounded clean shutdown. Site CI must run ESLint, `tsc --noEmit`, the production build, and
+both rendered-route tests.
+
+The root `action.yml` defaults to `version: source`. Its scan step captures and neutralizes
+the scanner exit temporarily, the SARIF upload uses `always()`, and the final step returns
+the captured code. A caller enabling SARIF upload grants `security-events: write`. Published
+semantic-version installation remains unavailable until the separately approved Phase 7
+PyPI train.
+
 ## Rollback
 
 1. Route all traffic back to the last known-good Cloud Run revision by immutable revision name.

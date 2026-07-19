@@ -50,10 +50,11 @@ to the canonical root resolved when the server starts.
 
 ## Beat 6 — 2:03–2:28 — Delivery surfaces and self-audit
 
-Show SARIF, GitHub annotations, baselines, changed-since scanning, and rule selection from
-prepared outputs or help text. Run `python scripts/compliance.py`; show the zero-finding
-production self-scan and the offline acceptance PASS evidence. Do not claim a reusable
-GitHub Action until Phase 3 ships it.
+Show SARIF, injection-safe GitHub annotations, the bounded job summary, the composite
+Action's upload-before-fail sequence, baselines, changed-since scanning, and rule selection
+from prepared outputs or help text. Run `python scripts/compliance.py`; show the zero-finding
+production self-scan and the offline acceptance PASS evidence. Claim the Action's green
+matrix only after the Phase 3 burn-in URL is recorded.
 
 ## Codex/GPT-5.6 development beat and close — 2:28–2:55
 

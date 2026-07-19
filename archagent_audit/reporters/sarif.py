@@ -15,14 +15,17 @@ def render_sarif(report: Report) -> str:
     results: list[dict[str, object]] = []
     for finding in report.findings:
         citation = finding.citations[0] if finding.citations else None
+        rule: dict[str, object] = {
+            "id": finding.rule_id,
+            "name": finding.title,
+            "shortDescription": {"text": finding.title},
+            "defaultConfiguration": {"level": _LEVEL[finding.severity]},
+        }
+        if citation is not None:
+            rule["helpUri"] = citation.url
         rules.setdefault(
             finding.rule_id,
-            {
-                "id": finding.rule_id,
-                "name": finding.title,
-                "shortDescription": {"text": finding.title},
-                "helpUri": citation.url if citation else None,
-            },
+            rule,
         )
         results.append(
             {

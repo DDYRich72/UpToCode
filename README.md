@@ -62,7 +62,8 @@ archagent-audit scan PATH [--format terminal|json|html|github|sarif] [--output F
                          [--baseline FILE|--update-baseline FILE]
                          [--changed-since REF] [--select RULES] [--ignore RULES]
                          [--exclude GLOB] [--severity RULE=LEVEL]
-                         [--fail-on-analysis-warning] [--verbose]
+                         [--fail-on-analysis-warning] [--github-summary PATH]
+                         [--verbose]
 archagent-audit review REPORT [--approve IDS|--approve-all] [--reject IDS]
                               [--reuse MANIFEST] [--non-interactive]
 archagent-audit plan REPORT --manifest MANIFEST [--output FIXPLAN.md]
@@ -80,7 +81,33 @@ archagent-audit plan report.json --manifest .archagent-audit/manifest.json --out
 
 `review` binds decisions to the exact report fingerprint. `plan` refuses a mismatched manifest and includes only approved findings. Neither command edits the scanned repository.
 
-Exit codes are `0` for no configured threshold breach, `1` for a finding at or above `--fail-on` (or a requested analysis-warning gate), and `2` for invalid configuration or an unrecoverable scan error. HTML requires `--output`. GitHub workflow commands and SARIF 2.1.0 are supported.
+Exit codes are `0` for no configured threshold breach, `1` for a finding at or above `--fail-on` (or a requested analysis-warning gate), and `2` for invalid configuration or an unrecoverable scan error. HTML requires `--output`. GitHub workflow commands escape untrusted command data and properties. SARIF 2.1.0 omits absent fields, declares default rule levels, and carries stable partial fingerprints. `--github-summary PATH` appends a bounded Markdown summary; when `GITHUB_STEP_SUMMARY` is set, the summary is appended there automatically.
+
+## GitHub Action
+
+The repository ships a composite Action that installs ArchAgent from the Action checkout,
+runs the scan, uploads SARIF with `always()`, and only then returns the preserved scanner
+exit code:
+
+```yaml
+permissions:
+  contents: read
+  security-events: write
+
+steps:
+  - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+  - uses: DDYRich72/UpToCode@v1.0.0-rc4
+    with:
+      path: .
+      fail-on: critical
+      version: source
+      upload-sarif: "true"
+```
+
+`version: source` is the competition-safe default and installs from the checked-out
+Action source before PyPI publication. After the event, an exact semantic version installs
+the matching `archagent-audit` PyPI release. Set `upload-sarif: "false"` when code-scanning
+upload is not desired; otherwise the calling workflow needs `security-events: write`.
 
 Example terminal output:
 
@@ -134,8 +161,9 @@ Recognized evidence includes:
 
 Known limitations:
 
-- Python only. TypeScript analysis is deferred to 1.1. GitHub workflow annotations and
-  SARIF are available, but a reusable composite GitHub Action is not yet shipped.
+- Python analysis only; TypeScript analysis remains deferred to 1.1. GitHub workflow
+  annotations, Markdown summaries, SARIF, and the reusable composite Action are delivery
+  surfaces for the Python scanner, not TypeScript analyzers.
 - Dynamic imports, metaprogramming, dispatch beyond the supported one-hop project call graph, and runtime-only behavior remain inconclusive and produce coverage warnings when recognized.
 - Static side-effect and schema analysis is conservative and can produce false positives; findings should be reviewed before planning.
 - Secret/PII recognition covers a small explicit pattern set, not arbitrary credentials or personal data.

@@ -1,0 +1,60 @@
+name: ArchAgent Audit
+description: Run ArchAgent, upload SARIF, and preserve the scanner exit code.
+inputs:
+  path:
+    description: Python file or repository path to scan.
+    required: false
+    default: .
+  fail-on:
+    description: Lowest finding severity that fails the Action.
+    required: false
+    default: critical
+  version:
+    description: Use source for this Action checkout, or an exact published semantic version.
+    required: false
+    default: source
+  upload-sarif:
+    description: Upload the generated SARIF report to GitHub code scanning.
+    required: false
+    default: "true"
+runs:
+  using: composite
+  steps:
+    - name: Install ArchAgent from Action source
+      if: inputs.version == 'source'
+      shell: bash
+      run: python -m pip install "$GITHUB_ACTION_PATH"
+    - name: Install published ArchAgent version
+      if: inputs.version != 'source'
+      shell: bash
+      env:
+        ARCHAGENT_ACTION_VERSION: ${{ inputs.version }}
+      run: python -m pip install "archagent-audit==${ARCHAGENT_ACTION_VERSION}"
+    - name: Scan and preserve exit code
+      id: scan
+      shell: bash
+      env:
+        ARCHAGENT_SCAN_PATH: ${{ inputs.path }}
+        ARCHAGENT_FAIL_ON: ${{ inputs.fail-on }}
+        ARCHAGENT_SARIF_PATH: ${{ runner.temp }}/archagent-results.sarif
+      run: |
+        set +e
+        archagent-audit scan "${ARCHAGENT_SCAN_PATH}" \
+          --format sarif \
+          --output "${ARCHAGENT_SARIF_PATH}" \
+          --fail-on "${ARCHAGENT_FAIL_ON}"
+        scanner_exit_code="$?"
+        echo "exit-code=${scanner_exit_code}" >> "$GITHUB_OUTPUT"
+        echo "sarif-path=${ARCHAGENT_SARIF_PATH}" >> "$GITHUB_OUTPUT"
+        exit 0
+    - name: Upload SARIF before returning scanner failure
+      if: always() && inputs.upload-sarif == 'true'
+      uses: github/codeql-action/upload-sarif@b7351df727350dca84cb9d725d57dcf5bc82ba26 # v3
+      with:
+        sarif_file: ${{ steps.scan.outputs.sarif-path }}
+    - name: Return scanner exit code
+      if: always()
+      shell: bash
+      env:
+        ARCHAGENT_SCANNER_EXIT_CODE: ${{ steps.scan.outputs.exit-code }}
+      run: exit "${ARCHAGENT_SCANNER_EXIT_CODE:-2}"

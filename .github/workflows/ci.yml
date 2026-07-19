@@ -4,11 +4,17 @@ on:
   push:
   pull_request:
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
   python:
+    name: Python ${{ matrix.python }} / ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -16,38 +22,149 @@ jobs:
         python: ["3.11", "3.12", "3.13"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: ${{ matrix.python }}
-      - run: python -m pip install --upgrade "pip>=26.1.2"
-      - run: python -m pip install -e ".[test]"
-      - run: python -m pip install pip-audit
-      - run: python -m pip_audit --local --skip-editable
-      - run: python -m ruff check archagent_audit tests scripts
-      - run: python -m mypy archagent_audit
-      - run: python -m coverage run -m pytest -q
-      - run: python -m coverage report
-      - run: python scripts/acceptance.py
-      - run: python scripts/compliance.py
+      - name: Install test environment
+        run: |
+          python -m pip install --upgrade "pip>=26.1.2"
+          python -m pip install -e ".[test]"
+      - name: Lint
+        run: python -m ruff check archagent_audit tests scripts
+      - name: Type check
+        run: python -m mypy archagent_audit
+      - name: Test with branch coverage
+        run: |
+          python -m coverage run --branch -m pytest -q
+          python -m coverage report --fail-under=85
+          python -m coverage xml -o coverage.xml
+      - name: Offline acceptance
+        run: python scripts/acceptance.py
+      - name: Production compliance
+        run: python scripts/compliance.py
+      - name: Retain validation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: validation-${{ matrix.os }}-py${{ matrix.python }}
+          path: |
+            coverage.xml
+            .archagent-audit/architecture-compliance.json
+            .archagent-audit/self-scan.json
+          if-no-files-found: warn
+          retention-days: 14
 
-  package-and-site:
+  dependency-audit:
+    name: Wheel dependency audit
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.13"
-      - uses: actions/setup-node@v4
+      - name: Build application wheel
+        run: |
+          python -m pip install --upgrade "pip>=26.1.2" build
+          python -m build --wheel
+      - name: Audit isolated wheel environment
+        run: |
+          python -m venv audit-venv
+          audit-venv/bin/python -m pip install --upgrade pip setuptools wheel
+          audit-venv/bin/python -m pip install dist/archagent_audit-*.whl pip-audit
+          audit-venv/bin/python -m pip check
+          audit-venv/bin/python -m pip_audit --local
+      - name: Retain wheel
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: wheel
+          path: dist/*.whl
+          if-no-files-found: error
+          retention-days: 14
+
+  package-and-site:
+    name: Package, SBOM, SARIF, and site
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - run: python -m pip wheel . --no-deps --wheel-dir dist
-      - run: docker build -t archagent-mcp:test .
-      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install packaging tools and ArchAgent
+        run: |
+          python -m pip install --upgrade "pip>=26.1.2" build cyclonedx-bom
+          python -m pip install .
+      - name: Build distributions and Python SBOM
+        run: |
+          python -m build
+          cyclonedx-py environment --output-file dist/python-sbom.json
+      - name: Generate zero-finding SARIF
+        run: archagent-audit scan archagent_audit --format sarif --output dist/archagent.sarif
+      - name: Install site dependencies
         working-directory: web
-      - run: npm test
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Lint site
         working-directory: web
-      - run: npm audit --omit=dev --audit-level=high
+        run: npm run lint
+      - name: Type check site
         working-directory: web
+        run: npm exec tsc -- --noEmit
+      - name: Build and test site
+        working-directory: web
+        run: npm test
+      - name: Audit production site dependencies
+        working-directory: web
+        run: npm audit --omit=dev --audit-level=high
+      - name: Generate site SBOM
+        working-directory: web
+        run: npm sbom --sbom-format cyclonedx > ../dist/site-sbom.json
+      - name: Retain distributions, SBOMs, and SARIF
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: package-site-evidence
+          path: |
+            dist/*
+          if-no-files-found: error
+          retention-days: 14
+
+  container-smoke:
+    name: Container health, auth, and shutdown
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Build container
+        run: docker build -t archagent-mcp:test .
+      - name: Start container
+        run: |
+          key_hash="$(printf '%s' 'archagent-ci-key' | sha256sum | cut -d ' ' -f 1)"
+          docker run --detach --name archagent-mcp-ci --publish 18080:8080 \
+            --env "ARCHAGENT_API_KEY_HASHES=${key_hash}" \
+            archagent-mcp:test
+      - name: Verify health and unauthorized MCP
+        run: |
+          health_code=""
+          for attempt in {1..30}; do
+            health_code="$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:18080/healthz || true)"
+            if [ "${health_code}" = "200" ]; then break; fi
+            sleep 1
+          done
+          test "${health_code}" = "200"
+          unauthorized_code="$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:18080/mcp || true)"
+          test "${unauthorized_code}" = "401"
+      - name: Verify graceful shutdown
+        if: always()
+        run: |
+          if docker inspect archagent-mcp-ci >/dev/null 2>&1; then
+            docker stop --time 10 archagent-mcp-ci
+            test "$(docker inspect --format '{{.State.Running}}' archagent-mcp-ci)" = "false"
+            docker rm archagent-mcp-ci
+          fi

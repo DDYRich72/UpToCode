@@ -16,7 +16,10 @@ ArchAgent finds architecture-quality risks that ordinary syntax checks miss: unb
 
 - Scans OpenAI Agents SDK, LangGraph, and recognizable custom Python loops.
 - Produces terminal, versioned JSON, and standalone HTML reports with coverage and direct primary-source citations.
-- Produces GitHub workflow annotations and SARIF 2.1.0 for CI integrations.
+- Produces injection-safe GitHub workflow annotations, bounded job summaries, and no-null
+  SARIF 2.1.0 with stable fingerprints for CI integrations.
+- Ships a reusable composite GitHub Action that uploads SARIF before returning the
+  scanner's preserved threshold exit code.
 - Supports report baselines, changed-since scans, rule selection/ignores, and severity overrides.
 - Redacts recognized secrets and narrow PII forms before output or optional judgment payloads.
 - Records approvals/rejections in a report-bound manifest.
@@ -57,7 +60,7 @@ and any optional hosted credentials remain operator-only submission fields.
 Version 1.0 analyzes Python, not TypeScript. It has no source-changing auto-fix, PR comment
 bot, package publication, or public hosted service. The local MCP has ten tools; hosted mode
 is a smaller bearer-authenticated submitted-content surface with a default 30-request/minute
-per-key process-local limit. A reusable composite GitHub Action is planned for Phase 3 and
-is not part of the current RC.
+per-key process-local limit. The composite Action supports source installation for the
+private competition repository; semantic-version PyPI installation remains post-event.
 
 This file is submission copy only. It does not authorize creating a Devpost entry, repository, upload, video, deployment, or package release.
