@@ -2,8 +2,8 @@
 
 ## Current gate
 
-Completion Plan v2 Phase 5 — hosted judge access deployed and validating for
-`v1.0.0-rc6`. Push, tag, and credential distribution remain operator-controlled.
+Completion Plan v2 Phase 6 — `v1.0.0-rc6` is published and fully verified; the
+submission tag and remaining submission actions stay operator-controlled.
 
 ## Status
 
@@ -132,9 +132,18 @@ Completion Plan v2 Phase 5 — hosted judge access deployed and validating for
 - [x] Exact commit `ab06ff1` passed the complete Phase 5 clean-clone gate on Windows and
   Ubuntu/WSL: 186 tests, acceptance, compliance, Ruff, strict mypy, 88% branch coverage,
   clean site installs, lint/type/build, five site tests, offline demo, and clean trees.
-- [ ] Operator checkpoint: approve pushing the six Phase 5 commits and creating/pushing
-  annotated tag `v1.0.0-rc6` at the final validation commit. Judge-key distribution remains
-  a separate operator-only action.
+- [x] The six Phase 5 commits and annotated `v1.0.0-rc6` tag were pushed after explicit
+  operator approval; the tag resolves to `f578f24`.
+- [x] Exact rc6 commit `f578f24` passed the complete Phase 6 clean-clone gate on Windows
+  and Ubuntu/WSL: 186 tests, acceptance, compliance, Ruff, strict mypy, 88% branch
+  coverage, clean site installs, lint/type/build, five site tests, offline demo, and clean
+  trees.
+- [x] Exact rc6 branch CI `29717585938`, tag CI `29717587213`, and release-artifact run
+  `29717587195` passed after the personal Actions billing owner was corrected. Earlier
+  attempts were rejected before runner allocation and did not execute repository code.
+- [ ] Operator checkpoint: approve pushing annotated tag `v1.0.0-submission`, sharing the
+  private repository with both judging accounts, distributing the judge key in private
+  submission notes, uploading the public demo, and submitting the Devpost entry.
 
 ## Notes
 

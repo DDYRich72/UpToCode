@@ -102,7 +102,7 @@ permissions:
 
 steps:
   - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-  - uses: DDYRich72/UpToCode@v1.0.0-rc5
+  - uses: DDYRich72/UpToCode@v1.0.0-rc6
     with:
       path: .
       fail-on: critical

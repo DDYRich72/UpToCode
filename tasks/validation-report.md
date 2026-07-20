@@ -10,8 +10,8 @@ verification. The complete `rc6` clean-clone exit gate is recorded below after d
 
 | Gate | Status | Evidence |
 |---|---|---|
-| Python suite | PASS | Exact `ab06ff1` fresh Windows and Ubuntu/WSL clones: `python -m pytest -q` → 186 passed; latest published rc5 nine-cell CI remains 175 passed in every cell |
-| Offline product acceptance | PASS | Exact `ab06ff1` clean clones: 186 tests, real installed-process stdio MCP, malformed-call recovery, CLI/report/review/plan/non-mutation, clean/bad fixtures |
+| Python suite | PASS | Exact rc6 commit `f578f24` fresh Windows and Ubuntu/WSL clones: `python -m pytest -q` → 186 passed; exact rc6 nine-cell tag CI `29717587213` also passed |
+| Offline product acceptance | PASS | Exact rc6 commit `f578f24` clean clones and all nine tag-CI cells: 186 tests, real installed-process stdio MCP, malformed-call recovery, CLI/report/review/plan/non-mutation, clean/bad fixtures |
 | Production dogfood | PASS | Fresh clones on both platforms: zero production findings, zero suppressions, zero analysis warnings; `.archagent-audit/architecture-compliance.json` |
 | Ruff | PASS | Fresh clones on both platforms: all checks passed |
 | Strict typing | PASS | All nine GitHub cells: no issues in 30 source files |
@@ -27,7 +27,7 @@ verification. The complete `rc6` clean-clone exit gate is recorded below after d
 | Packaging/release | PASS (artifact level) | non-root Dockerfile, Cloud Run limits/secrets/probes, protected release environment, retained wheel/distributions/SBOMs/compliance evidence, public-repository provenance workflow, operations/rollback runbook; private-repository attestation is deferred to Phase 7 |
 | Functional site | PASS | Fresh Windows and Ubuntu/WSL clones build `/` and `/connect`; five rendered/contract tests pass. Real Worker delivery was browser-verified at desktop and 375px mobile widths with CSS/JS assets returning 200, no console errors or overflow, and working keyboard tabs. |
 | Site dependency audit | PASS WITH DATED ACCEPTED RISK | Direct patched dependencies remove all high/critical records. `npm audit --omit=dev --audit-level=high` exits 0 with the two Next/nested-PostCSS records for GHSA-qx2v-qp2m-jg93; exposure, rationale, and 2026-08-02 review date are in `SECURITY.md`. |
-| Container lifecycle | PASS | Exact rc5 tag CI `29710992278`: build, health 200, unauthenticated MCP 401, and bounded graceful shutdown all passed |
+| Container lifecycle | PASS | Exact rc6 tag CI `29717587213`: build, health 200, unauthenticated MCP 401, and bounded graceful shutdown all passed |
 
 ## Safety and external actions
 
@@ -207,8 +207,8 @@ publication, and MCP registry submission are post-event Phase 7 work.
 - Exported Cloud Run logs passed the verifier: safe eight-character key attribution was
   present while the raw credential, full digest, and submitted sentinel were absent.
 - The raw judge key remains outside the repository and has not been printed, committed,
-  pushed, or distributed. Push, `v1.0.0-rc6`, and credential distribution still require
-  separate operator approval.
+  pushed, or distributed. The operator approved and pushed `v1.0.0-rc6`; credential
+  distribution remains a separate operator-only submission action.
 
 ## Phase 5 submission-ready exit gate
 
@@ -227,3 +227,19 @@ publication, and MCP registry submission are post-event Phase 7 work.
 - Both post-gate Git trees were clean. Claims match the live eight-tool hosted surface and
   the exact remote. No push, tag, credential distribution, video upload, submission, package
   publication, repository-access change, or paid model call occurred during the exit gate.
+
+## Phase 6 submission preparation
+
+- Published rc6 tag `v1.0.0-rc6` resolves to exact commit `f578f24`. That candidate was
+  cloned independently on Windows and Ubuntu/WSL and repeated the complete submission gate:
+  186 tests, acceptance, compliance, Ruff, strict mypy over 30 source files, 88% branch
+  coverage, clean site install/lint/type/build/five tests, offline demo, and clean trees.
+- Exact rc6 branch CI `29717585938` and tag CI `29717587213` passed every nine-cell
+  Python/OS job plus package/site, isolated wheel audit, and container lifecycle checks.
+  Release-artifact run `29717587195` passed the same release gates and retained the wheel,
+  distributions, SBOMs, compliance evidence, and private-repository attestation deferral.
+- The initial workflow attempts were rejected before runner allocation by an account billing
+  hold. Attempt 6 passed after the operator corrected the personal Actions billing owner;
+  this was external account state, not a repository defect.
+- The submission tag, private-repository sharing, judge-key distribution, public video
+  upload, Devpost submission, and submitted URL/timestamp remain operator-only actions.

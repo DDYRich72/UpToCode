@@ -1,6 +1,6 @@
 # Current State
 
-ArchAgent 1.0.0 is a Python-first architecture-quality scanner with 184 offline
+ArchAgent 1.0.0 is a Python-first architecture-quality scanner with 186 offline
 tests, deterministic terminal/JSON/HTML/GitHub/SARIF reports, optional GPT-5.6
 Structured Outputs judgment, approval-bound FIXPLAN generation, and ten local
 stdio MCP tools.
@@ -41,9 +41,11 @@ submitted-content tools, and passed live readiness, unauthorized-access, AA001,
 judgment-gate, rate-limit, and payload-free-log checks. Hosted judgment remains off, no
 OpenAI key is attached, and the live test made zero paid model calls. The raw judge key is
 kept outside the repository for private submission notes; it has not been distributed.
-Exact commit `ab06ff1` passes the complete Windows and Ubuntu/WSL submission gate: 186
-tests, acceptance, compliance, Ruff, strict mypy, 88% branch coverage, clean site
-install/lint/type/build/tests, offline demo, and clean trees.
+Phase 5 is preserved remotely as `v1.0.0-rc6` at `f578f24`. That exact commit passes the
+complete Windows and Ubuntu/WSL submission gate: 186 tests, acceptance, compliance, Ruff,
+strict mypy, 88% branch coverage, clean site install/lint/type/build/tests, offline demo,
+and clean trees. Branch CI `29717585938`, tag CI `29717587213`, and release-artifact run
+`29717587195` also pass on the exact rc6 commit.
 
 Deliberate bad fixtures and synthetic secret sentinels are test evidence, not
 production exceptions. The production compliance scan has zero findings,

@@ -57,7 +57,7 @@ Action's upload-before-fail sequence, baselines, changed-since scanning, and rul
 from prepared outputs or help text. Run `python scripts/compliance.py`; show the zero-finding
 production self-scan and the offline acceptance PASS evidence. Say, “ArchAgent audits
 itself: zero production findings, suppressions, or unexplained warnings.” Show the selected
-rc5 verification run `29710992278`—do not imply that the composite Action
+rc6 verification run `29717587213`—do not imply that the composite Action
 itself publishes a package or deploys a service.
 
 ## Codex/GPT-5.6 development beat and close — 2:28–2:55
