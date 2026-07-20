@@ -251,6 +251,7 @@ any live paid call requires separate operator approval.
 - [Architecture compliance matrix](docs/architecture-compliance.md)
 - [Reference production specification](specs/002-reference-production.md)
 - [Hosted operations and rollback](docs/operations.md)
+- [Hosted judge access](docs/hosted-judge-access.md)
 - [Under-three-minute demo script](docs/demo-script.md)
 - [Event rules and evidence checklist](docs/event-rules.md)
 - [Submission evidence index](docs/submission-evidence/README.md)
