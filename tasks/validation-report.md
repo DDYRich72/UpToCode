@@ -3,8 +3,9 @@
 Phase 5 is deployed to the approved Cloud Run project and region. Corrective commit
 `44e9d46` passed targeted hosted tests, Ruff, and strict mypy before Cloud Build produced
 immutable image digest `sha256:298fadd434cafc4a28182a4f263ca1a2b23c2aea0d02627ac9aebe3046bd778d`.
-Revision `uptocode-mcp-00002-xgh` passed the no-paid-call live smoke and payload-free-log
-verification. The complete `rc6` clean-clone exit gate is recorded below after deployment.
+The pre-rename Cloud Run revision passed the no-paid-call live smoke and payload-free-log
+verification. The complete `rc6` clean-clone exit gate is recorded below after deployment;
+the UpToCode production migration remains a separate Phase 7 checkpoint.
 
 ## Reference production gates
 
@@ -286,6 +287,19 @@ publication, and MCP registry submission are post-event Phase 7 work.
 - Local Docker and Google Cloud CLI are unavailable in the current shell. No local
   container, Cloud Run deployment, package publication, repository visibility change,
   registry submission, credential distribution, or paid model call occurred.
+- The operator-approved production-branch push placed `codex/uptocode-production` at
+  `6918b49`. GitHub CI run `29725081460` completed successfully against that exact commit:
+  all nine Python 3.11-3.13/Linux-macOS-Windows cells, package/SBOM/SARIF/site, isolated
+  wheel audit, and container health/auth/shutdown jobs passed. This closes the local-Docker
+  coverage gap without a rerun.
+- A read-only Phase 7 infrastructure audit found the healthy Phase 5 Cloud Run service,
+  image repository, runtime identity, and key-hash secret still under their pre-rename
+  resource set. None of the corresponding `uptocode`/`uptocode-mcp` production resources
+  exists yet, so no endpoint is advertised as migrated. No Cloud resource was changed.
+- GitHub remains private with the frozen submission branch as default. The production
+  branch is available remotely, but the protected `pypi` environment and trusted-publisher
+  relationship have not been created. Official PyPI JSON lookups for `uptocode` and
+  `uptocode-audit` still returned 404 during this checkpoint.
 - The external credential files were renamed in place to
   `C:\Users\nokes\.uptocode-secrets\uptocode-production-key.{txt,sha256}` without reading,
   printing, replacing, or distributing the credential.

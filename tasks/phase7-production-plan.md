@@ -2,6 +2,23 @@
 
 Authority: `tasks/completion-plan-v2.md` Phase 7 and DECISIONS D005–D008.
 
+## Current checkpoint
+
+- Stages 1 and 2 preparation are complete on `codex/uptocode-production` at `6918b49`;
+  the first pushed production CI run is fully green.
+- A read-only infrastructure audit confirms the healthy Phase 5 service still uses the
+  pre-rename resource set. The `uptocode` Artifact Registry repository,
+  `uptocode-mcp-runtime` service account, `uptocode-api-key-hashes` secret, and
+  `uptocode-mcp` Cloud Run service do not yet exist.
+- Stage 3 is the next mutation checkpoint. Deployment approval must cover creation of those
+  UpToCode resources, a new immutable image build, reuse of the existing external key
+  digest without exposing it, and the no-paid-call hosted verification.
+- The GitHub repository remains private, its default branch remains the frozen submission
+  branch, and only `release-approval` exists as a GitHub environment. Public visibility,
+  default-branch change, creation of the protected `pypi` environment, trusted-publisher
+  configuration, `v1.0.0` publication, and MCP Registry submission remain later explicit
+  checkpoints.
+
 ## Stage 1 — Canonical identity
 
 - Rename the package/import/CLI and every current product surface to UpToCode.

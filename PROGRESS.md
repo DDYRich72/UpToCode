@@ -33,11 +33,13 @@ remain operator-controlled.
   Windows and WSL clones; both post-gate trees were clean.
 - [x] Separate unimplemented 1.1 specifications added for Firestore beta access control
   and TypeScript analysis.
-- [ ] Docker is unavailable locally; the renamed container lifecycle must pass the first
-  approved GitHub CI run before deployment.
-- [ ] Operator checkpoints: push the production branch, approve Cloud Run migration,
-  make the repository public, configure the PyPI trusted publisher/environment, publish
-  `v1.0.0`, submit the MCP Registry record, and separately approve any paid smoke call.
+- [x] The production branch is pushed at `6918b49`; GitHub CI run `29725081460` passed the
+  complete nine-cell Python matrix, package/site/wheel jobs, and renamed container health,
+  unauthorized-MCP, and graceful-shutdown lifecycle on 2026-07-20.
+- [ ] Operator checkpoints: approve Cloud Run migration; make the repository public and
+  select the UpToCode production default branch; configure the protected `pypi`
+  environment and trusted publisher; publish `v1.0.0`; submit the MCP Registry record;
+  and separately approve any additional paid smoke call.
 - [x] Approved `SPEC.md` and `GOAL.md` copied into the repository.
 - [x] Durable project documents drafted.
 - [x] Package/import smoke test (`python -m pytest -q tests/test_bootstrap.py`: 1 passed).
