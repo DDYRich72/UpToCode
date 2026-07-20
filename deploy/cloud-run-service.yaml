@@ -31,6 +31,8 @@ spec:
               value: "30"
             - name: ARCHAGENT_HOSTED_JUDGMENT
               value: "false"
+            - name: ARCHAGENT_HOSTED_ALLOWED_HOSTS
+              value: "PUBLIC_DNS_VALUE"
             - name: ARCHAGENT_API_KEY_HASHES
               valueFrom:
                 secretKeyRef:

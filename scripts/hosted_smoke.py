@@ -38,7 +38,10 @@ async def verify_hosted(
     base_url = endpoint.removesuffix("/mcp").rstrip("/")
     headers = {"Authorization": f"Bearer {credential}"}
     async with httpx.AsyncClient(timeout=30, follow_redirects=False) as client:
-        health = await client.get(f"{base_url}/healthz")
+        # Cloud Run reserves /healthz at its public edge even though the same
+        # route remains valid for the container liveness probe. Use the public
+        # readiness route for the end-to-end hosted check.
+        health = await client.get(f"{base_url}/readyz")
         health.raise_for_status()
         health_payload = health.json()
         if health_payload.get("status") != "ok":

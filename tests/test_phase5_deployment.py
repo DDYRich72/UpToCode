@@ -30,6 +30,7 @@ def test_cloud_run_template_is_safe_for_application_bearer_auth() -> None:
     assert annotations["run.googleapis.com/ingress"] == "all"
     assert container["image"].endswith("@IMAGE_DIGEST")
     assert environment["ARCHAGENT_HOSTED_JUDGMENT"]["value"] == "false"
+    assert environment["ARCHAGENT_HOSTED_ALLOWED_HOSTS"]["value"] == "PUBLIC_DNS_VALUE"
     assert "OPENAI_API_KEY" not in environment
     assert environment["ARCHAGENT_API_KEY_HASHES"]["valueFrom"]["secretKeyRef"]
 
@@ -40,12 +41,16 @@ def test_cloud_run_renderer_pins_the_exact_image_and_resolves_placeholders() -> 
         project="archagent-demo1",
         region="us-central1",
         image_digest=digest,
+        host="archagent-mcp.example.run.app",
     )
     manifest = yaml.safe_load(rendered)
     image = manifest["spec"]["template"]["spec"]["containers"][0]["image"]
 
     assert image == f"us-central1-docker.pkg.dev/archagent-demo1/archagent/mcp@{digest}"
-    assert not any(token in rendered for token in ("REGION", "PROJECT", "IMAGE_DIGEST"))
+    assert not any(
+        token in rendered
+        for token in ("REGION", "PROJECT", "IMAGE_DIGEST", "PUBLIC_DNS_VALUE")
+    )
 
 
 @pytest.mark.parametrize(
@@ -62,7 +67,22 @@ def test_cloud_run_renderer_rejects_mutable_or_malformed_coordinates(
     digest: str,
 ) -> None:
     with pytest.raises(ValueError):
-        render_template(project=project, region=region, image_digest=digest)
+        render_template(
+            project=project,
+            region=region,
+            image_digest=digest,
+            host="archagent-mcp.example.run.app",
+        )
+
+
+def test_cloud_run_renderer_rejects_a_host_url_instead_of_a_bare_host() -> None:
+    with pytest.raises(ValueError, match="bare lowercase DNS host"):
+        render_template(
+            project="archagent-demo1",
+            region="us-central1",
+            image_digest="sha256:" + "a" * 64,
+            host="https://archagent-mcp.example.run.app/mcp",
+        )
 
 
 def test_credential_destination_must_be_outside_repository(tmp_path: Path) -> None:

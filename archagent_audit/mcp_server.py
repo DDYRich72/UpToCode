@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Annotated, Any, Protocol, cast
 
 from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import ToolAnnotations
 from pydantic import Field
 
@@ -464,6 +465,7 @@ def create_server(
     mode: str = "local",
     workspace_root: Path | None = None,
     hosted_judgment_enabled: bool = False,
+    transport_security: TransportSecuritySettings | None = None,
 ) -> FastMCP:
     if mode not in {"local", "hosted"}:
         raise ValueError("MCP mode must be local or hosted")
@@ -480,6 +482,7 @@ def create_server(
         ),
         json_response=True,
         stateless_http=mode == "hosted",
+        transport_security=transport_security,
     )
     if mode == "hosted":
         def audit_source_hosted(
@@ -836,9 +839,28 @@ def hosted_app() -> ASGIApplication:
     judgment_raw = os.getenv("ARCHAGENT_HOSTED_JUDGMENT", "false").strip().lower()
     if judgment_raw not in {"true", "false"}:
         raise ValueError("ARCHAGENT_HOSTED_JUDGMENT must be true or false")
+    allowed_hosts = [
+        item.strip().lower()
+        for item in os.getenv("ARCHAGENT_HOSTED_ALLOWED_HOSTS", "").split(",")
+        if item.strip()
+    ]
+    invalid_host = any(
+        "://" in item or "/" in item or any(character.isspace() for character in item)
+        for item in allowed_hosts
+    )
+    if invalid_host:
+        raise ValueError("ARCHAGENT_HOSTED_ALLOWED_HOSTS must contain bare host names")
+    transport_security = None
+    if allowed_hosts:
+        transport_security = TransportSecuritySettings(
+            enable_dns_rebinding_protection=True,
+            allowed_hosts=allowed_hosts,
+            allowed_origins=[f"https://{host}" for host in allowed_hosts],
+        )
     hosted = create_server(
         mode="hosted",
         hosted_judgment_enabled=judgment_raw == "true",
+        transport_security=transport_security,
     )
 
     async def health(_: object) -> JSONResponse:

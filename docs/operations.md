@@ -43,7 +43,7 @@ Build once, then deploy the immutable digest rather than a mutable tag:
 $ArchImageTag = "$ArchRegion-docker.pkg.dev/$ArchProject/archagent/mcp:v1.0.0-rc6"
 gcloud builds submit --tag $ArchImageTag .
 $ArchDigest = gcloud artifacts docker images describe $ArchImageTag --format="value(image_summary.digest)"
-python scripts/render_cloud_run.py --project $ArchProject --region $ArchRegion --image-digest $ArchDigest
+python scripts/render_cloud_run.py --project $ArchProject --region $ArchRegion --image-digest $ArchDigest --host $ArchHostedHost
 ```
 
 Generate the credential only after explicit key-generation approval. The helper refuses to
@@ -82,7 +82,7 @@ Configure budget alerts for Cloud Run, Artifact Registry, Secret Manager, and au
 
 ## Synthetic health check
 
-- `GET /healthz` and `GET /readyz` must return status and version without authentication or payload data.
+- `GET /readyz` must return status and version without authentication or payload data at the public Cloud Run edge. `/healthz` remains the container liveness-probe route; Cloud Run reserves that path on its public edge.
 - An authenticated `check_loop` call using only synthetic `while True` code must return AA001.
 - A request without a bearer token must return 401.
 - A credential exceeding its in-memory token bucket must return 429 with `Retry-After`;
