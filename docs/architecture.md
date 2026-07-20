@@ -12,8 +12,12 @@ discover → parse → normalize evidence → static rules → optional judgment
 - `uptocode.rules` evaluates normalized evidence; unsupported constructs become warnings.
 - `uptocode.redaction` is the mandatory boundary before output or judgment payload creation.
 - `uptocode.models` owns versioned public contracts.
+- `uptocode.rules.core.yml` owns severity, tier, maturity, and structured citations;
+  evaluators never invent citation metadata.
 - Reporters share the same report envelope.
 - Review and planning consume existing reports and never rescan or modify source.
+- Suppressions are parsed once per file, baselines classify debt before muting known
+  findings, and share-safe rendering sanitizes a copied Report 2.1 envelope.
 - MCP wraps the same engine; static-only is its default.
 
 ```text

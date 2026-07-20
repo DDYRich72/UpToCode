@@ -113,7 +113,7 @@ def test_report_contract_and_deterministic_content(tmp_path: Path) -> None:
     second = scan_path(tmp_path)
     parsed = Report.model_validate_json(first.model_dump_json())
 
-    assert parsed.schema_version == "2.0"
+    assert parsed.schema_version == "2.1"
     assert [finding.file for finding in first.findings] == ["a.py", "z.py"]
     left = first.model_dump(exclude={"generated_at", "metadata"})
     right = second.model_dump(exclude={"generated_at", "metadata"})

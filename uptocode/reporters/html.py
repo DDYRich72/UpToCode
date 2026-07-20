@@ -25,9 +25,14 @@ def render_html(report: Report) -> str:
     )
     finding_cards = []
     for finding in report.findings:
+        maturity_badge = (
+            '<span class="badge">experimental</span> '
+            if finding.maturity == "experimental"
+            else ""
+        )
         citations = "".join(
             f'<li><a href="{_text(citation.url)}">{_text(citation.title)}</a> '
-            f'<span class="muted">({_text(citation.vendor)})</span></li>'
+            f'<span class="muted">({_text(citation.publisher)} · {_text(citation.status)})</span></li>'
             for citation in finding.citations
         )
         evidence = "".join(
@@ -37,6 +42,7 @@ def render_html(report: Report) -> str:
         finding_cards.append(
             f'<article class="finding {finding.severity.value}">'
             f'<header><span class="badge">{_text(finding.severity.value)}</span> '
+            f'{maturity_badge}'
             f'<strong>{_text(finding.rule_id)} · {_text(finding.title)}</strong></header>'
             f'<p class="location">{_text(finding.file)}:{finding.line}</p>'
             f'<pre>{_text(finding.excerpt)}</pre>'
@@ -81,6 +87,8 @@ main{{max-width:980px;margin:auto;padding:40px 22px 80px}} h1{{font-size:2rem;ma
 <section class="panel"><h2>Findings by category</h2>{bars}</section>
 <section class="panel"><h2>Coverage</h2><p>Frameworks: {_text(frameworks)}</p>
 <p>Rules evaluated: {_text(', '.join(report.coverage.rules_evaluated) or 'None')}</p>
+<p>Experimental rules evaluated: {_text(', '.join(report.coverage.experimental_rules_evaluated) or 'None')}</p>
+<p>Baseline debt: {len(report.baseline_debt.new)} new · {len(report.baseline_debt.aging)} aging · {len(report.baseline_debt.resolved)} resolved</p>
 <h3>Analysis warnings</h3><ul>{warnings}</ul></section>
 <section><h2>Findings</h2>{''.join(finding_cards) or '<p>No findings at the configured threshold.</p>'}</section>
 </main></body></html>"""

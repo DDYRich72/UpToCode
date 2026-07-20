@@ -14,6 +14,7 @@
 | AA010 | Model output is domain-validated and cannot control rule metadata or side effects. | `JudgmentBatch`, trusted registry merge, non-mutating review/plan | `test_judgment.py`, `test_review_plan.py` |
 | AA011 | Every rule and public transport has positive, clean, adversarial, unsupported, and regression coverage. | rule matrix, official-client stdio/HTTP acceptance, nine-cell cross-platform CI, isolated wheel audit, site and container smokes | `test_rule_contract_matrix.py`, `test_hosted_lifecycle.py`, `test_github_ci_surface.py`, `scripts/acceptance.py` |
 | AA012 | Payload-free timing, counts, safe key attribution, error classes, model usage, synchronized versions, and correlation-capable MCP requests exist at boundaries. | Report metadata/usage, MCP lifecycle logs, version contract, operations policy | `test_gate1.py`, `test_judgment.py`, `test_mcp_hardening.py`, `test_hosted_lifecycle.py` |
+| AA013 | Scanner context and report collections are bounded by source, request, and output budgets; no production loop reuses an ever-growing model context list. | `analysis.py`, scan budgets, bounded judgment candidate payloads | `test_batch1_quick_wins.py`, production dogfood scan |
 
 `scripts/compliance.py` scans only production Python source and emits
 `.uptocode/architecture-compliance.json`. It fails on any production

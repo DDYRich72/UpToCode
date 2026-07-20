@@ -30,6 +30,7 @@ from uptocode.diffing import reconstruct_unified_diff
 from uptocode.engine import AuditService
 from uptocode.models import (
     AnalysisWarning,
+    Citation,
     Finding,
     RedactionCounts,
     Report,
@@ -130,7 +131,11 @@ RuleIdInput = Annotated[
     str,
     Field(
         pattern=r"^AA\d{3}$",
-        description="UpToCode rule identifier in AA001 through AA012 form.",
+        description=(
+            "UpToCode rule identifier; registered values are "
+            + ", ".join(item.id for item in load_core_rules())
+            + "."
+        ),
         examples=["AA001"],
     ),
 ]
@@ -162,7 +167,7 @@ DecisionList = Annotated[
 ]
 ApprovalFlag = Annotated[
     bool,
-    Field(description="Approve every finding in the exact supplied Report 2.0 document."),
+    Field(description="Approve every finding in the exact supplied Report 2.x document."),
 ]
 
 
@@ -177,7 +182,8 @@ class RuleInfo(StrictModel):
     name: str
     tier: str
     severity: str
-    citations: list[str]
+    maturity: str
+    citations: list[Citation]
 
 
 class RuleCatalog(StrictModel):
@@ -411,7 +417,8 @@ def list_rules() -> RuleCatalog:
                 name=item.name,
                 tier=item.tier,
                 severity=item.severity.value,
-                citations=[str(url).rstrip("/") for url in item.citations],
+                maturity=item.maturity,
+                citations=[citation.to_public() for citation in item.citations],
             )
             for item in load_core_rules()
         ]

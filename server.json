@@ -9,12 +9,12 @@
     "id": "1305781548"
   },
   "websiteUrl": "https://github.com/DDYRich72/UpToCode#readme",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "uptocode",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "runtimeHint": "uvx",
       "packageArguments": [
         {

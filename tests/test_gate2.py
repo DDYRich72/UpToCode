@@ -18,7 +18,7 @@ def test_bad_fixture_exercises_static_rulepack_without_leaking_secret() -> None:
     report = scan_path(ROOT / "fixtures" / "bad_python")
     ids = {finding.rule_id for finding in report.findings}
 
-    assert ids == {"AA001", "AA002", "AA003", "AA004", "AA006", "AA007", "AA010", "AA011", "AA012"}
+    assert ids == {"AA001", "AA002", "AA003", "AA004", "AA006", "AA007", "AA010", "AA011", "AA012", "AA013"}
     serialized = report.model_dump_json()
     assert "sk-proj-abcdefghijklmnopqrstuvwxyz123456" not in serialized
     assert "[REDACTED:openai-api-key]" in serialized

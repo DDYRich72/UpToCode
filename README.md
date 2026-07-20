@@ -2,12 +2,15 @@
 
 <!-- mcp-name: io.github.DDYRich72/uptocode -->
 
+[![PyPI version](https://img.shields.io/pypi/v/uptocode.svg)](https://pypi.org/project/uptocode/)
+[![Scanned with UpToCode](https://img.shields.io/badge/scanned%20with-UpToCode-175cd3)](https://github.com/DDYRich72/UpToCode)
+
 UpToCode is a design-time architecture-quality scanner for Python agent applications. It finds missing execution bounds, run budgets, approvals, validation, resilience controls, evals, and observability; explains the evidence; and produces an approval-driven plan for Codex without rewriting source code.
 
-The product is deliberately narrower than a general agent-security scanner. Version 1.0 recognizes OpenAI Agents SDK patterns, LangGraph limits, and conservative custom Python agent loops. Static scans are local and offline. Optional GPT‑5.6 judgment is explicit, bounded, redacted, and code-sharing gated.
+The product is deliberately narrower than a general agent-security scanner. Version 1.1 recognizes OpenAI Agents SDK patterns, LangGraph limits, conservative custom Python agent loops, and positive evidence of unbounded context growth. Static scans are local and offline. Optional GPT‑5.6 judgment is explicit, bounded, redacted, and code-sharing gated.
 
 > The Python distribution, import package, and command are all `uptocode`. Version 1.0.0
-> is published on PyPI through GitHub OIDC with public build-provenance attestations.
+> is the published PyPI release; this source tree is prepared as 1.1.0 for the operator-gated release.
 
 ## Install locally
 
@@ -76,6 +79,7 @@ off, no OpenAI key is attached, and verification made zero paid model calls.
 uptocode scan PATH [--format terminal|json|html|github|sarif] [--output FILE]
                          [--judgment --send-code]
                          [--fail-on critical|warning|info]
+                         [--include-experimental] [--share-safe]
                          [--baseline FILE|--update-baseline FILE]
                          [--changed-since REF] [--select RULES] [--ignore RULES]
                          [--exclude GLOB] [--severity RULE=LEVEL]
@@ -98,7 +102,24 @@ uptocode plan report.json --manifest .uptocode/manifest.json --output FIXPLAN.md
 
 `review` binds decisions to the exact report fingerprint. `plan` refuses a mismatched manifest and includes only approved findings. Neither command edits the scanned repository.
 
-Exit codes are `0` for no configured threshold breach, `1` for a finding at or above `--fail-on` (or a requested analysis-warning gate), and `2` for invalid configuration or an unrecoverable scan error. HTML requires `--output`. GitHub workflow commands escape untrusted command data and properties. SARIF 2.1.0 omits absent fields, declares default rule levels, and carries stable partial fingerprints. `--github-summary PATH` appends a bounded Markdown summary; when `GITHUB_STEP_SUMMARY` is set, the summary is appended there automatically.
+Exit codes are `0` for no configured threshold breach, `1` for a finding at or above `--fail-on` (or a requested analysis-warning gate), and `2` for invalid configuration or an unrecoverable scan error. Experimental findings remain visible but require `--include-experimental` to affect `--fail-on`. `--share-safe` sanitizes JSON, HTML, or SARIF for distribution while retaining the repository revision. Baseline 2.1 reports new, aging, and resolved debt and preserves `first_seen` when updated. Suppressions may include `owner`, quoted `reason`, and an inclusive `expires` date. HTML requires `--output`. GitHub workflow commands escape untrusted command data and properties. SARIF 2.1.0 omits absent fields, declares default rule levels, and carries stable partial fingerprints. `--github-summary PATH` appends a bounded Markdown summary; when `GITHUB_STEP_SUMMARY` is set, the summary is appended there automatically.
+
+## Pre-commit
+
+```yaml
+repos:
+  - repo: https://github.com/DDYRich72/UpToCode
+    rev: v1.1.0
+    hooks:
+      - id: uptocode
+```
+
+Run `pre-commit install`, then use `pre-commit run uptocode --all-files`. To copy the
+project badge into your own README:
+
+```markdown
+[![Scanned with UpToCode](https://img.shields.io/badge/scanned%20with-UpToCode-175cd3)](https://github.com/DDYRich72/UpToCode)
+```
 
 ## GitHub Action
 
@@ -131,7 +152,7 @@ Example terminal output:
 ```text
 UpToCode scan
 Coverage: 1/1 files analyzed
-Findings: 10 | Warnings: 0 | Redactions: 3
+Findings: 11 | Warnings: 0 | Redactions: 3
 [CRITICAL] AA001 agent.py:21 - Unbounded agent loop
 [CRITICAL] AA003 agent.py:11 - Ungated destructive action
 ```
@@ -157,12 +178,13 @@ No live API call is part of the offline test or acceptance suite. The submission
 | AA004 | Unvalidated tool arguments | Static | critical | [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling), [Anthropic tool definitions](https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools) |
 | AA005 | Raw untrusted content in prompts | Judgment | critical | [OpenAI safety](https://developers.openai.com/api/docs/guides/agent-builder-safety), [Anthropic guardrails](https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/mitigate-jailbreaks) |
 | AA006 | Secret or narrow PII exposure | Static | critical | [OpenAI safety](https://developers.openai.com/api/docs/guides/agent-builder-safety) |
-| AA007 | Missing timeout or safe retry control | Static | warning | [OpenAI practical guide](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf) |
+| AA007 | Missing timeout, retry, or retry backoff | Static | warning | [OpenAI practical guide](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf) |
 | AA008 | Unjustified orchestration complexity | Judgment | warning | [Anthropic effective agents](https://www.anthropic.com/engineering/building-effective-agents), [OpenAI practical guide](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf) |
 | AA009 | Poor tool schema | Judgment | warning | [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling), [Anthropic tool definitions](https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools) |
 | AA010 | Unvalidated model output before side effect | Static + judgment | warning | [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling), [OpenAI safety](https://developers.openai.com/api/docs/guides/agent-builder-safety) |
 | AA011 | No agent eval coverage | Static + judgment | warning | [OpenAI evals](https://developers.openai.com/api/docs/guides/evals), [Google ADK evaluation](https://adk.dev/evaluate/) |
 | AA012 | No agent observability | Static | info | [Agents SDK tracing](https://openai.github.io/openai-agents-python/tracing/) |
+| AA013 | Unbounded context growth | Static | warning | [Anthropic effective agents](https://www.anthropic.com/engineering/building-effective-agents), [OpenAI practical guide](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf) |
 
 Each static verdict requires recognized syntax and source-backed evidence. Unsupported or dynamic constructs produce coverage gaps or analysis warnings; they are never silently declared clean.
 

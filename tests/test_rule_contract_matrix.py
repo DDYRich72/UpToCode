@@ -44,6 +44,7 @@ STATIC_SUPPRESSIONS = [
     ("AA010", "# uptocode: ignore AA010\nsave(response.output_text)\n"),
     ("AA011", '# uptocode: ignore AA011\nagent = Agent(name="x")\n'),
     ("AA012", '# uptocode: ignore AA012\nagent = Agent(name="x")\n'),
+    ("AA013", 'history = []\n# uptocode: ignore AA013\nfor item in items:\n    history.append(item)\n    client.responses.create(input=history)\n'),
 ]
 
 
@@ -71,6 +72,7 @@ CLEAN_REGRESSIONS = [
     ("AA010", 'save(SafeResult.model_validate({"text": response.output_text}))\n'),
     ("AA011", 'agent = Agent(name="x")\n# uptocode: eval agent\n'),
     ("AA012", 'logger.info("start")\nagent = Agent(name="x")\n'),
+    ("AA013", 'history = []\nfor item in items:\n    history.append(item)\n    history[:] = history[-10:]\n    client.responses.create(input=history)\n'),
 ]
 
 
@@ -87,7 +89,7 @@ def test_every_static_rule_has_a_false_positive_regression(
     assert rule_id not in {item.rule_id for item in report.findings}
 
 
-@pytest.mark.parametrize("rule_id", [f"AA{number:03d}" for number in range(1, 13)])
+@pytest.mark.parametrize("rule_id", [f"AA{number:03d}" for number in range(1, 14)])
 def test_dynamic_unsupported_agent_syntax_never_reports_silent_clean(
     tmp_path: Path,
     rule_id: str,

@@ -34,7 +34,7 @@ def render_github(report: Report) -> str:
         properties = (
             f"file={escape_command_property(finding.file)},"
             f"line={finding.line},"
-            f"title={escape_command_property(finding.rule_id)}"
+            f"title={escape_command_property(finding.rule_id + (' [experimental]' if finding.maturity == 'experimental' else ''))}"
         )
         lines.append(
             f"::{_COMMAND[finding.severity]} {properties}::"
@@ -59,6 +59,7 @@ def render_github_summary(report: Report) -> str:
         f"- Coverage: **{analyzed}/{discovered} files ({percentage}%)**",
         f"- Analysis warnings: **{len(report.analysis_warnings)}**",
         f"- Suppressions: **{report.suppressions}**",
+        f"- Experimental rules evaluated: **{len(report.coverage.experimental_rules_evaluated)}**",
         "",
         "| Severity | Findings |",
         "|---|---:|",
@@ -80,7 +81,7 @@ def render_github_summary(report: Report) -> str:
             location = f"{finding.file}:{finding.line}"
             lines.append(
                 f"| {_markdown_cell(finding.severity.value)} "
-                f"| {_markdown_cell(finding.rule_id)} "
+                f"| {_markdown_cell(finding.rule_id + (' [experimental]' if finding.maturity == 'experimental' else ''))} "
                 f"| {_markdown_cell(location)} "
                 f"| {_markdown_cell(finding.verdict.observed)} |"
             )

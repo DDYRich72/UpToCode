@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "uptocode"
-version = "1.0.0"
+version = "1.1.0"
 description = "Evidence-backed architecture-quality analysis for Python agent applications"
 readme = "README.md"
 requires-python = ">=3.11"

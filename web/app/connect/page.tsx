@@ -22,9 +22,9 @@ export default function ConnectPage() {
         </div>
         <ConnectGenerator />
         <div className="callout">
-          UpToCode publishes its verified hosted address,
+          UpToCode publishes its verified hosted address,{" "}
           <code>https://uptocode-mcp-1015314816960.us-central1.run.app/mcp</code>, but never
-          collects a credential. Codex reads the separately issued key from your local
+          collects a credential. Codex reads the separately issued key from your local{" "}
           <code>UPTOCODE_API_KEY</code> environment variable.
         </div>
         <section className="connectionChecks" aria-labelledby="verify-connection">

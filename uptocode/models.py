@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 from uptocode import __version__
 
@@ -43,9 +43,10 @@ class Verdict(StrictModel):
 
 
 class Citation(StrictModel):
-    vendor: str
+    publisher: str = Field(validation_alias=AliasChoices("publisher", "vendor"))
     title: str
     url: str
+    status: Literal["normative", "supporting"] = "normative"
 
 
 class Remediation(StrictModel):
@@ -63,6 +64,7 @@ class Finding(StrictModel):
     rule_id: str
     severity: Severity
     tier: Literal["static", "judgment"]
+    maturity: Literal["stable", "experimental"] = "stable"
     title: str
     file: str
     line: int = Field(ge=1)
@@ -112,9 +114,35 @@ class Coverage(StrictModel):
     files_skipped: int = 0
     frameworks_detected: list[str] = Field(default_factory=list)
     rules_evaluated: list[str] = Field(default_factory=list)
+    experimental_rules_evaluated: list[str] = Field(default_factory=list)
     rules_not_applicable: list[str] = Field(default_factory=list)
     skipped_files: list[SkippedFile] = Field(default_factory=list)
     baseline_findings: int = 0
+    baseline_new: int = 0
+    baseline_resolved: int = 0
+
+
+class SuppressionDetail(StrictModel):
+    file: str
+    line: int = Field(ge=1)
+    rule: str
+    owner: str | None = None
+    reason: str | None = None
+    expires: date | None = None
+
+
+class BaselineDebtItem(StrictModel):
+    fingerprint: str
+    rule_id: str
+    file: str
+    first_seen: datetime
+    age_days: int = Field(default=0, ge=0)
+
+
+class BaselineDebt(StrictModel):
+    new: list[BaselineDebtItem] = Field(default_factory=list)
+    aging: list[BaselineDebtItem] = Field(default_factory=list)
+    resolved: list[BaselineDebtItem] = Field(default_factory=list)
 
 
 class ScanMetadata(StrictModel):
@@ -141,7 +169,7 @@ class RedactionCounts(StrictModel):
 
 
 class Report(StrictModel):
-    schema_version: str = "2.0"
+    schema_version: str = "2.1"
     tool_version: str = __version__
     scan_root: str
     generated_at: datetime = Field(
@@ -155,6 +183,8 @@ class Report(StrictModel):
     ] = "not-requested"
     redactions: RedactionCounts = Field(default_factory=RedactionCounts)
     suppressions: int = 0
+    suppression_details: list[SuppressionDetail] = Field(default_factory=list)
+    baseline_debt: BaselineDebt = Field(default_factory=BaselineDebt)
     rule_results: list[RuleResult] = Field(default_factory=list)
     metadata: ScanMetadata | None = None
     judgment_usage: JudgmentUsage = Field(default_factory=JudgmentUsage)

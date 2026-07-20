@@ -19,7 +19,6 @@ from uptocode.judgment_candidates import JudgmentCandidate
 from uptocode.fingerprints import finding_fingerprint
 from uptocode.models import (
     AnalysisWarning,
-    Citation,
     Evidence,
     Finding,
     FindingContext,
@@ -31,7 +30,7 @@ from uptocode.models import (
     Verdict,
 )
 from uptocode.redaction import redact_text
-from uptocode.rules.registry import load_core_rules
+from uptocode.rules.registry import RegistryCitation, load_core_rules
 
 
 logger = logging.getLogger(__name__)
@@ -111,15 +110,18 @@ def _to_finding(
     item: JudgmentFinding,
     candidate: JudgmentCandidate,
     allowed_urls: list[str],
+    citations: list[RegistryCitation],
     *,
     trusted_severity: Severity,
     trusted_title: str,
+    maturity: Literal["stable", "experimental"],
 ) -> Finding:
-    citation_url = item.citation_url if item.citation_url in allowed_urls else allowed_urls[0]
+    _ = item.citation_url if item.citation_url in allowed_urls else allowed_urls[0]
     return Finding(
         rule_id=item.rule_id,
         severity=trusted_severity,
         tier="judgment",
+        maturity=maturity,
         title=trusted_title,
         file=item.file,
         line=item.line,
@@ -137,7 +139,7 @@ def _to_finding(
             recommended=item.recommended,
             tradeoff=item.tradeoff,
         ),
-        citations=[Citation(vendor="Primary guidance", title="Rule guidance", url=citation_url)],
+        citations=[citation.to_public() for citation in citations],
         excerpt=redact_text(candidate.excerpt)[0],
         context=FindingContext(candidate_rule=candidate.rule_id),
         remediation=Remediation(complexity="complex"),
@@ -230,7 +232,7 @@ def run_judgment(
         report.judgment_usage.output_tokens += int(
             getattr(usage, "output_tokens", 0) or 0
         )
-        allowed_urls = [str(url).rstrip("/") for url in definitions[rule_id].citations]
+        allowed_urls = [str(citation.url).rstrip("/") for citation in definitions[rule_id].citations]
         by_location = {(item.file, item.line): item for item in rule_candidates}
         for item in parsed.findings:
             matched_candidate = by_location.get((item.file, item.line))
@@ -249,8 +251,10 @@ def run_judgment(
                         item,
                         matched_candidate,
                         allowed_urls,
+                        definition.citations,
                         trusted_severity=definition.severity,
                         trusted_title=definition.name.replace("-", " ").title(),
+                        maturity=definition.maturity,
                     )
                 )
     report.judgment_status = (

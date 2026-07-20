@@ -1,4 +1,4 @@
-"""Emit executable AA001-AA012 dogfood evidence for production source."""
+"""Emit executable AA001-AA013 dogfood evidence for production source."""
 
 from __future__ import annotations
 
@@ -28,6 +28,7 @@ EVIDENCE = {
     "AA010": ("uptocode/judgment.py", "tests/test_judgment.py"),
     "AA011": ("uptocode/rules/core.yml", "tests/test_rule_contract_matrix.py"),
     "AA012": ("uptocode/models.py", "tests/test_hosted_lifecycle.py"),
+    "AA013": ("uptocode/analysis.py", "tests/test_batch1_quick_wins.py"),
 }
 
 

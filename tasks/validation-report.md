@@ -358,3 +358,42 @@ publication, and MCP registry submission are post-event Phase 7 work.
   latest `io.github.DDYRich72/uptocode` record at version `1.0.0`, published
   `2026-07-20T17:04:57.809548Z`, with the PyPI package and verified Cloud Run remote.
 - No credential was distributed and no paid model call was made during Stage 4.
+
+## Batch 1 — Quick Wins / 1.1.0 implementation
+
+- **PASS — contracts:** `SPEC.md` defines Report/Baseline 2.1, structured citations,
+  stable/experimental maturity, inclusive suppression expiry, share-safe rendering, and
+  AA013 before implementation. Runtime, package, and MCP manifest versions agree at 1.1.0.
+- **PASS — Lane A:** stable AA013 requires proven append/model-input/loop evidence and
+  recognizes all specified truncation forms; inconclusive identity emits a coverage
+  warning. AA007 distinguishes timeout, retry, and retry-without-backoff. AA001 remediation
+  is protocol-aware. Bad/clean fixtures and the deliberate fingerprint golden cover AA013.
+- **PASS — Lane B:** Baseline 2.1 classifies new/aging/resolved debt, upgrades 2.0 input,
+  and preserves `first_seen` through combined apply/update. Structured suppression tests
+  cover bare/full/malformed and yesterday/today/tomorrow. Share-safe JSON, HTML, and SARIF
+  contain no tested Windows, UNC, Linux-home, macOS-home, or scan-root path sentinels.
+- **PASS — registry/reporting:** every emitted fixture finding carries the complete
+  registry citation set; AA004 contains OpenAI and Anthropic records; legacy `vendor`
+  input remains readable; no placeholder citation labels remain. Experimental maturity is
+  visible in terminal, JSON, HTML, GitHub, SARIF, and MCP metadata and affects thresholds
+  only with `--include-experimental`.
+- **PASS — adoption:** the exact pre-commit hook contract, PyPI badge, copyable scan badge,
+  README rule/CLI documentation, CHANGELOG, architecture docs, and AA013 site surface are
+  present. MCP Registry 1.0 publication is treated as already complete; no resubmission was
+  attempted.
+- **PASS — Windows gate (Python 3.13.7 / Node 22.19.0):** 207 tests, offline acceptance,
+  production compliance, Ruff, strict mypy over 32 source files, 88% branch coverage, site
+  build, and all seven site tests pass.
+- **PASS — POSIX/WSL gate (Python 3.13.12 / Node 22.22.2):** a fresh Python 3.13
+  environment passes 207 tests, offline acceptance, production compliance, Ruff, strict
+  mypy over 32 source files, and 88% branch coverage. A clean isolated Linux `npm ci`
+  installed 495 packages and passed the site build and all seven tests.
+- The WSL hosted lifecycle initially exposed a cold mounted-filesystem import time longer
+  than the test's approximately five-second retry window. Replacing the iteration count
+  with an explicit 30-second startup deadline made the test deterministic; the lifecycle
+  subsequently passed in the targeted and full POSIX runs.
+- Production dogfood reports zero findings, zero suppressions, and zero unexplained
+  warnings. No paid model call, deployment, publication, Marketplace mutation, GitHub
+  Release creation, tag creation/push, or credential operation occurred.
+- **OPERATOR GATES REMAIN:** create the missing `v1.0.0` GitHub Release, list the Action on
+  GitHub Marketplace, then create/push `v1.1.0` only after reviewing these local changes.

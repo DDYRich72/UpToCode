@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 - 2026-07-20
+
+- Add stable AA013 detection for positive-evidence unbounded context growth and extend
+  AA007 with a distinct retry-without-backoff finding.
+- Add registry-resolved structured cross-vendor citations, protocol-aware AA001
+  remediation, and stable/experimental rule maturity with opt-in threshold enforcement.
+- Add Report and Baseline 2.1 debt lifecycle tracking, structured suppression metadata
+  with inclusive expiry, and share-safe JSON, HTML, and SARIF rendering.
+- Add the reusable pre-commit hook, PyPI and copyable scan badges, deliberate AA013
+  fixtures/goldens, and synchronized 1.1.0 package and MCP metadata.
+
 ## 1.0.0 - 2026-07-20
 
 - Establish UpToCode as the canonical product, `uptocode` distribution/import/CLI, and
