@@ -1,19 +1,19 @@
-# ArchAgent Demo Script — Under Three Minutes
+# UpToCode Demo Script — Under Three Minutes
 
 Target runtime: **2:50–2:55**, including pauses. Narration audio is required.
 
 ## Beat 1 — 0:00–0:18 — Problem and position
 
 “Agent code can be syntactically valid and still ship with an unbounded loop, no budget,
-an ungated destructive tool, or no eval coverage. ArchAgent is a Python-first
+an ungated destructive tool, or no eval coverage. UpToCode is a Python-first
 architecture-quality scanner. It uses deterministic evidence first, optional GPT-5.6
 judgment second, and never auto-rewrites the repository.”
 
-Show only the ArchAgent README and the `scan → review → plan` flow.
+Show only the UpToCode README and the `scan → review → plan` flow.
 
 ## Beat 2 — 0:18–0:48 — Bad fixture and coverage-aware report
 
-Run `archagent-audit scan fixtures/bad_python --fail-on critical`, then open the prepared
+Run `uptocode scan fixtures/bad_python --fail-on critical`, then open the prepared
 standalone HTML report. Show AA001, AA003, the redacted AA006 excerpt, analyzed-file
 coverage, judgment status, citations, and the absence of a fabricated quality score.
 
@@ -30,8 +30,8 @@ paid request during recording.
 Run:
 
 ```text
-archagent-audit review report.json --approve AA001,AA003 --reject AA012 --non-interactive
-archagent-audit plan report.json --manifest .archagent-audit/manifest.json --output FIXPLAN.md
+uptocode review report.json --approve AA001,AA003 --reject AA012 --non-interactive
+uptocode plan report.json --manifest .uptocode/manifest.json --output FIXPLAN.md
 ```
 
 Show the report fingerprint binding, approved-only findings, evidence, ordered steps,
@@ -47,15 +47,16 @@ only submitted-content tools—never repository or filesystem-path tools. Its be
 boundary applies an in-memory per-key limit, defaults hosted judgment off, and logs only a
 short credential-digest prefix. Local file, repository, and diff-base tools remain contained
 to the canonical root resolved when the server starts.
-State that the live judge endpoint passed readiness, unauthorized access, AA001, judgment-gate,
-rate-limit, and payload-free-log checks with zero paid model calls.
+State that the submitted pre-production endpoint passed readiness, unauthorized access,
+AA001, judgment-gate, rate-limit, and payload-free-log checks with zero paid model calls;
+do not claim a production UpToCode endpoint until the Phase 7 migration is verified.
 
 ## Beat 6 — 2:03–2:28 — Delivery surfaces and self-audit
 
 Show SARIF, injection-safe GitHub annotations, the bounded job summary, the composite
 Action's upload-before-fail sequence, baselines, changed-since scanning, and rule selection
 from prepared outputs or help text. Run `python scripts/compliance.py`; show the zero-finding
-production self-scan and the offline acceptance PASS evidence. Say, “ArchAgent audits
+production self-scan and the offline acceptance PASS evidence. Say, “UpToCode audits
 itself: zero production findings, suppressions, or unexplained warnings.” Show the selected
 rc6 verification run `29717587213`—do not imply that the composite Action
 itself publishes a package or deploys a service.
@@ -65,7 +66,7 @@ itself publishes a package or deploys a service.
 “Codex collaborated throughout: turning the specification into vertical slices, building
 the scanner, reports, MCP, site, and tests, fixing clean-clone defects, and enforcing the
 Windows and Linux gates. GPT-5.6 powers the explicitly consented Structured Outputs
-judgment tier. ArchAgent completes that loop by turning cited findings and human approvals
+judgment tier. UpToCode completes that loop by turning cited findings and human approvals
 into a Codex-ready FIXPLAN—before production and before source mutation.”
 
 Show the “Built with Codex and GPT-5.6” README section and the validation matrix.
@@ -73,7 +74,7 @@ Show the “Built with Codex and GPT-5.6” README section and the validation ma
 ## Recording guardrails
 
 - Final exported video must be **less than 3:00** and include clear narration audio.
-- Use only ArchAgent-owned UI, checked-in fixtures, generated redacted reports, and plain
+- Use only UpToCode-owned UI, checked-in fixtures, generated redacted reports, and plain
   terminal/browser chrome; show no third-party logos, trademarks, copyrighted clips, or
   music.
 - Do not display API keys, environment values, private source outside this repository,

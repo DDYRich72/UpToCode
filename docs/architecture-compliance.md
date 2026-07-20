@@ -1,6 +1,6 @@
 # Architecture Compliance
 
-| Rule | ArchAgent production invariant | Implementation evidence | Automated evidence |
+| Rule | UpToCode production invariant | Implementation evidence | Automated evidence |
 |---|---|---|---|
 | AA001 | File, rule, judgment, and request execution are finite, deadline-aware, and preserve partial results. | `config.py`, `engine.py`, `judgment.py`, Cloud Run timeout | `test_gate2_edges.py`, `test_production_contract.py` |
 | AA002 | Typed policies cap file, aggregate source, request, output, rule-call, elapsed-time, per-key hosted request rate, and hosted concurrency usage. | `ScanConfig`, `JudgmentConfig`, MCP byte limits/token buckets, Cloud Run concurrency | `test_gate2_edges.py`, `test_mcp_hardening.py`, `test_production_contract.py` |
@@ -16,7 +16,7 @@
 | AA012 | Payload-free timing, counts, safe key attribution, error classes, model usage, synchronized versions, and correlation-capable MCP requests exist at boundaries. | Report metadata/usage, MCP lifecycle logs, version contract, operations policy | `test_gate1.py`, `test_judgment.py`, `test_mcp_hardening.py`, `test_hosted_lifecycle.py` |
 
 `scripts/compliance.py` scans only production Python source and emits
-`.archagent-audit/architecture-compliance.json`. It fails on any production
+`.uptocode/architecture-compliance.json`. It fails on any production
 finding, suppression, unexplained warning, or package/runtime/server version mismatch. The
 release-candidate workflow includes that artifact in the provenance-attested subject set
 without publishing to PyPI; narrative evidence alone

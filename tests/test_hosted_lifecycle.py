@@ -41,14 +41,14 @@ def test_real_streamable_http_lifecycle_and_authorization() -> None:
     port = _available_port()
     environment = {
         **os.environ,
-        "ARCHAGENT_API_KEY_HASHES": hashlib.sha256(token.encode()).hexdigest(),
+        "UPTOCODE_API_KEY_HASHES": hashlib.sha256(token.encode()).hexdigest(),
     }
     process = subprocess.Popen(
         [
             sys.executable,
             "-m",
             "uvicorn",
-            "archagent_audit.mcp_server:hosted_app",
+            "uptocode.mcp_server:hosted_app",
             "--factory",
             "--host",
             "127.0.0.1",

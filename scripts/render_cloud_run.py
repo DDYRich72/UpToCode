@@ -11,7 +11,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "deploy" / "cloud-run-service.yaml"
-DEFAULT_OUTPUT = ROOT / ".archagent-audit" / "deploy" / "cloud-run-service.yaml"
+DEFAULT_OUTPUT = ROOT / ".uptocode" / "deploy" / "cloud-run-service.yaml"
 PROJECT_PATTERN = re.compile(r"[a-z][a-z0-9-]{4,28}[a-z0-9]")
 REGION_PATTERN = re.compile(r"[a-z][a-z0-9-]*[a-z0-9]")
 DIGEST_PATTERN = re.compile(r"sha256:[0-9a-f]{64}")
@@ -41,13 +41,13 @@ def render_template(*, project: str, region: str, image_digest: str, host: str) 
     environment = {item["name"] for item in container["env"]}
     annotations = document["metadata"]["annotations"]
 
-    expected_image = f"{region}-docker.pkg.dev/{project}/archagent/mcp@{image_digest}"
+    expected_image = f"{region}-docker.pkg.dev/{project}/uptocode/mcp@{image_digest}"
     if container["image"] != expected_image:
         raise ValueError("rendered image reference is not the expected immutable digest")
     if "OPENAI_API_KEY" in environment:
         raise ValueError("hosted judgment is disabled, so OPENAI_API_KEY must not be attached")
     allowed_hosts = {item["name"]: item for item in container["env"]}
-    if allowed_hosts["ARCHAGENT_HOSTED_ALLOWED_HOSTS"]["value"] != host:
+    if allowed_hosts["UPTOCODE_HOSTED_ALLOWED_HOSTS"]["value"] != host:
         raise ValueError("rendered hosted allowlist is not the expected host")
     if annotations.get("run.googleapis.com/invoker-iam-disabled") != "true":
         raise ValueError("Cloud Run IAM must yield authentication to the application bearer key")

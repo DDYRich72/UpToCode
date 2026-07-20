@@ -26,7 +26,7 @@ test("connection generator defaults local and uses an explicit hosted placeholde
   assert.match(source, /role="tabpanel"/);
   assert.match(source, /aria-controls=/);
   assert.match(source, /ArrowRight/);
-  assert.doesNotMatch(source, /mcp\.archagent\.example/);
+  assert.doesNotMatch(source, /mcp\.uptocode\.example/);
 });
 
 test("site styles expose visible focus and reduced-motion behavior", async () => {

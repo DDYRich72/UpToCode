@@ -1,6 +1,6 @@
 # Submission Evidence
 
-These files are sanitized, reproducible captures from the offline ArchAgent workflow.
+These files are sanitized, reproducible captures from the offline UpToCode workflow.
 They contain checked-in synthetic fixtures only—no credentials, private external source,
 account identifiers, Codex Session ID, or live model payloads.
 

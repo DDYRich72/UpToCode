@@ -1,10 +1,10 @@
-# ArchAgent Project Constitution
+# UpToCode Project Constitution
 
 ## Product
 
-- Name: ArchAgent
-- Package: `archagent_audit`
-- CLI: `archagent-audit`
+- Name: UpToCode
+- Package: `uptocode`
+- CLI: `uptocode`
 - Build type: Python developer tool
 
 ## Mission
@@ -40,7 +40,7 @@ Help developers find architecture-quality failures in Python agent applications 
 ## Success criteria
 
 The active Definition of Done is proven by `tasks/validation-report.md` and
-`.archagent-audit/architecture-compliance.json`. Every AA001-AA012 control has
+`.uptocode/architecture-compliance.json`. Every AA001-AA012 control has
 an implementation reference, a test reference, and a passing result.
 
 ## Stack

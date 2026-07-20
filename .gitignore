@@ -10,6 +10,6 @@ venv/
 dist/
 build/
 *.egg-info/
-.archagent-audit/
+.uptocode/
 report.html
 out.json

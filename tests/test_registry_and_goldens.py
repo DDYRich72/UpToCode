@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from archagent_audit.engine import scan_path
-from archagent_audit.rules.registry import load_core_rules
+from uptocode.engine import scan_path
+from uptocode.rules.registry import load_core_rules
 
 
 ROOT = Path(__file__).parents[1]

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ArchAgent — Architecture evidence for agent systems",
+  title: "UpToCode — Architecture evidence for agent systems",
   description: "Audit execution bounds, budgets, approvals, validation, resilience, evals, and observability in Python agent applications.",
   icons: {
     icon: "/favicon.svg",

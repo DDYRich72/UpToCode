@@ -1,4 +1,4 @@
-"""Cross-platform, offline acceptance runner for the committed ArchAgent MVP."""
+"""Cross-platform, offline acceptance runner for the committed UpToCode MVP."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON = sys.executable
-CLI = [PYTHON, "-m", "archagent_audit.cli"]
+CLI = [PYTHON, "-m", "uptocode.cli"]
 
 
 def run(
@@ -81,7 +81,7 @@ async def main():
     root = Path(sys.argv[1])
     parameters = StdioServerParameters(
         command=sys.executable,
-        args=["-m", "archagent_audit.mcp_server"],
+        args=["-m", "uptocode.mcp_server"],
         cwd=root,
     )
     async with stdio_client(parameters) as (read, write):
@@ -131,7 +131,7 @@ def main() -> int:
     fixture_before = tree_digest(ROOT / "fixtures")
     run([PYTHON, "-m", "pytest", "-q"], capture=False)
 
-    with tempfile.TemporaryDirectory(prefix="archagent-acceptance-") as temp_name:
+    with tempfile.TemporaryDirectory(prefix="uptocode-acceptance-") as temp_name:
         temp = Path(temp_name)
         bad_report_path = temp / "bad-report.json"
         clean_report_path = temp / "clean-report.json"
@@ -166,7 +166,7 @@ def main() -> int:
         if rejected:
             review_command += ["--reject", rejected]
         run(review_command)
-        manifest = temp / ".archagent-audit" / "manifest.json"
+        manifest = temp / ".uptocode" / "manifest.json"
         fixplan = temp / "FIXPLAN.md"
         run(CLI + ["plan", str(copied_report), "--manifest", str(manifest), "--output", str(fixplan)])
         plan_text = fixplan.read_text(encoding="utf-8")
@@ -183,12 +183,12 @@ def main() -> int:
         mcp_probe = run([PYTHON, "-c", MCP_PROBE, str(ROOT)])
         print(f"MCP_PROBE: {mcp_probe.stdout.strip()}")
 
-    self_scan = ROOT / ".archagent-audit" / "self-scan.json"
+    self_scan = ROOT / ".uptocode" / "self-scan.json"
     self_scan.parent.mkdir(parents=True, exist_ok=True)
     run(CLI + ["scan", ".", "--format", "json", "--output", str(self_scan)])
     assert fixture_before == tree_digest(ROOT / "fixtures"), "Canonical fixtures changed"
     assert tracked_status() == status_before, "Tracked git worktree changed during acceptance"
-    print(f"PASS: ArchAgent offline acceptance; self-scan: {self_scan}")
+    print(f"PASS: UpToCode offline acceptance; self-scan: {self_scan}")
     return 0
 
 

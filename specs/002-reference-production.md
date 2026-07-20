@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Make ArchAgent the reference implementation of AA001-AA012 across its CLI,
+Make UpToCode the reference implementation of AA001-AA012 across its CLI,
 analyzer, judgment tier, MCP servers, hosted service, and release workflow.
 
 ## In scope

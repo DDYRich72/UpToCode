@@ -3,13 +3,25 @@ requires = ["hatchling>=1.27,<2"]
 build-backend = "hatchling.build"
 
 [project]
-name = "archagent-audit"
+name = "uptocode"
 version = "1.0.0"
-description = "Architecture-quality analysis for Python agent applications"
+description = "Evidence-backed architecture-quality analysis for Python agent applications"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {text = "MIT"}
-authors = [{name = "ArchAgent contributors"}]
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "UpToCode contributors"}]
+keywords = ["agents", "architecture", "mcp", "openai", "static-analysis"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Typing :: Typed",
+]
 dependencies = [
   "mcp==1.28.1",
   "jsonschema>=4.23,<5",
@@ -23,6 +35,12 @@ dependencies = [
   "uvicorn>=0.34,<1",
 ]
 
+[project.urls]
+Homepage = "https://github.com/DDYRich72/UpToCode"
+Documentation = "https://github.com/DDYRich72/UpToCode#readme"
+Issues = "https://github.com/DDYRich72/UpToCode/issues"
+Source = "https://github.com/DDYRich72/UpToCode"
+
 [project.optional-dependencies]
 test = [
   "coverage[toml]>=7.6,<8",
@@ -34,13 +52,24 @@ test = [
 ]
 
 [project.scripts]
-archagent-audit = "archagent_audit.cli:app"
+uptocode = "uptocode.cli:app"
 
 [tool.hatch.build.targets.wheel]
-packages = ["archagent_audit"]
+packages = ["uptocode"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"archagent_audit/rules/core.yml" = "archagent_audit/rules/core.yml"
+"uptocode/rules/core.yml" = "uptocode/rules/core.yml"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/CHANGELOG.md",
+  "/LICENSE",
+  "/README.md",
+  "/SECURITY.md",
+  "/pyproject.toml",
+  "/server.json",
+  "/uptocode",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -53,7 +82,7 @@ line-length = 100
 [tool.mypy]
 python_version = "3.11"
 strict = true
-packages = ["archagent_audit"]
+packages = ["uptocode"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -68,12 +97,12 @@ module = [
 follow_imports = "skip"
 
 [[tool.mypy.overrides]]
-module = ["archagent_audit.cli", "archagent_audit.mcp_server"]
+module = ["uptocode.cli", "uptocode.mcp_server"]
 disable_error_code = ["untyped-decorator"]
 
 [tool.coverage.run]
 branch = true
-source = ["archagent_audit"]
+source = ["uptocode"]
 
 [tool.coverage.report]
 fail_under = 85

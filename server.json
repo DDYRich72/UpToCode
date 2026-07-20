@@ -1,35 +1,35 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.archagent/audit",
+  "name": "io.github.DDYRich72/uptocode",
+  "title": "UpToCode",
   "description": "Evidence-backed architecture-quality analysis for Python agent applications.",
+  "repository": {
+    "url": "https://github.com/DDYRich72/UpToCode",
+    "source": "github",
+    "id": "1305781548"
+  },
+  "websiteUrl": "https://github.com/DDYRich72/UpToCode#readme",
   "version": "1.0.0",
   "packages": [
     {
       "registryType": "pypi",
-      "identifier": "archagent-audit",
+      "identifier": "uptocode",
       "version": "1.0.0",
+      "runtimeHint": "uvx",
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "serve"
+        },
+        {
+          "type": "named",
+          "name": "--transport",
+          "value": "stdio"
+        }
+      ],
       "transport": {
         "type": "stdio"
       }
-    }
-  ],
-  "remotes": [
-    {
-      "type": "streamable-http",
-      "url": "https://archagent-mcp-1015314816960.us-central1.run.app/mcp",
-      "headers": [
-        {
-          "name": "Authorization",
-          "value": "Bearer {ARCHAGENT_API_KEY}",
-          "variables": {
-            "ARCHAGENT_API_KEY": {
-              "description": "Private-beta judge credential supplied in submission testing notes.",
-              "isRequired": true,
-              "isSecret": true
-            }
-          }
-        }
-      ]
     }
   ]
 }

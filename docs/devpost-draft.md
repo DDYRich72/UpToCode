@@ -2,7 +2,7 @@
 
 ## Name
 
-ArchAgent
+UpToCode
 
 ## Tagline
 
@@ -10,7 +10,7 @@ Evidence-backed architecture review for Python agents, from static findings to a
 
 ## Short description
 
-ArchAgent finds architecture-quality risks that ordinary syntax checks miss: unbounded execution, missing budgets, unsafe tool boundaries, absent validation, brittle resilience, missing evals, and weak observability. It combines conservative Python evidence with an opt-in GPT‑5.6 Structured Outputs judgment tier. Developers review findings before generating a non-mutating `FIXPLAN.md`; coding agents can call the same static checks over MCP.
+UpToCode finds architecture-quality risks that ordinary syntax checks miss: unbounded execution, missing budgets, unsafe tool boundaries, absent validation, brittle resilience, missing evals, and weak observability. It combines conservative Python evidence with an opt-in GPT‑5.6 Structured Outputs judgment tier. Developers review findings before generating a non-mutating `FIXPLAN.md`; coding agents can call the same static checks over MCP.
 
 ## What it does
 
@@ -37,7 +37,7 @@ ArchAgent finds architecture-quality risks that ordinary syntax checks miss: unb
 
 Codex collaborated throughout development: turning the specification into vertical slices,
 building and reviewing the scanner, CLI, report formats, MCP surfaces, site, and tests, then
-running clean-clone Windows and Linux release gates. ArchAgent’s review workflow also emits
+running clean-clone Windows and Linux release gates. UpToCode’s review workflow also emits
 an approved-only, report-bound `FIXPLAN.md` designed as a safe Codex implementation hand-off.
 
 The implementation uses Python 3.11+, AST-based evidence extraction, Pydantic contracts,

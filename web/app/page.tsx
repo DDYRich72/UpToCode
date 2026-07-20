@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <main id="main-content">
       <nav className="nav" aria-label="Primary navigation">
-        <Link className="brand" href="/">ArchAgent</Link>
+        <Link className="brand" href="/">UpToCode</Link>
         <div className="navLinks">
           <a href="#rules">Rules</a>
           <a href="#privacy">Privacy</a>
@@ -31,7 +31,7 @@ export default function Home() {
         <p className="eyebrow">Architecture evidence for Python agent systems</p>
         <h1>Find the failure mode before your agent finds it in production.</h1>
         <p className="lede">
-          ArchAgent audits execution bounds, budgets, approvals, validation,
+          UpToCode audits execution bounds, budgets, approvals, validation,
           resilience, evals, and observability. Every finding includes source
           evidence, uncertainty, and an approval-driven remediation plan.
         </p>
@@ -57,7 +57,7 @@ export default function Home() {
           <article className="card">
             <h3>Local stdio MCP</h3>
             <p>Full repository, file, diff, review, and FIXPLAN analysis inside an explicitly bounded workspace.</p>
-            <code>uvx archagent-audit serve --root /path/to/repo</code>
+            <code>uvx uptocode serve --root /path/to/repo</code>
           </article>
           <article className="card">
             <h3>Hosted MCP</h3>
@@ -93,7 +93,7 @@ export default function Home() {
       </section>
 
       <footer>
-        <span>ArchAgent 1.0 · Python 3.11+</span>
+        <span>UpToCode 1.0 · Python 3.11+</span>
         <Link href="/connect">Connection instructions</Link>
       </footer>
     </main>

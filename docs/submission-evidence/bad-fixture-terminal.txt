@@ -1,7 +1,7 @@
-Command: archagent-audit scan fixtures/bad_python --fail-on critical
+Command: uptocode scan fixtures/bad_python --fail-on critical
 Expected exit: 1 (the synthetic fixture intentionally breaches the critical threshold)
 
-ArchAgent scan
+UpToCode scan
 Coverage: 1/1 files analyzed
 Findings: 10 | Warnings: 0 | Redactions: 3
 [CRITICAL] AA006 agent.py:7 - Secret exposure

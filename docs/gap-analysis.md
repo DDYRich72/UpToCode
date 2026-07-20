@@ -1,6 +1,6 @@
-# ArchAgent — Gap Analysis and Completion Plan
+# UpToCode — Gap Analysis and Completion Plan
 
-> Drafted 2026-07-19 from a post-Gate-4 review of `codex/archagent-build` at `f3154a8` (133 tests passing on Windows 3.11/3.13 and Ubuntu/WSL 3.13).
+> Drafted 2026-07-19 from a post-Gate-4 review of `codex/uptocode-build` at `f3154a8` (133 tests passing on Windows 3.11/3.13 and Ubuntu/WSL 3.13).
 > Companion to `roadmap.md` (MVP gates). This document covers what remains between the shipped MVP and a complete, robust tool and MCP server.
 > Event context: the OpenAI Build Week deadline is Tuesday, 2026-07-21 17:00 PT. See "Pre-submission vs post-submission" in section 6.
 
@@ -19,9 +19,9 @@ The committed MVP core is sound: consent-gated judgment, redaction before egress
 
 | ID | Defect | Where | Contract violated |
 |---|---|---|---|
-| D1 | Malformed `.archagent-audit.yml` produces an unhandled `yaml.YAMLError` traceback. `load_config` calls `yaml.safe_load` unguarded; the CLI catches only `OSError`/`ValueError`. Reproduced. | `config.py`, `cli.py` | "Exit 2 for invalid configuration" with a clean message |
+| D1 | Malformed `.uptocode.yml` produces an unhandled `yaml.YAMLError` traceback. `load_config` calls `yaml.safe_load` unguarded; the CLI catches only `OSError`/`ValueError`. Reproduced. | `config.py`, `cli.py` | "Exit 2 for invalid configuration" with a clean message |
 | D2 | A single unreadable file aborts the entire scan. The per-file loop catches `UnicodeDecodeError`/`SyntaxError` but not `OSError` (permissions, deletion race). Discovery's `stat`/`read_bytes` are also unguarded. | `engine.py`, `config.py` | Degraded files should become analysis warnings, not scan aborts |
-| D3 | No `--version` flag; `python -m archagent_audit` fails (no `__main__.py`); `Report.tool_version` defaults to a hardcoded string duplicating `__version__`. | `cli.py`, `models.py`, package root | Version drift risk; basic CLI ergonomics |
+| D3 | No `--version` flag; `python -m uptocode` fails (no `__main__.py`); `Report.tool_version` defaults to a hardcoded string duplicating `__version__`. | `cli.py`, `models.py`, package root | Version drift risk; basic CLI ergonomics |
 | D4 | The CLI cannot scan a single file (`scan_path` requires a directory) while MCP `audit_file` can. | `engine.py`, `cli.py` | Surface asymmetry with no rationale |
 | D5 | MCP `audit_file`/`audit_diff` silently return an empty, clean-looking report when input exceeds the 1 MiB size limit — the file is skipped at discovery and the CLI's `files_discovered && !files_analyzed` exit-2 guard is not replicated in `_scan_source`. | `mcp_server.py` | "Unsupported code is never silently declared clean" |
 
@@ -60,12 +60,12 @@ The committed MVP core is sound: consent-gated judgment, redaction before egress
 
 ## 4. Gaps for a complete MCP server
 
-1. **No repo-level scan tool.** The five tools audit one file, a diff snippet, a loop snippet, a schema, or fetch rule metadata. An agent working inside a project cannot say "audit this project" — the flagship CLI capability is absent. `audit_file` additionally copies the target into a temp directory, losing the project's `.archagent-audit.yml`, gitignore context, and real relative paths (`scan_root` becomes `<submitted-code>`).
+1. **No repo-level scan tool.** The five tools audit one file, a diff snippet, a loop snippet, a schema, or fetch rule metadata. An agent working inside a project cannot say "audit this project" — the flagship CLI capability is absent. `audit_file` additionally copies the target into a temp directory, losing the project's `.uptocode.yml`, gitignore context, and real relative paths (`scan_root` becomes `<submitted-code>`).
 2. **The review/plan workflow — the product differentiator — has no MCP surface.** An agent cannot approve findings or retrieve a FIXPLAN over MCP.
 3. **Protocol features unused:** no tool annotations (all five tools qualify for `readOnlyHint`), no typed output schemas (tools return `dict[str, Any]`, so clients receive no `outputSchema`), no resources or prompts, no progress reporting for long scans, no declared server version.
 4. **Filesystem scope is unbounded** — `audit_file` reads any path the process can read. Tolerable for local stdio; a roots/allowlist mechanism is required before any other transport.
 5. **stdio only** — no streamable-HTTP transport option for remote or shared use.
-6. **Distribution:** registration requires a repo-checkout `cwd`; the complete story is PyPI publication → `uvx archagent-audit serve` one-liner → `server.json` and MCP registry listing (all approval-gated).
+6. **Distribution:** registration requires a repo-checkout `cwd`; the complete story is PyPI publication → `uvx uptocode serve` one-liner → `server.json` and MCP registry listing (all approval-gated).
 
 ## 5. Non-goals (unchanged from SPEC)
 
@@ -86,7 +86,7 @@ The event deadline is 2026-07-21 17:00 PT. Recommended split, in the spirit of t
 
 - [ ] D1: wrap config parsing; map YAML and validation errors to a clean exit-2 configuration error. Test with a malformed-YAML fixture.
 - [ ] D2: per-file `OSError` becomes a `FILE_READ_ERROR` analysis warning; guard discovery's `stat`/`read_bytes`. Test via mock-raised `OSError` (chmod-based tests are unreliable on Windows).
-- [ ] D3: add an eager `--version` option; add `archagent_audit/__main__.py`; source `Report.tool_version`'s default from `__version__`.
+- [ ] D3: add an eager `--version` option; add `uptocode/__main__.py`; source `Report.tool_version`'s default from `__version__`.
 - [ ] D4: accept a single `.py` file as the scan target in `scan_path` and the CLI.
 - [ ] D5: `_scan_source` returns a structured error when discovery finds input but nothing was analyzable.
 
@@ -94,7 +94,7 @@ Acceptance: new paths covered by tests; `python -m pytest -q` and `python script
 
 ### Phase 1 — MCP completion (1–2 days)
 
-- [ ] `audit_repo(path, judgment=False, send_code=False)`: runs `scan_path` in place, honoring `.archagent-audit.yml`, gitignore, suppressions, and real relative paths.
+- [ ] `audit_repo(path, judgment=False, send_code=False)`: runs `scan_path` in place, honoring `.uptocode.yml`, gitignore, suppressions, and real relative paths.
 - [ ] `review_findings(report_json, approve, reject, approve_all)` → manifest JSON, and `generate_fixplan(report_json, manifest_json)` → FIXPLAN markdown. Pure functions over supplied payloads; no hidden filesystem state.
 - [ ] Tool annotations: `readOnlyHint` (and `idempotentHint` where true) on every tool.
 - [ ] Typed outputs: return Pydantic models (`Report`, manifest, issue lists) so FastMCP emits `outputSchema`.
@@ -124,7 +124,7 @@ Dependency: fingerprints land first; baseline and carry-forward build on them. S
 
 ### Phase 4 — Judgment hardening (~1 day)
 
-- [ ] Configuration surface (env, `.archagent-audit.yml`, flags) for model, base URL, timeout, output-token cap, and rule budget; default remains `gpt-5.6`.
+- [ ] Configuration surface (env, `.uptocode.yml`, flags) for model, base URL, timeout, output-token cap, and rule budget; default remains `gpt-5.6`.
 - [ ] Replace name-substring matching with openai typed exceptions (`APITimeoutError`, `AuthenticationError`, `PermissionDeniedError`, `RateLimitError` → distinct warning codes); catch `Exception`, let `KeyboardInterrupt`/`SystemExit` propagate.
 - [ ] Record the judgment model id and per-rule token usage in the report.
 - [ ] Optional: candidate-payload cache keyed by content hash to avoid re-billing identical reruns.
@@ -142,7 +142,7 @@ Live-API behavior stays mocked in tests; any paid smoke run remains explicitly a
 - [ ] GitHub Actions: test matrix (3.11–3.13 × ubuntu/windows/macos), ruff, mypy, coverage gate, acceptance runner.
 - [ ] `py.typed`, CHANGELOG.md, CONTRIBUTING.md, SECURITY.md.
 - [ ] Tag-driven build/publish workflow (PyPI trusted publishing). **Publication requires the name recheck and explicit approval per SPEC.**
-- [ ] Post-publication: `uvx archagent-audit serve` docs, `server.json`, MCP registry submission — approval-gated.
+- [ ] Post-publication: `uvx uptocode serve` docs, `server.json`, MCP registry submission — approval-gated.
 - [ ] Optional: streamable-HTTP transport behind a flag, gated on the roots/allowlist hardening from Phase 1.
 
 ### Sequencing summary

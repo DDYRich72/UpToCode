@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from archagent_audit.mcp_server import (
+from uptocode.mcp_server import (
     audit_diff,
     audit_file,
     check_loop,

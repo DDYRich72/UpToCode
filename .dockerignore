@@ -1,6 +1,6 @@
 .git
 .github
-.archagent-audit
+.uptocode
 .pytest_cache
 .venv*
 web

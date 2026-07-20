@@ -1,18 +1,22 @@
-# ArchAgent
+# UpToCode
 
-ArchAgent is a design-time architecture-quality scanner for Python agent applications. It finds missing execution bounds, run budgets, approvals, validation, resilience controls, evals, and observability; explains the evidence; and produces an approval-driven plan for Codex without rewriting source code.
+<!-- mcp-name: io.github.DDYRich72/uptocode -->
+
+UpToCode is a design-time architecture-quality scanner for Python agent applications. It finds missing execution bounds, run budgets, approvals, validation, resilience controls, evals, and observability; explains the evidence; and produces an approval-driven plan for Codex without rewriting source code.
 
 The product is deliberately narrower than a general agent-security scanner. Version 1.0 recognizes OpenAI Agents SDK patterns, LangGraph limits, and conservative custom Python agent loops. Static scans are local and offline. Optional GPT‑5.6 judgment is explicit, bounded, redacted, and code-sharing gated.
 
-> The Python distribution and command are `archagent-audit`; the import package is `archagent_audit`. The bare `archagent` name already has active uses. Registry and trademark availability must be rechecked before any publication.
+> The Python distribution, import package, and command are all `uptocode`. The name was
+> rechecked against PyPI during the Phase 7 production migration and was unclaimed; final
+> availability is checked again immediately before publication.
 
 ## Install locally
 
-ArchAgent requires Python 3.11 or newer. This repository has not been published as a package.
+UpToCode requires Python 3.11 or newer. This repository has not been published as a package.
 
 ```text
 python -m pip install -e ".[test]"
-archagent-audit --help
+uptocode --help
 ```
 
 All ordinary tests are mocked/offline:
@@ -39,30 +43,30 @@ Activate the environment with `.venv\Scripts\activate` on Windows PowerShell or
 ```text
 python -m pip install --upgrade pip
 python -m pip install -e ".[test]"
-archagent-audit scan fixtures/bad_python --fail-on critical
-archagent-audit scan fixtures/bad_python --format json --output report.json
-archagent-audit review report.json --approve AA001,AA003 --reject AA012 --non-interactive
-archagent-audit plan report.json --manifest .archagent-audit/manifest.json --output FIXPLAN.md
+uptocode scan fixtures/bad_python --fail-on critical
+uptocode scan fixtures/bad_python --format json --output report.json
+uptocode review report.json --approve AA001,AA003 --reject AA012 --non-interactive
+uptocode plan report.json --manifest .uptocode/manifest.json --output FIXPLAN.md
 python scripts/acceptance.py
 ```
 
 The first scan intentionally exits `1` because the fixture contains critical findings.
 The remaining commands produce a report-bound review manifest and an approved-only
 `FIXPLAN.md`; they do not edit the fixture. To inspect the local MCP surface, run
-`archagent-audit serve --transport stdio --root .` from an MCP client or use the JSON
+`uptocode serve --transport stdio --root .` from an MCP client or use the JSON
 registration under [MCP registration](#mcp-registration). `python scripts/acceptance.py`
 also launches a real stdio server, lists all ten tools, and calls `check_loop` offline.
 
-An optional credential-protected judge endpoint is also deployed at
-`https://archagent-mcp-1015314816960.us-central1.run.app/mcp`. The bearer credential is
-supplied only in private submission testing notes. Set it in `ARCHAGENT_API_KEY`; never
-commit it or enter it into the website. Hosted judgment is disabled and the endpoint makes
-no paid model calls.
+The submitted-content hosted transport remains implemented and container-tested. Its new
+`uptocode-mcp` production endpoint is deliberately not advertised until the operator
+approves deployment and the live control checks pass. When issued, its bearer credential
+is read from `UPTOCODE_API_KEY`; never commit it or enter it into the website. Hosted
+judgment defaults off and no paid model call is required.
 
 ## Scan, review, plan
 
 ```text
-archagent-audit scan PATH [--format terminal|json|html|github|sarif] [--output FILE]
+uptocode scan PATH [--format terminal|json|html|github|sarif] [--output FILE]
                          [--judgment --send-code]
                          [--fail-on critical|warning|info]
                          [--baseline FILE|--update-baseline FILE]
@@ -70,19 +74,19 @@ archagent-audit scan PATH [--format terminal|json|html|github|sarif] [--output F
                          [--exclude GLOB] [--severity RULE=LEVEL]
                          [--fail-on-analysis-warning] [--github-summary PATH]
                          [--verbose]
-archagent-audit review REPORT [--approve IDS|--approve-all] [--reject IDS]
+uptocode review REPORT [--approve IDS|--approve-all] [--reject IDS]
                               [--reuse MANIFEST] [--non-interactive]
-archagent-audit plan REPORT --manifest MANIFEST [--output FIXPLAN.md]
-archagent-audit serve --transport stdio --root PATH
-archagent-audit serve --transport streamable-http --mode hosted
+uptocode plan REPORT --manifest MANIFEST [--output FIXPLAN.md]
+uptocode serve --transport stdio --root PATH
+uptocode serve --transport streamable-http --mode hosted
 ```
 
 The v1 workflow is non-mutating:
 
 ```text
-archagent-audit scan . --format json --output report.json
-archagent-audit review report.json --approve AA001,AA003 --reject AA012 --non-interactive
-archagent-audit plan report.json --manifest .archagent-audit/manifest.json --output FIXPLAN.md
+uptocode scan . --format json --output report.json
+uptocode review report.json --approve AA001,AA003 --reject AA012 --non-interactive
+uptocode plan report.json --manifest .uptocode/manifest.json --output FIXPLAN.md
 ```
 
 `review` binds decisions to the exact report fingerprint. `plan` refuses a mismatched manifest and includes only approved findings. Neither command edits the scanned repository.
@@ -91,7 +95,7 @@ Exit codes are `0` for no configured threshold breach, `1` for a finding at or a
 
 ## GitHub Action
 
-The repository ships a composite Action that installs ArchAgent from the Action checkout,
+The repository ships a composite Action that installs UpToCode from the Action checkout,
 runs the scan, uploads SARIF with `always()`, and only then returns the preserved scanner
 exit code:
 
@@ -102,7 +106,7 @@ permissions:
 
 steps:
   - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-  - uses: DDYRich72/UpToCode@v1.0.0-rc6
+  - uses: DDYRich72/UpToCode@v1.0.0
     with:
       path: .
       fail-on: critical
@@ -112,13 +116,13 @@ steps:
 
 `version: source` is the competition-safe default and installs from the checked-out
 Action source before PyPI publication. After the event, an exact semantic version installs
-the matching `archagent-audit` PyPI release. Set `upload-sarif: "false"` when code-scanning
+the matching `uptocode` PyPI release. Set `upload-sarif: "false"` when code-scanning
 upload is not desired; otherwise the calling workflow needs `security-events: write`.
 
 Example terminal output:
 
 ```text
-ArchAgent scan
+UpToCode scan
 Coverage: 1/1 files analyzed
 Findings: 10 | Warnings: 0 | Redactions: 3
 [CRITICAL] AA001 agent.py:21 - Unbounded agent loop
@@ -131,7 +135,7 @@ Findings: 10 | Warnings: 0 | Redactions: 3
 - `--judgment` is rejected unless `--send-code` is also present.
 - Judgment sends only normalized evidence and bounded, redacted excerpts, grouped once per candidate rule. Requests use `gpt-5.6`, Pydantic Structured Outputs, `store=false`, a 2,000-token output ceiling, a 30-second timeout, and a six-rule call budget.
 - Recognized OpenAI keys, AWS access keys, bearer tokens, email addresses, and US Social Security numbers are replaced before report or judgment output. Detection is intentionally narrow and is not a substitute for a dedicated secret/PII scanner.
-- Nested `.gitignore` files, default build/dependency/generated exclusions, `.archagent-audit.yml`, 1 MiB per-file and 4 MiB aggregate limits, binary/non-Python exclusion, and explicit suppressions are honored. Production ArchAgent source is gated at zero suppressions.
+- Nested `.gitignore` files, default build/dependency/generated exclusions, `.uptocode.yml`, 1 MiB per-file and 4 MiB aggregate limits, binary/non-Python exclusion, and explicit suppressions are honored. Production UpToCode source is gated at zero suppressions.
 - Refusal, timeout, authentication failure, or API failure never deletes static results; the report records `partial` or `failed` judgment status and an analysis warning.
 
 No live API call is part of the offline test or acceptance suite. The submission smoke test requires a key and separate approval for paid usage.
@@ -177,7 +181,7 @@ Known limitations:
 
 ## Configuration
 
-Create `.archagent-audit.yml` at the scan root:
+Create `.uptocode.yml` at the scan root:
 
 ```yaml
 exclude:
@@ -190,14 +194,14 @@ Paths in reports are normalized relative to the scan root. Coverage records disc
 
 ## MCP registration
 
-Run the stdio server directly with `archagent-audit serve`, or register the module with an MCP client:
+Run the stdio server directly with `uptocode serve`, or register the module with an MCP client:
 
 ```json
 {
   "mcpServers": {
-    "archagent": {
+    "uptocode": {
       "command": "python",
-      "args": ["-m", "archagent_audit.mcp_server"],
+      "args": ["-m", "uptocode.mcp_server"],
       "cwd": "/absolute/path/to/this/repository"
     }
   }
@@ -208,11 +212,11 @@ Local mode exposes repository/file/source/diff audits, strict schema and loop ch
 
 Hosted Streamable HTTP mode registers only submitted-content tools. It has no repository or
 filesystem-path tools, never persists submitted code or results, and requires private-beta
-bearer keys configured as SHA-256 digests in `ARCHAGENT_API_KEY_HASHES`. Authenticated
-requests use an in-memory per-key token bucket (`ARCHAGENT_RATE_LIMIT_PER_MINUTE`, default
+bearer keys configured as SHA-256 digests in `UPTOCODE_API_KEY_HASHES`. Authenticated
+requests use an in-memory per-key token bucket (`UPTOCODE_RATE_LIMIT_PER_MINUTE`, default
 `30`); excess requests return `429` with `Retry-After`. Logs attribute traffic only to an
 eight-character digest prefix. Hosted judgment is rejected unless
-`ARCHAGENT_HOSTED_JUDGMENT=true`; the default is `false`. The double-consent
+`UPTOCODE_HOSTED_JUDGMENT=true`; the default is `false`. The double-consent
 `judgment=true, send_code=true` rule still applies when the global gate is enabled.
 
 Local mode resolves its canonical workspace root once when the server is created. Relative
@@ -223,9 +227,9 @@ procedure is documented in `docs/operations.md`.
 
 The functional landing and connection generator live in `web/`. `/connect` generates local stdio or hosted Codex MCP configuration; bearer keys remain in the user's local environment and are never entered into or transmitted by the page.
 
-## ArchAgent audits itself
+## UpToCode audits itself
 
-The release gate runs `python scripts/compliance.py` against ArchAgent's production Python
+The release gate runs `python scripts/compliance.py` against UpToCode's production Python
 source. The current verified result is zero findings, zero suppressions, and zero unexplained
 analysis warnings. Deliberately bad fixtures and synthetic redaction sentinels remain test
 evidence and are excluded from that production claim. This dogfood check is part of every
@@ -233,10 +237,10 @@ release candidate, alongside the full offline suite and branch-coverage floor.
 
 ## Built with Codex and GPT-5.6
 
-Codex was the development collaborator throughout ArchAgent: it translated the product
+Codex was the development collaborator throughout UpToCode: it translated the product
 specification into vertical slices, implemented and reviewed the scanner, CLI, reports,
 MCP servers, site, and tests, fixed clean-clone defects, and ran the Windows/POSIX
-submission gates. ArchAgent also produces a report-bound `FIXPLAN.md` with a copy-paste
+submission gates. UpToCode also produces a report-bound `FIXPLAN.md` with a copy-paste
 Codex hand-off, so approval—not automatic source mutation—connects analysis to coding.
 The competition-first work order, decisions, progress log, and validation report remain
 in the repository as an auditable record of that collaboration.

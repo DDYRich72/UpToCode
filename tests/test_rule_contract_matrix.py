@@ -6,8 +6,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from archagent_audit.engine import scan_path
-from archagent_audit.judgment import JudgmentBatch, JudgmentFinding
+from uptocode.engine import scan_path
+from uptocode.judgment import JudgmentBatch, JudgmentFinding
 
 
 class FakeResponses:
@@ -35,15 +35,15 @@ def sent_rule_ids(client: FakeClient) -> set[str]:
 
 
 STATIC_SUPPRESSIONS = [
-    ("AA001", "# archagent-audit: ignore AA001\nwhile True:\n    work()\n"),
-    ("AA002", '# archagent-audit: ignore AA002\nclient.responses.create(model="gpt", input="x")\n'),
-    ("AA003", "@function_tool  # archagent-audit: ignore AA003\ndef delete_user(value):\n    database.delete(value)\n"),
-    ("AA004", "@function_tool  # archagent-audit: ignore AA004\ndef tool(model_arg):\n    subprocess.run(model_arg)\n"),
-    ("AA006", '# archagent-audit: ignore AA006\nKEY="sk-proj-abcdefghijklmnopqrstuvwxyz123456"\n'),
-    ("AA007", '# archagent-audit: ignore AA007\nclient.responses.create(model="gpt", input="x")\n'),
-    ("AA010", "# archagent-audit: ignore AA010\nsave(response.output_text)\n"),
-    ("AA011", '# archagent-audit: ignore AA011\nagent = Agent(name="x")\n'),
-    ("AA012", '# archagent-audit: ignore AA012\nagent = Agent(name="x")\n'),
+    ("AA001", "# uptocode: ignore AA001\nwhile True:\n    work()\n"),
+    ("AA002", '# uptocode: ignore AA002\nclient.responses.create(model="gpt", input="x")\n'),
+    ("AA003", "@function_tool  # uptocode: ignore AA003\ndef delete_user(value):\n    database.delete(value)\n"),
+    ("AA004", "@function_tool  # uptocode: ignore AA004\ndef tool(model_arg):\n    subprocess.run(model_arg)\n"),
+    ("AA006", '# uptocode: ignore AA006\nKEY="sk-proj-abcdefghijklmnopqrstuvwxyz123456"\n'),
+    ("AA007", '# uptocode: ignore AA007\nclient.responses.create(model="gpt", input="x")\n'),
+    ("AA010", "# uptocode: ignore AA010\nsave(response.output_text)\n"),
+    ("AA011", '# uptocode: ignore AA011\nagent = Agent(name="x")\n'),
+    ("AA012", '# uptocode: ignore AA012\nagent = Agent(name="x")\n'),
 ]
 
 
@@ -69,7 +69,7 @@ CLEAN_REGRESSIONS = [
     ("AA006", 'KEY = os.environ["OPENAI_API_KEY"]\n'),
     ("AA007", 'client = OpenAI(timeout=30, max_retries=2)\nclient.responses.create(model="gpt", input="x")\n'),
     ("AA010", 'save(SafeResult.model_validate({"text": response.output_text}))\n'),
-    ("AA011", 'agent = Agent(name="x")\n# archagent-audit: eval agent\n'),
+    ("AA011", 'agent = Agent(name="x")\n# uptocode: eval agent\n'),
     ("AA012", 'logger.info("start")\nagent = Agent(name="x")\n'),
 ]
 
@@ -176,12 +176,12 @@ def test_every_judgment_rule_accepts_a_schema_valid_positive(
 
 
 JUDGMENT_SUPPRESSIONS = {
-    "AA003": "@function_tool  # archagent-audit: ignore AA003\ndef process_record(value):\n    database.write(value)\n",
-    "AA005": 'external = requests.get(url)\n# archagent-audit: ignore AA005\nclient.responses.create(model="gpt", input=external)\n',
-    "AA008": '# archagent-audit: ignore AA008\nfirst = Agent(name="one")\nsecond = Agent(name="two")\n',
-    "AA009": "@function_tool  # archagent-audit: ignore AA009\ndef act(value):\n    return value\n",
-    "AA010": "# archagent-audit: ignore AA010\nsave_result(response.output_text)\n",
-    "AA011": '# archagent-audit: ignore AA011\nagent = Agent(name="one")\n',
+    "AA003": "@function_tool  # uptocode: ignore AA003\ndef process_record(value):\n    database.write(value)\n",
+    "AA005": 'external = requests.get(url)\n# uptocode: ignore AA005\nclient.responses.create(model="gpt", input=external)\n',
+    "AA008": '# uptocode: ignore AA008\nfirst = Agent(name="one")\nsecond = Agent(name="two")\n',
+    "AA009": "@function_tool  # uptocode: ignore AA009\ndef act(value):\n    return value\n",
+    "AA010": "# uptocode: ignore AA010\nsave_result(response.output_text)\n",
+    "AA011": '# uptocode: ignore AA011\nagent = Agent(name="one")\n',
 }
 
 

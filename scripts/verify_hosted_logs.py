@@ -11,8 +11,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_SMOKE = ROOT / ".archagent-audit" / "hosted-smoke.json"
-DEFAULT_OUTPUT = ROOT / ".archagent-audit" / "hosted-log-safety.json"
+DEFAULT_SMOKE = ROOT / ".uptocode" / "hosted-smoke.json"
+DEFAULT_OUTPUT = ROOT / ".uptocode" / "hosted-log-safety.json"
 
 
 def verify_logs(*, logs: str, smoke: dict[str, object], credential: str) -> dict[str, object]:
@@ -48,9 +48,9 @@ def main() -> int:
     parser.add_argument("--smoke", type=Path, default=DEFAULT_SMOKE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     arguments = parser.parse_args()
-    credential = os.environ.get("ARCHAGENT_JUDGE_KEY", "")
+    credential = os.environ.get("UPTOCODE_JUDGE_KEY", "")
     if not credential:
-        parser.error("ARCHAGENT_JUDGE_KEY is required")
+        parser.error("UPTOCODE_JUDGE_KEY is required")
     try:
         logs = arguments.logs.read_text(encoding="utf-8")
         smoke = json.loads(arguments.smoke.read_text(encoding="utf-8"))

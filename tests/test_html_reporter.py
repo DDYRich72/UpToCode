@@ -4,9 +4,9 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from archagent_audit.cli import app
-from archagent_audit.engine import scan_path
-from archagent_audit.reporters.html import render_html
+from uptocode.cli import app
+from uptocode.engine import scan_path
+from uptocode.reporters.html import render_html
 
 
 ROOT = Path(__file__).parents[1]
@@ -19,7 +19,7 @@ def test_html_is_standalone_semantic_and_redacted() -> None:
     rendered = render_html(report)
 
     assert rendered.startswith("<!doctype html>")
-    assert "ArchAgent architecture report" in rendered
+    assert "UpToCode architecture report" in rendered
     assert "Findings by category" in rendered
     assert "Coverage" in rendered
     assert "Judgment: not-requested" in rendered

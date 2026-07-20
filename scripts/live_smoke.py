@@ -16,9 +16,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from archagent_audit.judgment import run_judgment  # noqa: E402
-from archagent_audit.judgment_candidates import JudgmentCandidate  # noqa: E402
-from archagent_audit.models import Coverage, Report  # noqa: E402
+from uptocode.judgment import run_judgment  # noqa: E402
+from uptocode.judgment_candidates import JudgmentCandidate  # noqa: E402
+from uptocode.models import Coverage, Report  # noqa: E402
 
 
 def main() -> int:
@@ -58,7 +58,7 @@ def main() -> int:
         "analysis_warning_codes": [item.code for item in report.analysis_warnings],
         "pass": passed,
     }
-    output = Path(".archagent-audit/live-smoke.json")
+    output = Path(".uptocode/live-smoke.json")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
     print(f"{'PASS' if passed else 'FAIL'}: one-request GPT-5.6 smoke; evidence: {output}")

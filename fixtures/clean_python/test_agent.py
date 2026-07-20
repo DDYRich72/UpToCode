@@ -1,4 +1,4 @@
-# archagent-audit: eval agent
+# uptocode: eval agent
 def test_agent_reference_architecture() -> None:
     assert True
 

@@ -31,9 +31,9 @@ jobs:
           python -m pip install --upgrade "pip>=26.1.2"
           python -m pip install -e ".[test]"
       - name: Lint
-        run: python -m ruff check archagent_audit tests scripts
+        run: python -m ruff check uptocode tests scripts
       - name: Type check
-        run: python -m mypy archagent_audit
+        run: python -m mypy uptocode
       - name: Test with branch coverage
         run: |
           python -m coverage run --branch -m pytest -q
@@ -50,8 +50,8 @@ jobs:
           name: validation-${{ matrix.os }}-py${{ matrix.python }}
           path: |
             coverage.xml
-            .archagent-audit/architecture-compliance.json
-            .archagent-audit/self-scan.json
+            .uptocode/architecture-compliance.json
+            .uptocode/self-scan.json
           if-no-files-found: warn
           retention-days: 14
 
@@ -72,7 +72,7 @@ jobs:
         run: |
           python -m venv audit-venv
           audit-venv/bin/python -m pip install --upgrade pip setuptools wheel
-          audit-venv/bin/python -m pip install dist/archagent_audit-*.whl pip-audit
+          audit-venv/bin/python -m pip install dist/uptocode-*.whl pip-audit
           audit-venv/bin/python -m pip check
           audit-venv/bin/python -m pip_audit --local
       - name: Retain wheel
@@ -97,7 +97,7 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - name: Install packaging tools and ArchAgent
+      - name: Install packaging tools and UpToCode
         run: |
           python -m pip install --upgrade "pip>=26.1.2" build cyclonedx-bom
           python -m pip install .
@@ -106,7 +106,7 @@ jobs:
           python -m build
           cyclonedx-py environment --output-file dist/python-sbom.json
       - name: Generate zero-finding SARIF
-        run: archagent-audit scan archagent_audit --format sarif --output dist/archagent.sarif
+        run: uptocode scan uptocode --format sarif --output dist/uptocode.sarif
       - name: Install site dependencies
         working-directory: web
         run: npm ci --ignore-scripts --no-audit --no-fund
@@ -142,13 +142,13 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Build container
-        run: docker build -t archagent-mcp:test .
+        run: docker build -t uptocode-mcp:test .
       - name: Start container
         run: |
-          key_hash="$(printf '%s' 'archagent-ci-key' | sha256sum | cut -d ' ' -f 1)"
-          docker run --detach --name archagent-mcp-ci --publish 18080:8080 \
-            --env "ARCHAGENT_API_KEY_HASHES=${key_hash}" \
-            archagent-mcp:test
+          key_hash="$(printf '%s' 'uptocode-ci-key' | sha256sum | cut -d ' ' -f 1)"
+          docker run --detach --name uptocode-mcp-ci --publish 18080:8080 \
+            --env "UPTOCODE_API_KEY_HASHES=${key_hash}" \
+            uptocode-mcp:test
       - name: Verify health and unauthorized MCP
         run: |
           health_code=""
@@ -163,8 +163,8 @@ jobs:
       - name: Verify graceful shutdown
         if: always()
         run: |
-          if docker inspect archagent-mcp-ci >/dev/null 2>&1; then
-            docker stop --time 10 archagent-mcp-ci
-            test "$(docker inspect --format '{{.State.Running}}' archagent-mcp-ci)" = "false"
-            docker rm archagent-mcp-ci
+          if docker inspect uptocode-mcp-ci >/dev/null 2>&1; then
+            docker stop --time 10 uptocode-mcp-ci
+            test "$(docker inspect --format '{{.State.Running}}' uptocode-mcp-ci)" = "false"
+            docker rm uptocode-mcp-ci
           fi

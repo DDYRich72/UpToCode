@@ -7,17 +7,17 @@ from pathlib import Path
 import yaml
 from typer.testing import CliRunner
 
-from archagent_audit.cli import app
-from archagent_audit.engine import scan_path
-from archagent_audit.models import AnalysisWarning
-from archagent_audit.reporters.github import (
+from uptocode.cli import app
+from uptocode.engine import scan_path
+from uptocode.models import AnalysisWarning
+from uptocode.reporters.github import (
     MAX_SUMMARY_FINDINGS,
     escape_command_data,
     escape_command_property,
     render_github,
     render_github_summary,
 )
-from archagent_audit.reporters.sarif import render_sarif
+from uptocode.reporters.sarif import render_sarif
 
 
 ROOT = Path(__file__).parents[1]
@@ -88,8 +88,8 @@ def test_cli_appends_explicit_and_environment_github_summaries(tmp_path: Path) -
 
     assert explicit_result.exit_code == 0
     assert automatic_result.exit_code == 0
-    assert explicit.read_text(encoding="utf-8").startswith("# ArchAgent scan summary")
-    assert automatic.read_text(encoding="utf-8").startswith("# ArchAgent scan summary")
+    assert explicit.read_text(encoding="utf-8").startswith("# UpToCode scan summary")
+    assert automatic.read_text(encoding="utf-8").startswith("# UpToCode scan summary")
 
 
 def test_sarif_has_no_null_and_declares_rule_default_levels(tmp_path: Path) -> None:
@@ -104,7 +104,7 @@ def test_sarif_has_no_null_and_declares_rule_default_levels(tmp_path: Path) -> N
     assert "null" not in rendered
     assert "helpUri" not in rule
     assert rule["defaultConfiguration"] == {"level": "error"}
-    assert result["partialFingerprints"]["archagentFinding"] == report.findings[0].fingerprint
+    assert result["partialFingerprints"]["uptocodeFinding"] == report.findings[0].fingerprint
 
 
 def test_ci_contract_separates_audit_and_covers_product_surfaces() -> None:
@@ -134,11 +134,11 @@ def test_ci_contract_separates_audit_and_covers_product_surfaces() -> None:
     )
 
     assert "pip_audit" not in python_runs
-    assert "dist/archagent_audit-*.whl" in audit_runs
+    assert "dist/uptocode-*.whl" in audit_runs
     assert "audit-venv/bin/python -m pip install --upgrade pip setuptools wheel" in audit_runs
     assert "npm run lint" in site_runs
     assert "tsc -- --noEmit" in site_runs
-    assert "archagent.sarif" in site_runs
+    assert "uptocode.sarif" in site_runs
     assert "/healthz" in container_runs
     assert "/mcp" in container_runs and '"401"' in container_runs
     assert "docker stop --time 10" in container_runs
@@ -163,8 +163,8 @@ def test_composite_action_uploads_sarif_before_returning_scan_failure() -> None:
     assert upload_index < return_index
     assert "always()" in steps[upload_index]["if"]
     assert "exit 0" in steps[names.index("Scan and preserve exit code")]["run"]
-    assert "steps.scan.outputs.exit-code" in steps[return_index]["env"]["ARCHAGENT_SCANNER_EXIT_CODE"]
-    assert 'archagent-audit==${ARCHAGENT_ACTION_VERSION}' in steps[1]["run"]
+    assert "steps.scan.outputs.exit-code" in steps[return_index]["env"]["UPTOCODE_SCANNER_EXIT_CODE"]
+    assert 'uptocode==${UPTOCODE_ACTION_VERSION}' in steps[1]["run"]
 
 
 def test_external_actions_are_sha_pinned_and_dependabot_is_weekly() -> None:
@@ -187,13 +187,17 @@ def test_external_actions_are_sha_pinned_and_dependabot_is_weekly() -> None:
     assert all(item["schedule"]["interval"] == "weekly" for item in dependabot["updates"])
 
 
-def test_release_workflow_retains_artifacts_without_publishing() -> None:
+def test_release_workflow_attests_and_publishes_only_production_tags() -> None:
     release = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
 
     assert "upload-artifact@" in release
+    assert "download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53" in release
     assert "attest-build-provenance@" in release
-    assert "if: github.event.repository.private == false" in release
-    assert "if: github.event.repository.private" in release
-    assert "signed/attested publication is deferred to Phase 7" in release
-    assert "gh-action-pypi-publish" not in release
-    assert "PyPI publication and private-repository attestation are intentionally absent" in release
+    assert "github.event.repository.private == false" in release
+    assert "!contains(github.ref_name, '-')" in release
+    assert "environment:\n      name: pypi" in release
+    assert "id-token: write" in release
+    assert "gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247" in release
+    assert "packages-dir: dist" in release
+    assert "production-packages-${{ github.ref_name }}" in release
+    assert "test \"${GITHUB_REF_NAME}\" = \"${expected}\"" in release

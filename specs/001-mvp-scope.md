@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Deliver the Python-first ArchAgent architecture-quality scanner defined by `SPEC.md` before the Build Week deadline.
+Deliver the Python-first UpToCode architecture-quality scanner defined by `SPEC.md` before the Build Week deadline.
 
 ## User story
 

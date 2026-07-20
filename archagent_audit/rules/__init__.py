@@ -1,2 +1,0 @@
-"""ArchAgent rule evaluation."""
-

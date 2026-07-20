@@ -22,13 +22,13 @@ async function render(pathname) {
   );
 }
 
-test("server-renders the functional ArchAgent landing page", async () => {
+test("server-renders the functional UpToCode landing page", async () => {
   const response = await render("/");
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>ArchAgent/);
+  assert.match(html, /<title>UpToCode/);
   assert.match(html, /Find the failure mode before your agent finds it in production/);
   assert.match(html, /AA001/);
   assert.match(html, /AA012/);
@@ -46,11 +46,12 @@ test("server-renders connection instructions without collecting a key", async ()
 
   const html = await response.text();
   assert.match(html, /Choose where your code is analyzed/);
-  assert.match(html, /ARCHAGENT_API_KEY/);
+  assert.match(html, /UPTOCODE_API_KEY/);
   assert.match(html, /command = &quot;uvx&quot;/);
   assert.match(html, /Local stdio/);
-  assert.match(html, /credential-protected hosted judge endpoint/i);
+  assert.match(html, /operator-issued hosted endpoint/i);
   assert.match(html, /aria-label="Connection navigation"/);
-  assert.match(html, /archagent-mcp-1015314816960\.us-central1\.run\.app/);
+  assert.match(html, /never fabricates a hosted address/i);
+  assert.doesNotMatch(html, /\.run\.app/);
   assert.doesNotMatch(html, /type="password"|name="api[_-]?key"/i);
 });

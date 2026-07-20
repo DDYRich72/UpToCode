@@ -6,5 +6,5 @@ self-service product. Each authorized credential digest receives a bounded in-me
 token bucket (30 requests/minute by default), and authenticated logs contain only an
 eight-character digest prefix. Authorization headers, raw keys, full digests, and request
 payloads are never logged. Hosted model judgment is globally disabled unless the operator
-explicitly sets `ARCHAGENT_HOSTED_JUDGMENT=true`; per-request code-sharing consent remains
+explicitly sets `UPTOCODE_HOSTED_JUDGMENT=true`; per-request code-sharing consent remains
 required after that gate.

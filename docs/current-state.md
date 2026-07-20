@@ -1,6 +1,6 @@
 # Current State
 
-ArchAgent 1.0.0 is a Python-first architecture-quality scanner with 186 offline
+UpToCode 1.0.0 is a Python-first architecture-quality scanner with 188 offline
 tests, deterministic terminal/JSON/HTML/GitHub/SARIF reports, optional GPT-5.6
 Structured Outputs judgment, approval-bound FIXPLAN generation, and ten local
 stdio MCP tools.
@@ -34,14 +34,16 @@ skip navigation, reduced-motion handling, and responsive desktop/mobile evidence
 Windows and Ubuntu/WSL clones pass five site tests and the complete release gate. Branch
 CI `29710990279`, tag CI `29710992278`, and release-artifact run `29710992277` passed.
 
-Phase 5 deploys the credential-protected judge MCP to Cloud Run in `us-central1`. Revision
-`archagent-mcp-00002-xgh` is pinned to image digest
+Phase 5 deployed a credential-protected pre-production judge MCP to Cloud Run in
+`us-central1`. The immutable submission tag records its exact superseded resource names;
+its revision was pinned to image digest
 `sha256:298fadd434cafc4a28182a4f263ca1a2b23c2aea0d02627ac9aebe3046bd778d`, exposes eight
 submitted-content tools, and passed live readiness, unauthorized-access, AA001,
 judgment-gate, rate-limit, and payload-free-log checks. Hosted judgment remains off, no
 OpenAI key is attached, and the live test made zero paid model calls. The raw judge key is
 kept outside the repository for private submission notes; it has not been distributed.
-Phase 5 is preserved remotely as `v1.0.0-rc6` at `f578f24`. That exact commit passes the
+It is not advertised as the UpToCode production endpoint. Phase 5 is preserved remotely
+as `v1.0.0-rc6` at `f578f24`. That exact commit passes the
 complete Windows and Ubuntu/WSL submission gate: 186 tests, acceptance, compliance, Ruff,
 strict mypy, 88% branch coverage, clean site install/lint/type/build/tests, offline demo,
 and clean trees. Branch CI `29717585938`, tag CI `29717587213`, and release-artifact run
@@ -50,3 +52,10 @@ and clean trees. Branch CI `29717585938`, tag CI `29717587213`, and release-arti
 Deliberate bad fixtures and synthetic secret sentinels are test evidence, not
 production exceptions. The production compliance scan has zero findings,
 warnings, or suppressions.
+
+Phase 7 is active on `codex/uptocode-production`. Every current tracked surface uses the
+UpToCode identity: distribution/import/CLI `uptocode`, `UPTOCODE_*` settings,
+`io.github.DDYRich72/uptocode` registry metadata, and prepared `uptocode-mcp` deployment
+resources. The production package and MCP record remain unpublished, the repository
+remains private, and no production hosted URL is advertised pending the explicit external
+checkpoints.

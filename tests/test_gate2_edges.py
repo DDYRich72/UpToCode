@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from archagent_audit.engine import scan_path
+from uptocode.engine import scan_path
 
 
 def scan_source(tmp_path: Path, source: str) -> set[str]:

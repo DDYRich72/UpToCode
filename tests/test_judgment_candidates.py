@@ -1,4 +1,4 @@
-from archagent_audit.judgment_candidates import collect_judgment_candidates
+from uptocode.judgment_candidates import collect_judgment_candidates
 
 
 def test_extracts_ambiguous_judgment_candidates_without_verdicts() -> None:
@@ -24,7 +24,7 @@ save_result(response.output_text)
 def test_eval_marker_removes_aa011_candidate() -> None:
     sources = [
         ("agent.py", 'agent = Agent(name="one")\n'),
-        ("test_agent.py", "# archagent-audit: eval agent\n"),
+        ("test_agent.py", "# uptocode: eval agent\n"),
     ]
 
     candidates = collect_judgment_candidates(sources)
@@ -51,7 +51,7 @@ def test_judgment_false_positive_regressions_do_not_create_candidates() -> None:
         "AA005": 'external = requests.get(url)\nsafe = sanitize(external)\nclient.responses.create(model="gpt", input=safe)\n',
         "AA008": 'agent = Agent(name="one")\n',
         "AA010": 'save_result(SafeResult.model_validate({"text": response.output_text}))\n',
-        "AA011": 'agent = Agent(name="one")\n# archagent-audit: eval agent\n',
+        "AA011": 'agent = Agent(name="one")\n# uptocode: eval agent\n',
     }
 
     for rule_id, source in cases.items():

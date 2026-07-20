@@ -9,9 +9,9 @@ from typing import cast
 
 import pytest
 
-import archagent_audit.mcp_server as mcp_module
-from archagent_audit import __version__
-from archagent_audit.mcp_server import (
+import uptocode.mcp_server as mcp_module
+from uptocode import __version__
+from uptocode.mcp_server import (
     MCP_FASTMCP_COMPAT_VERSION,
     MCP_SDK_VERSION,
     ASGIApplication,
@@ -21,7 +21,7 @@ from archagent_audit.mcp_server import (
     create_server,
     hosted_app,
 )
-from archagent_audit.models import Report
+from uptocode.models import Report
 
 
 def test_fastmcp_sdk_upgrade_canary_and_private_contract() -> None:
@@ -201,7 +201,7 @@ def test_hosted_judgment_is_rejected_until_global_gate_is_enabled(
     enabled = create_server(mode="hosted", hosted_judgment_enabled=True)
 
     async def exercise() -> None:
-        with pytest.raises(Exception, match="ARCHAGENT_HOSTED_JUDGMENT"):
+        with pytest.raises(Exception, match="UPTOCODE_HOSTED_JUDGMENT"):
             await disabled.call_tool(
                 "audit_source",
                 {"source": "x = 1", "judgment": True, "send_code": True},
@@ -217,17 +217,17 @@ def test_hosted_judgment_is_rejected_until_global_gate_is_enabled(
 
 def test_hosted_environment_controls_fail_closed(monkeypatch: pytest.MonkeyPatch) -> None:
     token = "synthetic-hosted-key"
-    monkeypatch.setenv("ARCHAGENT_API_KEY_HASHES", hashlib.sha256(token.encode()).hexdigest())
-    monkeypatch.setenv("ARCHAGENT_RATE_LIMIT_PER_MINUTE", "0")
+    monkeypatch.setenv("UPTOCODE_API_KEY_HASHES", hashlib.sha256(token.encode()).hexdigest())
+    monkeypatch.setenv("UPTOCODE_RATE_LIMIT_PER_MINUTE", "0")
     with pytest.raises(ValueError, match="positive integer"):
         hosted_app()
 
-    monkeypatch.setenv("ARCHAGENT_RATE_LIMIT_PER_MINUTE", "30")
-    monkeypatch.setenv("ARCHAGENT_HOSTED_JUDGMENT", "sometimes")
+    monkeypatch.setenv("UPTOCODE_RATE_LIMIT_PER_MINUTE", "30")
+    monkeypatch.setenv("UPTOCODE_HOSTED_JUDGMENT", "sometimes")
     with pytest.raises(ValueError, match="true or false"):
         hosted_app()
 
-    monkeypatch.delenv("ARCHAGENT_HOSTED_JUDGMENT")
+    monkeypatch.delenv("UPTOCODE_HOSTED_JUDGMENT")
     application = hosted_app()
     assert isinstance(application, BearerKeyMiddleware)
     assert application.rate_limiter.rate_per_minute == 30

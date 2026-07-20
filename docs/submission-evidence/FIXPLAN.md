@@ -1,4 +1,4 @@
-# ArchAgent FIXPLAN
+# UpToCode FIXPLAN
 
 Generated from explicitly approved findings.
 
@@ -28,7 +28,7 @@ Require an explicit approval mechanism before execution.
 
 ### Acceptance checks
 
-- [ ] ArchAgent no longer emits AA003 at this location.
+- [ ] UpToCode no longer emits AA003 at this location.
 - [ ] The clean counterpart remains finding-free.
 - [ ] Existing behavior and public contracts remain intact.
 
@@ -39,7 +39,7 @@ The control adds implementation and maintenance overhead.
 ### Codex prompt
 
 ```text
-Address ArchAgent finding AA003 (8502169c0c07fcc71a5dbcb0) in agent.py:11. Observed: Tool delete_user can change state without a recognized approval gate. Required outcome: Require an explicit approval mechanism before execution. Preserve existing behavior, add regression coverage, run the relevant checks, and report evidence.
+Address UpToCode finding AA003 (8502169c0c07fcc71a5dbcb0) in agent.py:11. Observed: Tool delete_user can change state without a recognized approval gate. Required outcome: Require an explicit approval mechanism before execution. Preserve existing behavior, add regression coverage, run the relevant checks, and report evidence.
 ```
 
 ## AA001: Unbounded agent loop
@@ -68,7 +68,7 @@ Set a turn cap and preserve partial results when the cap is reached.
 
 ### Acceptance checks
 
-- [ ] ArchAgent no longer emits AA001 at this location.
+- [ ] UpToCode no longer emits AA001 at this location.
 - [ ] The clean counterpart remains finding-free.
 - [ ] Existing behavior and public contracts remain intact.
 
@@ -79,5 +79,5 @@ A cap can truncate legitimately long tasks.
 ### Codex prompt
 
 ```text
-Address ArchAgent finding AA001 (d5e085372a107c27efaa8b1d) in agent.py:21. Observed: A custom while-True agent loop has no detectable exit. Required outcome: Set a turn cap and preserve partial results when the cap is reached. Preserve existing behavior, add regression coverage, run the relevant checks, and report evidence.
+Address UpToCode finding AA001 (d5e085372a107c27efaa8b1d) in agent.py:21. Observed: A custom while-True agent loop has no detectable exit. Required outcome: Set a turn cap and preserve partial results when the cap is reached. Preserve existing behavior, add regression coverage, run the relevant checks, and report evidence.
 ```

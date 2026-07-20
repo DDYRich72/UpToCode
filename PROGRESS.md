@@ -2,11 +2,40 @@
 
 ## Current gate
 
-Completion Plan v2 Phase 6 — `v1.0.0-rc6` is published and fully verified; the
-submission tag and remaining submission actions stay operator-controlled.
+Completion Plan v2 Phase 7 — UpToCode production identity and release preparation.
+Publication, deployment, repository visibility, registry submission, and paid-model use
+remain operator-controlled.
 
 ## Status
 
+- [x] Operator declared UpToCode the canonical identity for the program and MCP; D008 and
+  `specs/003-uptocode-production-identity.md` record the complete public contract.
+- [x] Post-submission work moved to `codex/uptocode-production`; the submitted branch and
+  immutable `v1.0.0-submission` tag remain frozen at `8d822f0`.
+- [x] Distribution, import, CLI, config/output paths, environment variables, reports,
+  Action, site, container, deployment templates, MCP manifest, tests, and documentation
+  migrated to UpToCode with no superseded identifier in the current tracked surface.
+- [x] `uptocode` and `uptocode-audit` were absent from the official PyPI index on
+  2026-07-20; `uptocode` is the selected distribution and will be rechecked at publish time.
+- [x] Official MCP metadata uses `io.github.DDYRich72/uptocode`, the stable GitHub
+  repository ID, explicit `uvx` arguments, and the required PyPI README ownership marker;
+  it passed the live 2025-12-11 official JSON schema.
+- [x] Production release automation separates verified builds from the protected `pypi`
+  OIDC job, SHA-pins external Actions, attests packages, and rejects non-exact tags.
+- [x] The source archive allowlist fixed an audit-discovered packaging defect: the sdist
+  dropped from 14.6 MB/8,327 workspace files to 47,945 bytes/40 intentional files.
+- [x] Clean isolated wheel install passed version agreement and `pip check`; wheel size is
+  58,838 bytes.
+- [x] Phase 7 Windows and POSIX gates pass: 188 tests, acceptance, compliance, Ruff,
+  strict mypy over 30 files, 88% branch coverage, clean site installs, lint/type/build,
+  five site tests, and the high-severity npm threshold.
+- [x] Separate unimplemented 1.1 specifications added for Firestore beta access control
+  and TypeScript analysis.
+- [ ] Docker is unavailable locally; the renamed container lifecycle must pass the first
+  approved GitHub CI run before deployment.
+- [ ] Operator checkpoints: push the production branch, approve Cloud Run migration,
+  make the repository public, configure the PyPI trusted publisher/environment, publish
+  `v1.0.0`, submit the MCP Registry record, and separately approve any paid smoke call.
 - [x] Approved `SPEC.md` and `GOAL.md` copied into the repository.
 - [x] Durable project documents drafted.
 - [x] Package/import smoke test (`python -m pytest -q tests/test_bootstrap.py`: 1 passed).
@@ -51,7 +80,7 @@ submission tag and remaining submission actions stay operator-controlled.
 - [x] Hosted per-key token-bucket limiting added with monotonic refill, bounded
   idle eviction, `429`/`Retry-After`, and safe digest-prefix attribution.
 - [x] Hosted judgment defaults off and is accepted only when
-  `ARCHAGENT_HOSTED_JUDGMENT=true` globally.
+  `UPTOCODE_HOSTED_JUDGMENT=true` globally.
 - [x] Package, runtime, and `server.json` version agreement enforced by tests and
   compliance.
 - [x] Phase 2 containment, rate-limit, judgment-gate, log-safety, malformed-SDK,
@@ -123,7 +152,7 @@ submission tag and remaining submission actions stay operator-controlled.
 - [x] Operator authorized project `gen-lang-client-0606364192`, region `us-central1`,
   Cloud Run resource creation, judge-key generation, and no-paid-call live verification.
 - [x] Cloud Build produced the exact corrective commit image; Cloud Run revision
-  `archagent-mcp-00002-xgh` serves the immutable digest with hosted judgment off and no
+  `uptocode-mcp-00002-xgh` serves the immutable digest with hosted judgment off and no
   attached OpenAI key.
 - [x] Live readiness, unauthorized access, eight-tool discovery, AA001, judgment rejection,
   `429`/`Retry-After`, and payload-free log verification passed with zero paid model calls.
@@ -151,11 +180,11 @@ submission tag and remaining submission actions stay operator-controlled.
 - One paid GPT-5.6 smoke request was explicitly authorized and completed successfully; no further paid requests are authorized.
 - The static engine evaluates AA001/2/3/4/6/7/10/11/12 and records AA005/8/9 as judgment-only/not applicable during static scans.
 - Semantic HTML, CSP, escaping, redaction, and standalone behavior pass automated tests; the user opened and approved the rendered final HTML report.
-- Live evidence: `.archagent-audit/live-smoke.json` records one synthetic-code request to `gpt-5.6`, a completed structured result, one expected finding, and no analysis warnings. The evidence contains no API key or submitted code.
+- Live evidence: `.uptocode/live-smoke.json` records one synthetic-code request to `gpt-5.6`, a completed structured result, one expected finding, and no analysis warnings. The evidence contains no API key or submitted code.
 
 ## Self-scan triage
 
-Latest output: `.archagent-audit/self-scan.json` from the Phase 4 clean-clone
+Latest output: `.uptocode/self-scan.json` from the Phase 4 clean-clone
 acceptance run (generated and gitignored).
 
 - Coverage: 53/53 project Python files analyzed with nine excluded-directory records.

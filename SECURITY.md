@@ -27,7 +27,7 @@ represented by the `next` and nested `postcss` records in `npm audit --omit=dev`
 
 - `GHSA-qx2v-qp2m-jg93` affects the PostCSS copy vendored by Next.js 16.2.10. The
   vulnerable behavior requires stringifying attacker-controlled CSS containing a closing
-  `style` tag. ArchAgent serves only checked-in static CSS, has no CSS editor or upload
+  `style` tag. UpToCode serves only checked-in static CSS, has no CSS editor or upload
   surface, and does not pass request data to PostCSS. npm currently offers only an unsafe
   downgrade to Next.js 9.3.3, so the available automated fix is rejected.
 

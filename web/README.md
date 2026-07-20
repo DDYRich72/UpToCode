@@ -1,4 +1,4 @@
-# ArchAgent site
+# UpToCode site
 
 The competition site contains exactly two product routes: the landing page at `/`
 and the MCP setup guide at `/connect`. It runs on
@@ -31,7 +31,7 @@ there are no D1, R2, or migration bindings.
 - `npm test`: build and verify both rendered routes and site contracts
 - `npm run lint`: run ESLint
 - `npx tsc --noEmit`: run the TypeScript compiler as a site build check; TypeScript
-  analysis in the ArchAgent scanner remains deferred to 1.1
+  analysis in the UpToCode scanner remains deferred to 1.1
 
 ## Learn More
 

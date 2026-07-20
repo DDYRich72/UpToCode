@@ -1,10 +1,10 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: archagent-mcp
+  name: uptocode-mcp
   annotations:
-    run.googleapis.com/description: Stateless ArchAgent private-beta MCP service
-    # Judges authenticate at the application boundary with an ArchAgent bearer key.
+    run.googleapis.com/description: Stateless UpToCode private-beta MCP service
+    # Judges authenticate at the application boundary with an UpToCode bearer key.
     # Cloud Run IAM must not consume the same Authorization header first.
     run.googleapis.com/invoker-iam-disabled: "true"
     run.googleapis.com/ingress: all
@@ -17,9 +17,9 @@ spec:
     spec:
       containerConcurrency: 4
       timeoutSeconds: 300
-      serviceAccountName: archagent-mcp-runtime
+      serviceAccountName: uptocode-mcp-runtime
       containers:
-        - image: REGION-docker.pkg.dev/PROJECT/archagent/mcp@IMAGE_DIGEST
+        - image: REGION-docker.pkg.dev/PROJECT/uptocode/mcp@IMAGE_DIGEST
           ports:
             - containerPort: 8080
           resources:
@@ -27,17 +27,17 @@ spec:
               cpu: "1"
               memory: 1Gi
           env:
-            - name: ARCHAGENT_RATE_LIMIT_PER_MINUTE
+            - name: UPTOCODE_RATE_LIMIT_PER_MINUTE
               value: "30"
-            - name: ARCHAGENT_HOSTED_JUDGMENT
+            - name: UPTOCODE_HOSTED_JUDGMENT
               value: "false"
-            - name: ARCHAGENT_HOSTED_ALLOWED_HOSTS
+            - name: UPTOCODE_HOSTED_ALLOWED_HOSTS
               value: "PUBLIC_DNS_VALUE"
-            - name: ARCHAGENT_API_KEY_HASHES
+            - name: UPTOCODE_API_KEY_HASHES
               valueFrom:
                 secretKeyRef:
                   key: latest
-                  name: archagent-api-key-hashes
+                  name: uptocode-api-key-hashes
           startupProbe:
             httpGet:
               path: /readyz

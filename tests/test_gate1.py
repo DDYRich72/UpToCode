@@ -5,10 +5,10 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from archagent_audit.cli import app
-from archagent_audit.engine import scan_path
-from archagent_audit.models import Report
-from archagent_audit.redaction import redact_text
+from uptocode.cli import app
+from uptocode.engine import scan_path
+from uptocode.models import Report
+from uptocode.redaction import redact_text
 
 
 runner = CliRunner()
@@ -95,7 +95,7 @@ def test_custom_counter_and_break_is_clean(tmp_path: Path) -> None:
 def test_suppression_honored_and_counted(tmp_path: Path) -> None:
     write_source(
         tmp_path,
-        "# archagent-audit: ignore AA001\n"
+        "# uptocode: ignore AA001\n"
         "result = Runner.run(agent, task, max_turns=None)\n",
     )
 

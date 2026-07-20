@@ -5,11 +5,11 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from archagent_audit.cli import app
-from archagent_audit.engine import scan_path
-from archagent_audit.models import Report
-from archagent_audit.planner import generate_fixplan
-from archagent_audit.review import create_manifest, report_fingerprint
+from uptocode.cli import app
+from uptocode.engine import scan_path
+from uptocode.models import Report
+from uptocode.planner import generate_fixplan
+from uptocode.review import create_manifest, report_fingerprint
 
 
 ROOT = Path(__file__).parents[1]
@@ -79,7 +79,7 @@ def test_review_and_plan_cli_do_not_modify_scanned_source(tmp_path: Path) -> Non
         app,
         ["review", str(report_path), "--approve-all", "--non-interactive"],
     )
-    manifest_path = tmp_path / ".archagent-audit" / "manifest.json"
+    manifest_path = tmp_path / ".uptocode" / "manifest.json"
     planned = runner.invoke(
         app,
         [

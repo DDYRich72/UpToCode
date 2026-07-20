@@ -5,9 +5,9 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from archagent_audit.cli import app
-from archagent_audit.engine import scan_path
-from archagent_audit.reporters.terminal import render_terminal
+from uptocode.cli import app
+from uptocode.engine import scan_path
+from uptocode.reporters.terminal import render_terminal
 
 
 ROOT = Path(__file__).parents[1]
@@ -69,7 +69,7 @@ def test_static_rule_positive_cases(tmp_path: Path, source: str, expected_rule: 
 
 def test_rule_suppression_is_generic(tmp_path: Path) -> None:
     (tmp_path / "agent.py").write_text(
-        "@function_tool  # archagent-audit: ignore AA004\n"
+        "@function_tool  # uptocode: ignore AA004\n"
         "def tool(model_arg):\n"
         "    subprocess.run(model_arg)\n",
         encoding="utf-8",
@@ -101,7 +101,7 @@ def test_cli_returns_two_when_no_discovered_python_file_can_be_parsed(tmp_path: 
 
 
 def test_custom_exclude_and_size_limit_are_reported(tmp_path: Path) -> None:
-    (tmp_path / ".archagent-audit.yml").write_text(
+    (tmp_path / ".uptocode.yml").write_text(
         "exclude:\n  - excluded.py\nmax_file_size: 20\n",
         encoding="utf-8",
     )
@@ -136,7 +136,7 @@ def test_terminal_report_is_human_readable_and_redacted() -> None:
 
     rendered = render_terminal(report)
 
-    assert "ArchAgent" in rendered
+    assert "UpToCode" in rendered
     assert "AA001" in rendered
     assert "Coverage" in rendered
     assert "sk-proj-abcdefghijklmnopqrstuvwxyz123456" not in rendered
@@ -160,4 +160,4 @@ def test_terminal_cli_uses_terminal_renderer(tmp_path: Path) -> None:
     result = runner.invoke(app, ["scan", str(tmp_path)])
 
     assert result.exit_code == 0
-    assert "ArchAgent scan" in result.stdout
+    assert "UpToCode scan" in result.stdout

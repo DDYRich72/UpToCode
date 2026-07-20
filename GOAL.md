@@ -1,6 +1,6 @@
-# /goal — Build ArchAgent with gated TDD
+# /goal — Build UpToCode with gated TDD
 
-Build ArchAgent end to end in this repository. `SPEC.md` defines **what** to build; this prompt defines **how** to work. If they conflict, `SPEC.md` wins on product behavior and this prompt wins on process. Do not silently resolve a material conflict: record it in `DECISIONS.md`, choose the smallest behavior that satisfies the spec, and continue only when the choice does not change scope, cost, security, privacy, deployment, or public interfaces.
+Build UpToCode end to end in this repository. `SPEC.md` defines **what** to build; this prompt defines **how** to work. If they conflict, `SPEC.md` wins on product behavior and this prompt wins on process. Do not silently resolve a material conflict: record it in `DECISIONS.md`, choose the smallest behavior that satisfies the spec, and continue only when the choice does not change scope, cost, security, privacy, deployment, or public interfaces.
 
 The current layer is implementation and local verification. Do not publish, deploy, submit, send external messages, or use paid APIs without explicit approval.
 
@@ -44,7 +44,10 @@ BLOCKED.md
 
 Populate them from `SPEC.md`; do not invent a second scope. `tasks/implementation-plan.md` must map every active Definition of Done criterion to implementation and test work. `tasks/validation-report.md` starts with every criterion marked `NOT RUN`.
 
-Then scaffold a Python 3.11+ package named `archagent_audit` with an `archagent-audit` CLI entry point, `pyproject.toml`, tests, and the directory structure in `SPEC.md`. Do not register the already-used bare `archagent` command. Pin direct dependencies to compatible version ranges and record the resolved environment in the validation report.
+Then scaffold a Python 3.11+ package named `uptocode` with the canonical `uptocode` CLI
+entry point, `pyproject.toml`, tests, and the directory structure in `SPEC.md`. Pin direct
+dependencies to compatible version ranges and record the resolved environment in the
+validation report.
 
 The bootstrap itself requires a green packaging/import smoke test before Gate 1 product work begins.
 
@@ -73,7 +76,7 @@ The bootstrap itself requires a green packaging/import smoke test before Gate 1 
 Implement:
 
 - Package and CLI scaffold.
-- `.archagent-audit.yml` loading, default exclusions, `.gitignore` handling, and source discovery.
+- `.uptocode.yml` loading, default exclusions, `.gitignore` handling, and source discovery.
 - Pydantic models for findings, report envelope, coverage, warnings, redactions, and review manifest.
 - Secret redaction boundary used by all output paths.
 - Python AST adapter skeleton and normalized evidence model.
@@ -89,7 +92,7 @@ Required AA001 tests:
 - A bounded custom loop with an effective counter/break is clean.
 - A demonstrably unbounded custom loop reports AA001.
 - Unknown dynamic configuration produces an analysis warning, not a finding.
-- `# archagent-audit: ignore AA001` suppresses the finding and increments the suppression count.
+- `# uptocode: ignore AA001` suppresses the finding and increments the suppression count.
 
 ### Gate 1 pass condition
 
@@ -335,5 +338,4 @@ The final report must provide:
 - External actions still awaiting approval.
 
 Begin by inspecting the repository, materializing the durable project documents from `SPEC.md`, and running the bootstrap/import smoke test. Then enter Gate 1 at RED.
-
 

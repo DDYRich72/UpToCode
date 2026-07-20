@@ -18,7 +18,7 @@ from mcp.client.streamable_http import streamable_http_client
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT = ROOT / ".archagent-audit" / "hosted-smoke.json"
+DEFAULT_OUTPUT = ROOT / ".uptocode" / "hosted-smoke.json"
 SYNTHETIC_SENTINEL = "phase5-sentinel@example.invalid"
 
 
@@ -78,7 +78,7 @@ async def verify_hosted(
                         "send_code": True,
                     },
                 )
-                if not judgment.isError or "ARCHAGENT_HOSTED_JUDGMENT" not in _result_text(
+                if not judgment.isError or "UPTOCODE_HOSTED_JUDGMENT" not in _result_text(
                     judgment
                 ):
                     raise RuntimeError("hosted judgment was not rejected by the global gate")
@@ -112,7 +112,7 @@ async def verify_hosted(
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Run a synthetic, no-paid-call smoke test against hosted ArchAgent.",
+        description="Run a synthetic, no-paid-call smoke test against hosted UpToCode.",
     )
     parser.add_argument("--endpoint", required=True, help="HTTPS URL ending in /mcp")
     parser.add_argument("--rate-limit", type=int, default=30)
@@ -130,9 +130,9 @@ def main() -> int:
         parser.error("--endpoint must be an HTTPS URL ending in /mcp")
     if arguments.rate_limit < 1:
         parser.error("--rate-limit must be positive")
-    credential = os.environ.get("ARCHAGENT_JUDGE_KEY", "")
+    credential = os.environ.get("UPTOCODE_JUDGE_KEY", "")
     if not credential:
-        parser.error("ARCHAGENT_JUDGE_KEY is required")
+        parser.error("UPTOCODE_JUDGE_KEY is required")
 
     try:
         evidence = asyncio.run(

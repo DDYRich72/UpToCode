@@ -12,27 +12,27 @@ from pathlib import Path
 ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT))
 
-OUTPUT = ROOT / ".archagent-audit" / "architecture-compliance.json"
+OUTPUT = ROOT / ".uptocode" / "architecture-compliance.json"
 
 
 EVIDENCE = {
-    "AA001": ("archagent_audit/engine.py", "tests/test_gate2_edges.py"),
-    "AA002": ("archagent_audit/config.py", "tests/test_production_contract.py"),
-    "AA003": ("archagent_audit/review.py", "tests/test_review_plan.py"),
-    "AA004": ("archagent_audit/schema_validation.py", "tests/test_production_contract.py"),
-    "AA005": ("archagent_audit/judgment.py", "tests/test_judgment_candidates.py"),
-    "AA006": ("archagent_audit/redaction.py", "tests/test_gate1.py"),
-    "AA007": ("archagent_audit/judgment.py", "tests/test_judgment.py"),
-    "AA008": ("archagent_audit/engine.py", "tests/test_production_contract.py"),
-    "AA009": ("archagent_audit/mcp_server.py", "tests/test_mcp_server.py"),
-    "AA010": ("archagent_audit/judgment.py", "tests/test_judgment.py"),
-    "AA011": ("archagent_audit/rules/core.yml", "tests/test_rule_contract_matrix.py"),
-    "AA012": ("archagent_audit/models.py", "tests/test_hosted_lifecycle.py"),
+    "AA001": ("uptocode/engine.py", "tests/test_gate2_edges.py"),
+    "AA002": ("uptocode/config.py", "tests/test_production_contract.py"),
+    "AA003": ("uptocode/review.py", "tests/test_review_plan.py"),
+    "AA004": ("uptocode/schema_validation.py", "tests/test_production_contract.py"),
+    "AA005": ("uptocode/judgment.py", "tests/test_judgment_candidates.py"),
+    "AA006": ("uptocode/redaction.py", "tests/test_gate1.py"),
+    "AA007": ("uptocode/judgment.py", "tests/test_judgment.py"),
+    "AA008": ("uptocode/engine.py", "tests/test_production_contract.py"),
+    "AA009": ("uptocode/mcp_server.py", "tests/test_mcp_server.py"),
+    "AA010": ("uptocode/judgment.py", "tests/test_judgment.py"),
+    "AA011": ("uptocode/rules/core.yml", "tests/test_rule_contract_matrix.py"),
+    "AA012": ("uptocode/models.py", "tests/test_hosted_lifecycle.py"),
 }
 
 
 def version_contract() -> dict[str, object]:
-    from archagent_audit import __version__
+    from uptocode import __version__
 
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     manifest = json.loads((ROOT / "server.json").read_text(encoding="utf-8"))
@@ -53,9 +53,9 @@ def version_contract() -> dict[str, object]:
 
 
 def main() -> int:
-    from archagent_audit.engine import scan_path
+    from uptocode.engine import scan_path
 
-    report = scan_path(ROOT / "archagent_audit")
+    report = scan_path(ROOT / "uptocode")
     versions = version_contract()
     production_clean = (
         not report.findings

@@ -6,16 +6,16 @@ type Mode = "hosted" | "local";
 
 export function ConnectGenerator() {
   const [mode, setMode] = useState<Mode>("local");
-  const [endpoint, setEndpoint] = useState("https://archagent-mcp-1015314816960.us-central1.run.app/mcp");
+  const [endpoint, setEndpoint] = useState("");
   const [root, setRoot] = useState("/absolute/path/to/repository");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   const config = useMemo(() => {
     if (mode === "local") {
-      return `[mcp_servers.archagent]\ncommand = "uvx"\nargs = ["archagent-audit", "serve", "--transport", "stdio", "--root", "${root.replaceAll('"', '\\"')}"]\nrequired = true\nstartup_timeout_sec = 20\ntool_timeout_sec = 240`;
+      return `[mcp_servers.uptocode]\ncommand = "uvx"\nargs = ["uptocode", "serve", "--transport", "stdio", "--root", "${root.replaceAll('"', '\\"')}"]\nrequired = true\nstartup_timeout_sec = 20\ntool_timeout_sec = 240`;
     }
     const hostedUrl = endpoint.trim() || "<HOSTED_MCP_URL>";
-    return `[mcp_servers.archagent]\nurl = "${hostedUrl.replaceAll('"', '\\"')}"\nbearer_token_env_var = "ARCHAGENT_API_KEY"\nrequired = true\nstartup_timeout_sec = 20\ntool_timeout_sec = 240`;
+    return `[mcp_servers.uptocode]\nurl = "${hostedUrl.replaceAll('"', '\\"')}"\nbearer_token_env_var = "UPTOCODE_API_KEY"\nrequired = true\nstartup_timeout_sec = 20\ntool_timeout_sec = 240`;
   }, [endpoint, mode, root]);
 
   async function copyConfig() {
@@ -56,13 +56,13 @@ export function ConnectGenerator() {
         <div id="hosted-panel" className="field" role="tabpanel" aria-labelledby="hosted-tab">
           <label htmlFor="endpoint">Hosted MCP endpoint</label>
           <input id="endpoint" type="url" value={endpoint} placeholder="https://your-approved-endpoint/mcp" onChange={(event) => setEndpoint(event.target.value)} spellCheck={false} />
-          <p className="hint">The credential-protected judge endpoint is live. Set the separately issued private-beta key in <code>ARCHAGENT_API_KEY</code>; this page never receives it.</p>
+          <p className="hint">Enter only an operator-issued UpToCode endpoint. Set its separately issued key in <code>UPTOCODE_API_KEY</code>; this page never receives it.</p>
         </div>
       ) : (
         <div id="local-panel" className="field" role="tabpanel" aria-labelledby="local-tab">
           <label htmlFor="root">Allowed repository root</label>
           <input id="root" value={root} onChange={(event) => setRoot(event.target.value)} spellCheck={false} />
-          <p className="hint">ArchAgent resolves and enforces this boundary before any local path tool reads a file.</p>
+          <p className="hint">UpToCode resolves and enforces this boundary before any local path tool reads a file.</p>
         </div>
       )}
 

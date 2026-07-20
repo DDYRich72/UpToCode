@@ -8,7 +8,7 @@ rulepacks, and persists no code. The two modes share typed use cases, not access
 capabilities.
 
 FastMCP owns protocol parsing, structured outputs, annotations, resources,
-progress, cancellation propagation, and Streamable HTTP. ArchAgent augments the
+progress, cancellation propagation, and Streamable HTTP. UpToCode augments the
 SDK-generated argument models to reject unknown fields and publish
 `additionalProperties: false`, because MCP SDK 1.28.1 does not expose that setting
 on `add_tool`. The package is pinned to 1.28.1. Every private attribute is guarded,

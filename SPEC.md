@@ -1,13 +1,14 @@
-# ArchAgent — Implementation Specification
+# UpToCode — Implementation Specification
 
-> Product name: **ArchAgent**. Python package: `archagent_audit`. CLI: `archagent-audit`.
-> The requested product name and the bare `archagent` command already have active uses. Recheck GitHub, PyPI, npm, and trademark availability immediately before publication; do not claim exclusivity.
+> Product name: **UpToCode**. Python package: `uptocode`. CLI: `uptocode`.
+> PyPI availability was rechecked on 2026-07-20 and remained open; recheck immediately
+> before publication because registry availability can change.
 
 **Event:** OpenAI Build Week, Developer Tools track  
 **Deadline:** Tuesday, July 21, 2026 at 5:00 PM PT  
 **One-line description:** A design-time architecture-quality linter for Python agent applications that finds missing execution bounds, budgets, approvals, validation, evals, and observability before the application reaches production.
 
-ArchAgent is not positioned as the first or only agent-security scanner. Its wedge is architecture-quality review backed by explainable static evidence and optional GPT-5.6 judgment, followed by an approval-driven, Codex-ready remediation plan.
+UpToCode is not positioned as the first or only agent-security scanner. Its wedge is architecture-quality review backed by explainable static evidence and optional GPT-5.6 judgment, followed by an approval-driven, Codex-ready remediation plan.
 
 ---
 
@@ -53,10 +54,10 @@ The user can scan a repository, understand every supported finding and every ana
 ## 2. Technical Architecture
 
 ```text
-archagent_audit/
+uptocode/
 ├── engine.py              # discover → parse → normalize → check → report
 ├── models.py              # Pydantic report, finding, coverage, and manifest models
-├── config.py              # .archagent-audit.yml, ignore and suppression behavior
+├── config.py              # .uptocode.yml, ignore and suppression behavior
 ├── redaction.py           # secret detection and irreversible display redaction
 ├── adapters/
 │   ├── python.py          # common AST utilities and custom-loop extraction
@@ -90,10 +91,10 @@ archagent_audit/
 
 ### Discovery and privacy defaults
 
-- Honor `.gitignore` plus `.archagent-audit.yml` exclusions.
+- Honor `.gitignore` plus `.uptocode.yml` exclusions.
 - Exclude `.git`, virtual environments, dependency directories, caches, build output, generated files, binary files, and files above the configured size limit.
 - Default maximum source file size: 1 MiB. Default excerpt limit: 40 lines and 2,000 aggregate input tokens per judgment rule.
-- Honor `# archagent-audit: ignore AA001` on the relevant statement and count suppressions in report metadata.
+- Honor `# uptocode: ignore AA001` on the relevant statement and count suppressions in report metadata.
 - Detect secrets before excerpt construction. Replace the secret value with `[REDACTED:<kind>]` everywhere outside the in-memory detector.
 - Static scanning is the default and is offline. Judgment requires `--judgment --send-code`; `--judgment` without `--send-code` is a configuration error with exit code 2.
 
@@ -265,13 +266,13 @@ The manifest stores the report fingerprint, finding fingerprints, `approved|reje
 ### CLI
 
 ```text
-archagent-audit scan PATH [--format terminal|json|html|github] [--output FILE]
+uptocode scan PATH [--format terminal|json|html|github] [--output FILE]
                         [--judgment --send-code]
                         [--fail-on critical|warning|info]
-archagent-audit review REPORT [--approve IDS|--approve-all] [--reject IDS]
+uptocode review REPORT [--approve IDS|--approve-all] [--reject IDS]
                             [--non-interactive]
-archagent-audit plan REPORT --manifest MANIFEST [--output FIXPLAN.md]
-archagent-audit serve
+uptocode plan REPORT --manifest MANIFEST [--output FIXPLAN.md]
+uptocode serve
 ```
 
 - `scan` defaults to terminal format and static-only behavior.
@@ -311,7 +312,7 @@ Static-only is the default. Judgment requires both flags and uses the same redac
 Flow: `scan → review → plan`.
 
 1. Scan writes a versioned JSON report.
-2. Review records explicit approval/rejection decisions in `.archagent-audit/manifest.json` or a requested path.
+2. Review records explicit approval/rejection decisions in `.uptocode/manifest.json` or a requested path.
 3. Plan verifies report/manifest fingerprints and writes `FIXPLAN.md` for approved findings.
 4. Each plan entry contains finding ID/fingerprint, objective, evidence, files likely affected, ordered steps, acceptance checks, risks/tradeoffs, and a copy-paste Codex prompt.
 5. No command in v1 changes scanned source code.
@@ -384,5 +385,4 @@ Never cut: Python static engine, at least two judgment rules, review manifest, F
 4. Approve selected findings and generate `FIXPLAN.md`; emphasize that v1 plans changes but does not rewrite source.
 5. Show a coding agent calling MCP `check_loop` before writing an explicitly unbounded loop.
 6. Close with rulepack extensibility, Codex build evidence, and the authorized GPT-5.6 judgment path.
-
 

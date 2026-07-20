@@ -5,14 +5,14 @@ from types import SimpleNamespace
 
 import pytest
 
-from archagent_audit.engine import scan_path
-from archagent_audit.judgment import (
+from uptocode.engine import scan_path
+from uptocode.judgment import (
     JudgmentBatch,
     JudgmentFinding,
     run_judgment,
 )
-from archagent_audit.judgment_candidates import JudgmentCandidate
-from archagent_audit.models import Coverage, Report
+from uptocode.judgment_candidates import JudgmentCandidate
+from uptocode.models import Coverage, Report
 
 
 SECRET = "sk-proj-abcdefghijklmnopqrstuvwxyz123456"

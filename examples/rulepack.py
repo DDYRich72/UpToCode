@@ -1,7 +1,7 @@
-"""Minimal trusted local ArchAgent rulepack example."""
+"""Minimal trusted local UpToCode rulepack example."""
 
-from archagent_audit.models import AnalysisWarning
-from archagent_audit.rules.plugins import RuleContext, RulePluginResult
+from uptocode.models import AnalysisWarning
+from uptocode.rules.plugins import RuleContext, RulePluginResult
 
 
 class ExampleRulepack:

@@ -29,24 +29,24 @@ def test_cloud_run_template_is_safe_for_application_bearer_auth() -> None:
     assert annotations["run.googleapis.com/invoker-iam-disabled"] == "true"
     assert annotations["run.googleapis.com/ingress"] == "all"
     assert container["image"].endswith("@IMAGE_DIGEST")
-    assert environment["ARCHAGENT_HOSTED_JUDGMENT"]["value"] == "false"
-    assert environment["ARCHAGENT_HOSTED_ALLOWED_HOSTS"]["value"] == "PUBLIC_DNS_VALUE"
+    assert environment["UPTOCODE_HOSTED_JUDGMENT"]["value"] == "false"
+    assert environment["UPTOCODE_HOSTED_ALLOWED_HOSTS"]["value"] == "PUBLIC_DNS_VALUE"
     assert "OPENAI_API_KEY" not in environment
-    assert environment["ARCHAGENT_API_KEY_HASHES"]["valueFrom"]["secretKeyRef"]
+    assert environment["UPTOCODE_API_KEY_HASHES"]["valueFrom"]["secretKeyRef"]
 
 
 def test_cloud_run_renderer_pins_the_exact_image_and_resolves_placeholders() -> None:
     digest = "sha256:" + "a" * 64
     rendered = render_template(
-        project="archagent-demo1",
+        project="uptocode-demo1",
         region="us-central1",
         image_digest=digest,
-        host="archagent-mcp.example.run.app",
+        host="uptocode-mcp.example.run.app",
     )
     manifest = yaml.safe_load(rendered)
     image = manifest["spec"]["template"]["spec"]["containers"][0]["image"]
 
-    assert image == f"us-central1-docker.pkg.dev/archagent-demo1/archagent/mcp@{digest}"
+    assert image == f"us-central1-docker.pkg.dev/uptocode-demo1/uptocode/mcp@{digest}"
     assert not any(
         token in rendered
         for token in ("REGION", "PROJECT", "IMAGE_DIGEST", "PUBLIC_DNS_VALUE")
@@ -57,8 +57,8 @@ def test_cloud_run_renderer_pins_the_exact_image_and_resolves_placeholders() -> 
     ("project", "region", "digest"),
     [
         ("UPPERCASE", "us-central1", "sha256:" + "a" * 64),
-        ("archagent-demo1", "bad_region", "sha256:" + "a" * 64),
-        ("archagent-demo1", "us-central1", "latest"),
+        ("uptocode-demo1", "bad_region", "sha256:" + "a" * 64),
+        ("uptocode-demo1", "us-central1", "latest"),
     ],
 )
 def test_cloud_run_renderer_rejects_mutable_or_malformed_coordinates(
@@ -71,37 +71,52 @@ def test_cloud_run_renderer_rejects_mutable_or_malformed_coordinates(
             project=project,
             region=region,
             image_digest=digest,
-            host="archagent-mcp.example.run.app",
+            host="uptocode-mcp.example.run.app",
         )
 
 
 def test_cloud_run_renderer_rejects_a_host_url_instead_of_a_bare_host() -> None:
     with pytest.raises(ValueError, match="bare lowercase DNS host"):
         render_template(
-            project="archagent-demo1",
+            project="uptocode-demo1",
             region="us-central1",
             image_digest="sha256:" + "a" * 64,
-            host="https://archagent-mcp.example.run.app/mcp",
+            host="https://uptocode-mcp.example.run.app/mcp",
         )
 
 
-def test_server_manifest_advertises_the_live_secret_bearing_remote() -> None:
+def test_server_manifest_uses_the_canonical_registry_and_package_identity() -> None:
     manifest = json.loads((ROOT / "server.json").read_text(encoding="utf-8"))
-    remote = manifest["remotes"][0]
-    authorization = remote["headers"][0]
 
-    assert remote["type"] == "streamable-http"
-    assert remote["url"] == (
-        "https://archagent-mcp-1015314816960.us-central1.run.app/mcp"
-    )
-    assert authorization["name"] == "Authorization"
-    assert authorization["value"] == "Bearer {ARCHAGENT_API_KEY}"
-    assert authorization["variables"]["ARCHAGENT_API_KEY"]["isSecret"] is True
+    assert manifest["name"] == "io.github.DDYRich72/uptocode"
+    assert manifest["title"] == "UpToCode"
+    assert manifest["repository"] == {
+        "url": "https://github.com/DDYRich72/UpToCode",
+        "source": "github",
+        "id": "1305781548",
+    }
+    assert manifest["packages"] == [
+        {
+            "registryType": "pypi",
+            "identifier": "uptocode",
+            "version": "1.0.0",
+            "runtimeHint": "uvx",
+            "packageArguments": [
+                {"type": "positional", "value": "serve"},
+                {"type": "named", "name": "--transport", "value": "stdio"},
+            ],
+            "transport": {"type": "stdio"},
+        }
+    ]
+    assert "remotes" not in manifest
+    assert "<!-- mcp-name: io.github.DDYRich72/uptocode -->" in (
+        ROOT / "README.md"
+    ).read_text(encoding="utf-8")
 
 
 def test_credential_destination_must_be_outside_repository(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="outside the repository"):
-        validate_destination(ROOT / ".archagent-audit" / "judge-key.txt")
+        validate_destination(ROOT / ".uptocode" / "judge-key.txt")
     assert validate_destination(tmp_path / "judge-key.txt") == (tmp_path / "judge-key.txt").resolve()
 
 
@@ -129,7 +144,7 @@ def test_credential_generator_refuses_without_authorization(tmp_path: Path) -> N
 
 def test_hosted_smoke_refuses_without_live_authorization() -> None:
     environment = dict(os.environ)
-    environment.pop("ARCHAGENT_JUDGE_KEY", None)
+    environment.pop("UPTOCODE_JUDGE_KEY", None)
     result = subprocess.run(
         [
             sys.executable,

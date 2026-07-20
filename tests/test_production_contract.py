@@ -11,13 +11,13 @@ import pytest
 from pydantic import ValidationError
 from typer.testing import CliRunner
 
-from archagent_audit.baseline import apply_baseline, create_baseline
-from archagent_audit.config import ScanConfig, load_config
-from archagent_audit.cli import app
-from archagent_audit.diffing import DiffReconstructionError, reconstruct_unified_diff
-from archagent_audit.engine import AuditService, scan_path
-from archagent_audit.fingerprints import finding_fingerprint
-from archagent_audit.mcp_server import (
+from uptocode.baseline import apply_baseline, create_baseline
+from uptocode.config import ScanConfig, load_config
+from uptocode.cli import app
+from uptocode.diffing import DiffReconstructionError, reconstruct_unified_diff
+from uptocode.engine import AuditService, scan_path
+from uptocode.fingerprints import finding_fingerprint
+from uptocode.mcp_server import (
     MAX_SOURCE_BYTES,
     _workspace_diff_bases,
     BearerKeyMiddleware,
@@ -27,11 +27,11 @@ from archagent_audit.mcp_server import (
     create_server,
     hosted_app,
 )
-from archagent_audit.models import Report
-from archagent_audit.reporters.sarif import render_sarif
-from archagent_audit.review import create_manifest
-from archagent_audit.rules.plugins import RuleContext, evaluate_plugins, load_rule_plugins
-from archagent_audit.schema_validation import validate_tool_schema
+from uptocode.models import Report
+from uptocode.reporters.sarif import render_sarif
+from uptocode.review import create_manifest
+from uptocode.rules.plugins import RuleContext, evaluate_plugins, load_rule_plugins
+from uptocode.schema_validation import validate_tool_schema
 
 
 def test_content_fingerprint_is_location_independent() -> None:
@@ -151,7 +151,7 @@ def test_strict_configuration_rejects_unknown_fields() -> None:
 
 
 def test_malformed_project_yaml_has_actionable_error(tmp_path: Path) -> None:
-    (tmp_path / ".archagent-audit.yml").write_text("rules: [", encoding="utf-8")
+    (tmp_path / ".uptocode.yml").write_text("rules: [", encoding="utf-8")
 
     with pytest.raises(ValueError, match="Invalid configuration"):
         load_config(tmp_path)
@@ -223,7 +223,7 @@ def test_submitted_source_is_not_persisted(tmp_path: Path, monkeypatch: pytest.M
 def test_submitted_report_output_budget_preserves_partial_results(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import archagent_audit.mcp_server as mcp_module
+    import uptocode.mcp_server as mcp_module
 
     monkeypatch.setattr(mcp_module, "MAX_REPORT_FINDINGS", 1)
     report = audit_source(
@@ -249,7 +249,7 @@ def test_hosted_server_never_registers_filesystem_tools() -> None:
 
 
 def test_hosted_auth_configuration_fails_closed(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("ARCHAGENT_API_KEY_HASHES", "not-a-digest")
+    monkeypatch.setenv("UPTOCODE_API_KEY_HASHES", "not-a-digest")
 
     with pytest.raises(ValueError, match="SHA-256"):
         hosted_app()
@@ -274,7 +274,7 @@ def test_hosted_logs_are_payload_and_credential_free(caplog: pytest.LogCaptureFi
         {hashlib.sha256(token.encode()).hexdigest()},
         TokenBucketLimiter(),
     )
-    caplog.set_level("INFO", logger="archagent_audit.mcp_server")
+    caplog.set_level("INFO", logger="uptocode.mcp_server")
     asyncio.run(
         middleware(
             {
@@ -335,7 +335,7 @@ def test_cli_eager_version_and_sarif_output(tmp_path: Path) -> None:
 
 
 def test_rule_layer_has_no_interface_or_network_dependencies() -> None:
-    rules = Path(__file__).parents[1] / "archagent_audit" / "rules"
+    rules = Path(__file__).parents[1] / "uptocode" / "rules"
     forbidden = ("mcp.server", "typer", "openai", "starlette", "uvicorn")
 
     for module in rules.glob("*.py"):
@@ -356,7 +356,7 @@ def test_rule_layer_has_no_interface_or_network_dependencies() -> None:
 def test_trusted_local_rulepack_protocol_is_versioned(tmp_path: Path) -> None:
     good = tmp_path / "good_pack.py"
     good.write_text(
-        "from archagent_audit.rules.plugins import RulePluginResult\n"
+        "from uptocode.rules.plugins import RulePluginResult\n"
         "class Pack:\n"
         "    api_version = '1.0'\n"
         "    def evaluate(self, context):\n"

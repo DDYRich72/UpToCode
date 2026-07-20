@@ -3,7 +3,7 @@
 Phase 5 is deployed to the approved Cloud Run project and region. Corrective commit
 `44e9d46` passed targeted hosted tests, Ruff, and strict mypy before Cloud Build produced
 immutable image digest `sha256:298fadd434cafc4a28182a4f263ca1a2b23c2aea0d02627ac9aebe3046bd778d`.
-Revision `archagent-mcp-00002-xgh` passed the no-paid-call live smoke and payload-free-log
+Revision `uptocode-mcp-00002-xgh` passed the no-paid-call live smoke and payload-free-log
 verification. The complete `rc6` clean-clone exit gate is recorded below after deployment.
 
 ## Reference production gates
@@ -12,11 +12,11 @@ verification. The complete `rc6` clean-clone exit gate is recorded below after d
 |---|---|---|
 | Python suite | PASS | Exact rc6 commit `f578f24` fresh Windows and Ubuntu/WSL clones: `python -m pytest -q` → 186 passed; exact rc6 nine-cell tag CI `29717587213` also passed |
 | Offline product acceptance | PASS | Exact rc6 commit `f578f24` clean clones and all nine tag-CI cells: 186 tests, real installed-process stdio MCP, malformed-call recovery, CLI/report/review/plan/non-mutation, clean/bad fixtures |
-| Production dogfood | PASS | Fresh clones on both platforms: zero production findings, zero suppressions, zero analysis warnings; `.archagent-audit/architecture-compliance.json` |
+| Production dogfood | PASS | Fresh clones on both platforms: zero production findings, zero suppressions, zero analysis warnings; `.uptocode/architecture-compliance.json` |
 | Ruff | PASS | Fresh clones on both platforms: all checks passed |
 | Strict typing | PASS | All nine GitHub cells: no issues in 30 source files |
 | Branch coverage | PASS | All nine GitHub cells: 88%, exceeding the configured 85% release floor |
-| Wheel | PASS | `archagent_audit-1.0.0-py3-none-any.whl` built, installed in an isolated environment, imported from site-packages, and exercised through stdio MCP |
+| Wheel | PASS | `uptocode-1.0.0-py3-none-any.whl` built, installed in an isolated environment, imported from site-packages, and exercised through stdio MCP |
 | Python dependency audit | PASS | Fresh Windows isolated install with upgraded pip: `pip check` reports no broken requirements and `pip-audit --local --skip-editable` reports no known vulnerabilities |
 | Report 2.0 | PASS | strict contracts, stable fingerprints, rule states, metadata/usage, baselines, SARIF, and Report 1.0 clean-reader compatibility tests |
 | Analyzer hardening | PASS | unified-diff context reconstruction, strict Draft 2020-12 schemas, project evidence resolution, pruned nested ignores, unsupported-state warnings, and `super().__init__` false-positive regression |
@@ -37,7 +37,7 @@ verification. The complete `rc6` clean-clone exit gate is recorded below after d
 - The operator explicitly authorized Cloud Run deployment and judge-key generation. No
   package publication, site deployment, credential distribution, public repository release,
   submission, or new paid model request was performed.
-- The historical single authorized synthetic GPT-5.6 smoke remains recorded in `.archagent-audit/live-smoke.json`; a post-build/post-deploy smoke requires fresh explicit approval.
+- The historical single authorized synthetic GPT-5.6 smoke remains recorded in `.uptocode/live-smoke.json`; a post-build/post-deploy smoke requires fresh explicit approval.
 
 ## Phase 1 submission-ready evidence
 
@@ -94,8 +94,8 @@ publication, and MCP registry submission are post-event Phase 7 work.
 - Local Python validation passes 175 tests, offline acceptance, production
   compliance, Ruff, strict mypy over 30 source files, and 88% branch coverage.
 - The isolated wheel environment upgrades pip, setuptools, and wheel, installs
-  `archagent_audit-1.0.0-py3-none-any.whl`, passes `pip check`, and reports no known
-  dependency vulnerabilities. The unpublished ArchAgent package itself is
+  `uptocode-1.0.0-py3-none-any.whl`, passes `pip check`, and reports no known
+  dependency vulnerabilities. The unpublished UpToCode package itself is
   correctly reported as unavailable for registry audit.
 - A source install matching the composite Action's `version: source` path built
   successfully. Its bad-fixture scan generated ten SARIF results, preserved the
@@ -192,16 +192,16 @@ publication, and MCP registry submission are post-event Phase 7 work.
 
 ## Phase 5 live hosted verification
 
-- Project `gen-lang-client-0606364192`, region `us-central1`, service `archagent-mcp`, and
-  runtime identity `archagent-mcp-runtime` were used under explicit operator approval.
+- Project `gen-lang-client-0606364192` and region `us-central1` were used under explicit
+  operator approval. Exact superseded service and identity names remain in the immutable
+  submission tag rather than being advertised as current UpToCode resources.
 - Cloud Build `d013ca7f-ca25-4b66-89f8-93c49ef65315` built commit `44e9d46` from archive
   SHA-256 `16990989e2a2067d95e7d8b4652f2ce7cdae1d61628e169b45cb8dd98f14d8aa` and pushed
   immutable image digest `sha256:298fadd434cafc4a28182a4f263ca1a2b23c2aea0d02627ac9aebe3046bd778d`.
-- Cloud Run revision `archagent-mcp-00002-xgh` receives 100% of traffic at
-  `https://archagent-mcp-1015314816960.us-central1.run.app/mcp`. It uses the digest-only
+- The pre-production Cloud Run revision received 100% of its service traffic and used the digest-only
   Secret Manager allowlist, rate limit `30`, hosted judgment `false`, exact Host-header
   allowlisting, and no `OPENAI_API_KEY`.
-- Sanitized live evidence in ignored `.archagent-audit/` records version `1.0.0`, eight
+- Sanitized live evidence in ignored `.uptocode/` records version `1.0.0`, eight
   hosted tools, readiness PASS, unauthenticated MCP `401`, AA001 PASS, judgment-gate PASS,
   `429` with `Retry-After` PASS, and zero paid model calls.
 - Exported Cloud Run logs passed the verifier: safe eight-character key attribution was
@@ -241,5 +241,48 @@ publication, and MCP registry submission are post-event Phase 7 work.
 - The initial workflow attempts were rejected before runner allocation by an account billing
   hold. Attempt 6 passed after the operator corrected the personal Actions billing owner;
   this was external account state, not a repository defect.
-- The submission tag, private-repository sharing, judge-key distribution, public video
-  upload, Devpost submission, and submitted URL/timestamp remain operator-only actions.
+- Annotated tag `v1.0.0-submission` and commit `8d822f0` were pushed after operator
+  approval. Branch CI `29720149185`, tag CI `29720149466`, and release-artifact run
+  `29720149370` all passed on exact commit
+  `8d822f02c76ba9c30a4da665d80b7fb77201fdf4`.
+- Private-repository sharing, judge-key distribution, public video upload, Devpost
+  submission, and submitted URL/timestamp remain operator-only actions.
+
+## Phase 7 UpToCode production preparation
+
+- D008, `specs/003-uptocode-production-identity.md`, and
+  `tasks/phase7-production-plan.md` define one canonical identity: product UpToCode;
+  distribution/import/CLI `uptocode`; settings `UPTOCODE_*`; MCP Registry name
+  `io.github.DDYRich72/uptocode`; hosted resources `uptocode-mcp`.
+- Current tracked files contain no superseded product identifier. Historical evidence is
+  preserved by immutable Git history and tags rather than repeated in current claims.
+- Official PyPI JSON endpoints and `pip index versions` returned no project for `uptocode`
+  or `uptocode-audit` on 2026-07-20. Availability remains race-prone and must be checked
+  again immediately before publication.
+- `server.json` includes the GitHub-auth namespace, stable repository ID `1305781548`,
+  explicit `uvx` package arguments, and the required README `mcp-name` ownership marker.
+  The manifest passed the official 2025-12-11 MCP Registry JSON schema fetched from
+  `static.modelcontextprotocol.io`.
+- Production release automation builds and verifies once, retains package/SBOM/compliance
+  artifacts, and isolates attestation plus PyPI OIDC publication in the protected `pypi`
+  environment. Exact-version tag verification and the public-repository guard prevent RC
+  or private-repository publication.
+- An isolated Windows wheel environment installed `uptocode-1.0.0`, agreed on runtime and
+  metadata version `1.0.0`, and passed `pip check`. The wheel is 58,838 bytes.
+- Packaging inspection caught workspace/build output in the initial sdist (14.6 MB and
+  8,327 files). An explicit Hatch sdist allowlist reduced the verified archive to 47,945
+  bytes and 40 intentional public-package files; tests prohibit web/docs/tests/cache input.
+- Windows: Python 3.13.7; 188 tests, offline acceptance, compliance, Ruff, strict mypy over
+  30 files, and 88% branch coverage pass. A Git-tracked-only site copy installed 493
+  packages offline and passed ESLint, `tsc --noEmit`, the `/` and `/connect` production
+  build, five rendered-route tests, and the high-severity npm threshold.
+- POSIX/WSL: Python 3.13.12 in a fresh `uv` venv; the same 188-test Python gates and 88%
+  coverage pass. A Git-tracked-only site copy installed 494 packages and passed the same
+  site gates. Both platforms report only the two dated moderate Next/PostCSS records
+  accepted in `SECURITY.md`.
+- Local Docker and Google Cloud CLI are unavailable in the current shell. No local
+  container, Cloud Run deployment, package publication, repository visibility change,
+  registry submission, credential distribution, or paid model call occurred.
+- The external credential files were renamed in place to
+  `C:\Users\nokes\.uptocode-secrets\uptocode-production-key.{txt,sha256}` without reading,
+  printing, replacing, or distributing the credential.
