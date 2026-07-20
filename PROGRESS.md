@@ -129,8 +129,12 @@ Completion Plan v2 Phase 5 — hosted judge access deployed and validating for
   `429`/`Retry-After`, and payload-free log verification passed with zero paid model calls.
 - [x] The exact remote is in `server.json`; site, README, demo, Devpost, current-state, and
   validation claims are synchronized without committing or distributing the raw key.
-- [ ] Pass the complete Phase 5 clean-clone gate and request approval before pushing or
-  tagging `v1.0.0-rc6`.
+- [x] Exact commit `ab06ff1` passed the complete Phase 5 clean-clone gate on Windows and
+  Ubuntu/WSL: 186 tests, acceptance, compliance, Ruff, strict mypy, 88% branch coverage,
+  clean site installs, lint/type/build, five site tests, offline demo, and clean trees.
+- [ ] Operator checkpoint: approve pushing the six Phase 5 commits and creating/pushing
+  annotated tag `v1.0.0-rc6` at the final validation commit. Judge-key distribution remains
+  a separate operator-only action.
 
 ## Notes
 

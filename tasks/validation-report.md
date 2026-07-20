@@ -10,8 +10,8 @@ verification. The complete `rc6` clean-clone exit gate is recorded below after d
 
 | Gate | Status | Evidence |
 |---|---|---|
-| Python suite | PASS | Phase 5 fresh Windows and Ubuntu/WSL clones: `python -m pytest -q` → 184 passed; latest published rc5 nine-cell CI remains 175 passed in every cell |
-| Offline product acceptance | PASS | Phase 5 clean clones: 184 tests, real installed-process stdio MCP, malformed-call recovery, CLI/report/review/plan/non-mutation, clean/bad fixtures |
+| Python suite | PASS | Exact `ab06ff1` fresh Windows and Ubuntu/WSL clones: `python -m pytest -q` → 186 passed; latest published rc5 nine-cell CI remains 175 passed in every cell |
+| Offline product acceptance | PASS | Exact `ab06ff1` clean clones: 186 tests, real installed-process stdio MCP, malformed-call recovery, CLI/report/review/plan/non-mutation, clean/bad fixtures |
 | Production dogfood | PASS | Fresh clones on both platforms: zero production findings, zero suppressions, zero analysis warnings; `.archagent-audit/architecture-compliance.json` |
 | Ruff | PASS | Fresh clones on both platforms: all checks passed |
 | Strict typing | PASS | All nine GitHub cells: no issues in 30 source files |
@@ -209,3 +209,21 @@ publication, and MCP registry submission are post-event Phase 7 work.
 - The raw judge key remains outside the repository and has not been printed, committed,
   pushed, or distributed. Push, `v1.0.0-rc6`, and credential distribution still require
   separate operator approval.
+
+## Phase 5 submission-ready exit gate
+
+- Exact commit `ab06ff1` was cloned independently on Windows and Ubuntu/WSL. Windows used
+  Python 3.13.7 and Node 24.14.1; WSL used Python 3.13.12 and Node 22.22.2.
+- Both clean clones passed 186 tests, installed-process acceptance, zero-finding production
+  compliance, Ruff, strict mypy over 30 source files, and 88% branch coverage.
+- Windows installed 493 site packages and WSL installed 494 platform-adjusted packages.
+  Both passed ESLint, `tsc --noEmit`, the production build for exactly `/` and `/connect`,
+  five site tests, and the high-severity npm release threshold. The two documented moderate
+  Next/PostCSS records remain the dated accepted risk in `SECURITY.md`.
+- The offline demo passed on both platforms: the deliberate fixture produced the expected
+  critical exit 1, ten findings, three redactions, three bound review decisions, and an
+  approved-only FIXPLAN. Acceptance independently verified fixture non-mutation and the real
+  ten-tool stdio MCP lifecycle.
+- Both post-gate Git trees were clean. Claims match the live eight-tool hosted surface and
+  the exact remote. No push, tag, credential distribution, video upload, submission, package
+  publication, repository-access change, or paid model call occurred during the exit gate.

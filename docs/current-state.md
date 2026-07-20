@@ -41,6 +41,9 @@ submitted-content tools, and passed live readiness, unauthorized-access, AA001,
 judgment-gate, rate-limit, and payload-free-log checks. Hosted judgment remains off, no
 OpenAI key is attached, and the live test made zero paid model calls. The raw judge key is
 kept outside the repository for private submission notes; it has not been distributed.
+Exact commit `ab06ff1` passes the complete Windows and Ubuntu/WSL submission gate: 186
+tests, acceptance, compliance, Ruff, strict mypy, 88% branch coverage, clean site
+install/lint/type/build/tests, offline demo, and clean trees.
 
 Deliberate bad fixtures and synthetic secret sentinels are test evidence, not
 production exceptions. The production compliance scan has zero findings,
