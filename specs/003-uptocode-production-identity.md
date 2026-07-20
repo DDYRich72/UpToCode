@@ -54,17 +54,17 @@ and document to identify the product as UpToCode, so that the product has one cl
 
 ## Acceptance criteria
 
-- [ ] No current tracked product surface contains the superseded identity except an
+- [x] No current tracked product surface contains the superseded identity except an
   explicitly labeled historical migration note.
-- [ ] Full Windows and POSIX gates pass with at least 85% branch coverage.
-- [ ] A clean wheel environment installs and executes `uptocode` successfully.
-- [ ] Site lint, type check, build, tests, and production dependency audit pass.
-- [ ] Container health, unauthorized MCP, authenticated discovery, rate-limit,
+- [x] Full Windows and POSIX gates pass with at least 85% branch coverage.
+- [x] A clean wheel environment installs and executes `uptocode` successfully.
+- [x] Site lint, type check, build, tests, and production dependency audit pass.
+- [x] Container health, unauthorized MCP, authenticated discovery, rate-limit,
   judgment-off, log-safety, and shutdown checks pass for `uptocode-mcp`.
-- [ ] Package, runtime, manifest, and generated report version checks pass.
-- [ ] Trusted-publishing workflow and MCP manifest validate without publishing.
-- [ ] 1.1 beta-access and TypeScript specifications exist without implementation.
-- [ ] Claims and validation evidence are synchronized and the working tree is clean.
+- [x] Package, runtime, manifest, and generated report version checks pass.
+- [x] Trusted-publishing workflow and MCP manifest validate before approved publication.
+- [x] 1.1 beta-access and TypeScript specifications exist without implementation.
+- [x] Claims and validation evidence are synchronized and the working tree is clean.
 
 ## Test plan
 
@@ -73,4 +73,5 @@ and document to identify the product as UpToCode, so that the product has one cl
   run version/help/self-scan/MCP discovery.
 - Deployment: render the immutable manifest and run local container lifecycle checks;
   run live checks only after deployment approval.
-- Publication: validate workflow YAML and artifact contents before any OIDC publish.
+- Publication: validate workflow YAML and artifact contents before OIDC publish, then
+  verify the public distributions, attestations, and registry record after approval.

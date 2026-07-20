@@ -2,9 +2,9 @@
 
 ## Current gate
 
-Completion Plan v2 Phase 7 — UpToCode production release and publication.
-Repository visibility, package publication, registry submission, credential distribution,
-and paid-model use remain operator-controlled.
+Completion Plan v2 Phase 7 — complete. UpToCode 1.0.0 is public, published, attested,
+deployed, and registered. Credential distribution and any additional paid-model use remain
+operator-controlled.
 
 ## Status
 
@@ -15,8 +15,8 @@ and paid-model use remain operator-controlled.
 - [x] Distribution, import, CLI, config/output paths, environment variables, reports,
   Action, site, container, deployment templates, MCP manifest, tests, and documentation
   migrated to UpToCode with no superseded identifier in the current tracked surface.
-- [x] `uptocode` and `uptocode-audit` were absent from the official PyPI index on
-  2026-07-20; `uptocode` is the selected distribution and will be rechecked at publish time.
+- [x] `uptocode` and `uptocode-audit` were absent from the official PyPI index immediately
+  before publication on 2026-07-20; `uptocode==1.0.0` now owns the selected distribution.
 - [x] Official MCP metadata uses `io.github.DDYRich72/uptocode`, the stable GitHub
   repository ID, explicit `uvx` arguments, and the required PyPI README ownership marker;
   it passed the live 2025-12-11 official JSON schema.
@@ -44,10 +44,13 @@ and paid-model use remain operator-controlled.
   clean 493-package site install, lint, `tsc --noEmit`, build, five site tests, wheel/sdist
   build, isolated install, version agreement, and `pip check`. Push CI `29753128316` is
   also fully green on exact checkpoint `1394c7f`.
-- [ ] Operator checkpoints: make the repository public and select the UpToCode production
-  default branch; configure the protected `pypi` environment and trusted publisher;
-  publish `v1.0.0`; submit the MCP Registry record; distribute credentials only through
-  an approved private channel; and separately approve any additional paid smoke call.
+- [x] Operator-approved Stage 4 completed: the repository is public with
+  `codex/uptocode-production` as default; the protected `pypi` environment and pending
+  trusted publisher produced the attested `uptocode==1.0.0` release; tag CI
+  `29761626642` and production release `29761626504` passed; and the MCP Registry lists
+  active latest `io.github.DDYRich72/uptocode` version `1.0.0`.
+- [ ] Optional operator actions only: distribute private-beta credentials through an
+  approved private channel or separately authorize another paid GPT-5.6 smoke call.
 - [x] Approved `SPEC.md` and `GOAL.md` copied into the repository.
 - [x] Durable project documents drafted.
 - [x] Package/import smoke test (`python -m pytest -q tests/test_bootstrap.py`: 1 passed).

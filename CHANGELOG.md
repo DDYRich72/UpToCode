@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 - Unreleased
+## 1.0.0 - 2026-07-20
 
 - Establish UpToCode as the canonical product, `uptocode` distribution/import/CLI, and
   `io.github.DDYRich72/uptocode` MCP Registry identity before the first public release.
@@ -17,7 +17,7 @@
   default-off hosted judgment, safe log attribution, and no persistence.
 - Add the reusable upload-before-fail GitHub Action, nine-cell Python CI matrix, isolated
   wheel dependency audit, container lifecycle smoke tests, retained SBOM/SARIF artifacts,
-  and private-repository release-candidate workflow.
+  release-candidate workflow, and attested public production release.
 - Add the two-route UpToCode product site and connection generator, with keyboard tabs,
   visible focus, reduced-motion handling, responsive layouts, and no credential collection.
 - Add a production dogfood compliance gate: UpToCode audits itself with zero production

@@ -2,10 +2,10 @@
 
 Authority: `tasks/completion-plan-v2.md` Phase 7 and DECISIONS D005–D008.
 
-## Current checkpoint
+## Current checkpoint — complete
 
-- Stages 1–3 are complete. The production branch was pushed at `1394c7f`, and Cloud Build
-  produced the immutable UpToCode image from that exact archive.
+- Stages 1–5 are complete. The public repository defaults to
+  `codex/uptocode-production`; annotated tag `v1.0.0` resolves to `fc45894`.
 - `uptocode-mcp` revision `uptocode-mcp-00001-szq` serves the verified production endpoint
   at `https://uptocode-mcp-1015314816960.us-central1.run.app/mcp`. It uses the dedicated
   `uptocode` repository, `uptocode-mcp-runtime` identity, and
@@ -13,11 +13,12 @@ Authority: `tasks/completion-plan-v2.md` Phase 7 and DECISIONS D005–D008.
 - The no-paid-call hosted smoke and payload-free-log verification passed: readiness,
   unauthorized access, eight-tool discovery, AA001, judgment gate, per-key rate limiting,
   short-digest attribution, and secret/payload absence.
-- The GitHub repository remains private, its default branch remains the frozen submission
-  branch, and only `release-approval` exists as a GitHub environment. Public visibility,
-  default-branch change, creation of the protected `pypi` environment, trusted-publisher
-  configuration, `v1.0.0` publication, and MCP Registry submission remain later explicit
-  Stage 4 checkpoints.
+- The protected `pypi` environment admitted only exact tag `v1.0.0` after operator review.
+  Production release run `29761626504` built once, retained SBOM/compliance artifacts,
+  attested both distributions, and published `uptocode==1.0.0` through GitHub OIDC.
+- Tag CI run `29761626642` passed the complete matrix, package/site/wheel, and container
+  jobs. The official MCP Registry lists active latest
+  `io.github.DDYRich72/uptocode` version `1.0.0`.
 
 ## Stage 1 — Canonical identity
 

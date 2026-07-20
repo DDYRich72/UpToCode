@@ -321,10 +321,40 @@ publication, and MCP registry submission are post-event Phase 7 work.
 - GitHub CI run `29753128316` passed the complete matrix, package/site/wheel, and container
   jobs on exact pushed checkpoint `1394c7f`. No additional CI run was started during the
   local claim-synchronization gate.
-- GitHub remains private with the frozen submission branch as default. The production
-  branch is available remotely, but the protected `pypi` environment and trusted-publisher
-  relationship have not been created. Official PyPI JSON lookups for `uptocode` and
-  `uptocode-audit` still returned 404 during this checkpoint.
+- At this pre-publication checkpoint GitHub remained private with the frozen submission
+  branch as default. The production branch was available remotely, while the protected
+  `pypi` environment and trusted-publisher relationship had not yet been created. Official
+  PyPI JSON lookups for `uptocode` and `uptocode-audit` returned 404 at that checkpoint.
 - The external credential files were renamed in place to
   `C:\Users\nokes\.uptocode-secrets\uptocode-production-key.{txt,sha256}` without reading,
   printing, replacing, or distributing the credential.
+
+## Phase 7 public production release
+
+- Operator approved the combined Stage 4 sequence on 2026-07-20. GitHub repository
+  `DDYRich72/UpToCode` is public and defaults to `codex/uptocode-production`; the frozen
+  submission tag remains unchanged.
+- The protected `pypi` environment requires operator review and admits only exact tag
+  `v1.0.0`. PyPI pending publisher identity was exactly `DDYRich72/UpToCode`, workflow
+  `release.yml`, environment `pypi`, and project `uptocode`.
+- `uptocode` returned 404 immediately before the annotated `v1.0.0` tag was created at
+  `fc458948ac9391d08d7d84a1eac0d81e41d126a3` and pushed.
+- Production release run `29761626504` passed the full release gate, built once, retained
+  package/SBOM/compliance evidence, and published through GitHub OIDC after protected
+  environment approval. Tag CI run `29761626642` passed all nine Python cells plus the
+  package/site, isolated wheel-audit, and container lifecycle jobs.
+- PyPI serves `uptocode==1.0.0`: wheel 58,893 bytes with SHA-256
+  `34d53e778ca4219d3f853fcb133c1782f06fd85e053d0dcf21ee046fd3b4b2dc`; sdist
+  48,410 bytes with SHA-256
+  `b84c0bcdac6bb8dbc46f534e665608e4567499f2576b21cf2fa7c82bddca33fa`.
+  GitHub attestation verification bound both digests to
+  `.github/workflows/release.yml`, source ref `refs/tags/v1.0.0`, and this repository.
+- A fresh Python 3.13 environment installed `uptocode==1.0.0` from the public index;
+  `uptocode --version` and `python -m uptocode --version` both returned `1.0.0`, and
+  `pip check` reported no broken requirements.
+- Official `mcp-publisher` v1.7.9 Windows AMD64 archive matched release SHA-256
+  `aa7c3e014a38b427171b5c6d2c034551daa6fd822ce4a00d1dee2dbf7a21c118`.
+  Its live validation passed before publication. The Registry API now returns one active,
+  latest `io.github.DDYRich72/uptocode` record at version `1.0.0`, published
+  `2026-07-20T17:04:57.809548Z`, with the PyPI package and verified Cloud Run remote.
+- No credential was distributed and no paid model call was made during Stage 4.

@@ -53,11 +53,12 @@ Deliberate bad fixtures and synthetic secret sentinels are test evidence, not
 production exceptions. The production compliance scan has zero findings,
 warnings, or suppressions.
 
-Phase 7 is active on `codex/uptocode-production`. Every current tracked surface uses the
+Phase 7 completed on `codex/uptocode-production`. Every current tracked surface uses the
 UpToCode identity: distribution/import/CLI `uptocode`, `UPTOCODE_*` settings,
 `io.github.DDYRich72/uptocode` registry metadata, and deployed `uptocode-mcp` resources.
 The production endpoint is
 `https://uptocode-mcp-1015314816960.us-central1.run.app/mcp`; its immutable revision passed
-the no-paid-call hosted control and log-safety checks. The production package and MCP
-Registry record remain unpublished, and the repository remains private pending later
-explicit checkpoints.
+the no-paid-call hosted control and log-safety checks. The public repository defaults to
+`codex/uptocode-production`; `uptocode==1.0.0` is published on PyPI through the protected
+GitHub OIDC environment with verified provenance; and the official MCP Registry lists
+active latest server `io.github.DDYRich72/uptocode` version `1.0.0`.

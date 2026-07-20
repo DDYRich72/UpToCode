@@ -6,13 +6,19 @@ UpToCode is a design-time architecture-quality scanner for Python agent applicat
 
 The product is deliberately narrower than a general agent-security scanner. Version 1.0 recognizes OpenAI Agents SDK patterns, LangGraph limits, and conservative custom Python agent loops. Static scans are local and offline. Optional GPT‑5.6 judgment is explicit, bounded, redacted, and code-sharing gated.
 
-> The Python distribution, import package, and command are all `uptocode`. The name was
-> rechecked against PyPI during the Phase 7 production migration and was unclaimed; final
-> availability is checked again immediately before publication.
+> The Python distribution, import package, and command are all `uptocode`. Version 1.0.0
+> is published on PyPI through GitHub OIDC with public build-provenance attestations.
 
 ## Install locally
 
-UpToCode requires Python 3.11 or newer. This repository has not been published as a package.
+UpToCode requires Python 3.11 or newer. Install the verified 1.0 release from PyPI:
+
+```text
+python -m pip install "uptocode==1.0.0"
+uptocode --help
+```
+
+For repository development, use the editable test environment:
 
 ```text
 python -m pip install -e ".[test]"
@@ -28,8 +34,8 @@ python scripts/acceptance.py
 
 ## Judge test build
 
-The judging accounts must first be granted access to this private repository. No package
-publication, hosted credential, or paid model call is required for the test build.
+The repository and package are public. No hosted credential or paid model call is required
+for the complete offline test build.
 
 ```text
 git clone https://github.com/DDYRich72/UpToCode.git
@@ -115,9 +121,9 @@ steps:
       upload-sarif: "true"
 ```
 
-`version: source` is the competition-safe default and installs from the checked-out
-Action source before PyPI publication. After the event, an exact semantic version installs
-the matching `uptocode` PyPI release. Set `upload-sarif: "false"` when code-scanning
+`version: source` installs from the checked-out Action source. An exact semantic version,
+such as `1.0.0`, installs the matching `uptocode` PyPI release. Set
+`upload-sarif: "false"` when code-scanning
 upload is not desired; otherwise the calling workflow needs `security-events: write`.
 
 Example terminal output:
@@ -178,7 +184,7 @@ Known limitations:
 - Dynamic imports, metaprogramming, dispatch beyond the supported one-hop project call graph, and runtime-only behavior remain inconclusive and produce coverage warnings when recognized.
 - Static side-effect and schema analysis is conservative and can produce false positives; findings should be reviewed before planning.
 - Secret/PII recognition covers a small explicit pattern set, not arbitrary credentials or personal data.
-- No instruction-file linting, runtime tracing service, source-changing auto-fix, browser repository upload, account system, or package publication.
+- No instruction-file linting, runtime tracing service, source-changing auto-fix, browser repository upload, or account system.
 
 ## Configuration
 
