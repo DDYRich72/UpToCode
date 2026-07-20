@@ -284,18 +284,43 @@ publication, and MCP registry submission are post-event Phase 7 work.
   coverage pass. A Git-tracked-only site copy installed 494 packages and passed the same
   site gates. Both platforms report only the two dated moderate Next/PostCSS records
   accepted in `SECURITY.md`.
-- Local Docker and Google Cloud CLI are unavailable in the current shell. No local
-  container, Cloud Run deployment, package publication, repository visibility change,
-  registry submission, credential distribution, or paid model call occurred.
+- Local Docker was unavailable during preparation; GitHub CI supplied the container gate.
+  Google Cloud CLI 576.0.0 was installed only after explicit migration approval. No package
+  publication, repository visibility change, registry submission, credential distribution,
+  or paid model call occurred.
 - The operator-approved production-branch push placed `codex/uptocode-production` at
   `6918b49`. GitHub CI run `29725081460` completed successfully against that exact commit:
   all nine Python 3.11-3.13/Linux-macOS-Windows cells, package/SBOM/SARIF/site, isolated
   wheel audit, and container health/auth/shutdown jobs passed. This closes the local-Docker
   coverage gap without a rerun.
-- A read-only Phase 7 infrastructure audit found the healthy Phase 5 Cloud Run service,
-  image repository, runtime identity, and key-hash secret still under their pre-rename
-  resource set. None of the corresponding `uptocode`/`uptocode-mcp` production resources
-  exists yet, so no endpoint is advertised as migrated. No Cloud resource was changed.
+- The approved migration created the `uptocode` Artifact Registry repository,
+  `uptocode-mcp-runtime` service account, and `uptocode-api-key-hashes` digest-only secret.
+  Cloud Build `21c2abda-1c59-4148-b54f-ff1acb486f43` built the exact `1394c7f` archive and
+  pushed image digest
+  `sha256:309f90c591b1072dacc16726366f4319fd4996c2b4cdb9230c37d14c94e12091`.
+- Cloud Run revision `uptocode-mcp-00001-szq` receives 100% of traffic at
+  `https://uptocode-mcp-1015314816960.us-central1.run.app/mcp`. It uses the dedicated
+  runtime identity and secret, rate limit `30`, ingress `all`, application-level bearer
+  authentication, hosted judgment `false`, and no `OPENAI_API_KEY`.
+- The live no-paid smoke passed version `1.0.0`, readiness, unauthenticated `401`, eight-tool
+  hosted discovery, AA001, judgment-gate rejection, and `429` with `Retry-After: 2`.
+  Exported logs contain only safe key ID `f7254b8f`; the raw key, full digest, and submitted
+  synthetic sentinel are absent. The smoke made zero paid model calls.
+- The synchronized `server.json` with the verified `streamable-http` remote validates
+  against the official 2025-12-11 MCP Registry schema. The hosted key is represented only
+  as required secret variable `UPTOCODE_API_KEY`; no credential value is present.
+- The post-migration Windows gate passes 188 tests, 88% branch coverage, offline
+  acceptance, production compliance, Ruff, and strict mypy over 30 files. A clean
+  Git-tracked site copy under Node 22.19.0 installed 493 packages and passed ESLint,
+  `tsc --noEmit`, the `/` and `/connect` build, all five site tests, and the existing
+  high-severity npm threshold. The dated two-moderate advisory record remains unchanged.
+- Fresh release artifacts build successfully after endpoint synchronization:
+  `uptocode-1.0.0-py3-none-any.whl` is 58,893 bytes and
+  `uptocode-1.0.0.tar.gz` is 48,410 bytes. An isolated environment reports version `1.0.0`
+  through both entry points and passes `pip check`.
+- GitHub CI run `29753128316` passed the complete matrix, package/site/wheel, and container
+  jobs on exact pushed checkpoint `1394c7f`. No additional CI run was started during the
+  local claim-synchronization gate.
 - GitHub remains private with the frozen submission branch as default. The production
   branch is available remotely, but the protected `pypi` environment and trusted-publisher
   relationship have not been created. Official PyPI JSON lookups for `uptocode` and

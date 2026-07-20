@@ -2,9 +2,9 @@
 
 ## Current gate
 
-Completion Plan v2 Phase 7 — UpToCode production identity and release preparation.
-Publication, deployment, repository visibility, registry submission, and paid-model use
-remain operator-controlled.
+Completion Plan v2 Phase 7 — UpToCode production release and publication.
+Repository visibility, package publication, registry submission, credential distribution,
+and paid-model use remain operator-controlled.
 
 ## Status
 
@@ -36,10 +36,18 @@ remain operator-controlled.
 - [x] The production branch is pushed at `6918b49`; GitHub CI run `29725081460` passed the
   complete nine-cell Python matrix, package/site/wheel jobs, and renamed container health,
   unauthorized-MCP, and graceful-shutdown lifecycle on 2026-07-20.
-- [ ] Operator checkpoints: approve Cloud Run migration; make the repository public and
-  select the UpToCode production default branch; configure the protected `pypi`
-  environment and trusted publisher; publish `v1.0.0`; submit the MCP Registry record;
-  and separately approve any additional paid smoke call.
+- [x] Operator-approved Cloud migration built exact commit `1394c7f` as immutable digest
+  `sha256:309f90c591b1072dacc16726366f4319fd4996c2b4cdb9230c37d14c94e12091`
+  and deployed `uptocode-mcp-00001-szq`; all no-paid hosted and log-safety checks pass.
+- [x] Post-migration gate passes locally: 188 tests, 88% branch coverage, acceptance,
+  compliance, Ruff, strict mypy over 30 files, official MCP Registry schema validation,
+  clean 493-package site install, lint, `tsc --noEmit`, build, five site tests, wheel/sdist
+  build, isolated install, version agreement, and `pip check`. Push CI `29753128316` is
+  also fully green on exact checkpoint `1394c7f`.
+- [ ] Operator checkpoints: make the repository public and select the UpToCode production
+  default branch; configure the protected `pypi` environment and trusted publisher;
+  publish `v1.0.0`; submit the MCP Registry record; distribute credentials only through
+  an approved private channel; and separately approve any additional paid smoke call.
 - [x] Approved `SPEC.md` and `GOAL.md` copied into the repository.
 - [x] Durable project documents drafted.
 - [x] Package/import smoke test (`python -m pytest -q tests/test_bootstrap.py`: 1 passed).

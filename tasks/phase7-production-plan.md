@@ -4,20 +4,20 @@ Authority: `tasks/completion-plan-v2.md` Phase 7 and DECISIONS D005–D008.
 
 ## Current checkpoint
 
-- Stages 1 and 2 preparation are complete on `codex/uptocode-production` at `6918b49`;
-  the first pushed production CI run is fully green.
-- A read-only infrastructure audit confirms the healthy Phase 5 service still uses the
-  pre-rename resource set. The `uptocode` Artifact Registry repository,
-  `uptocode-mcp-runtime` service account, `uptocode-api-key-hashes` secret, and
-  `uptocode-mcp` Cloud Run service do not yet exist.
-- Stage 3 is the next mutation checkpoint. Deployment approval must cover creation of those
-  UpToCode resources, a new immutable image build, reuse of the existing external key
-  digest without exposing it, and the no-paid-call hosted verification.
+- Stages 1–3 are complete. The production branch was pushed at `1394c7f`, and Cloud Build
+  produced the immutable UpToCode image from that exact archive.
+- `uptocode-mcp` revision `uptocode-mcp-00001-szq` serves the verified production endpoint
+  at `https://uptocode-mcp-1015314816960.us-central1.run.app/mcp`. It uses the dedicated
+  `uptocode` repository, `uptocode-mcp-runtime` identity, and
+  `uptocode-api-key-hashes` digest-only secret.
+- The no-paid-call hosted smoke and payload-free-log verification passed: readiness,
+  unauthorized access, eight-tool discovery, AA001, judgment gate, per-key rate limiting,
+  short-digest attribution, and secret/payload absence.
 - The GitHub repository remains private, its default branch remains the frozen submission
   branch, and only `release-approval` exists as a GitHub environment. Public visibility,
   default-branch change, creation of the protected `pypi` environment, trusted-publisher
   configuration, `v1.0.0` publication, and MCP Registry submission remain later explicit
-  checkpoints.
+  Stage 4 checkpoints.
 
 ## Stage 1 — Canonical identity
 
