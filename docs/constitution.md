@@ -21,11 +21,11 @@ Help developers find architecture-quality failures in Python agent applications 
 ### Must have
 
 - Python scanning for OpenAI Agents SDK, LangGraph, raw OpenAI calls, and recognizable custom loops.
-- AA001–AA012 static/judgment behavior defined by `SPEC.md`.
+- AA001–AA013 static/judgment behavior defined by `SPEC.md`.
 - Terminal, JSON, standalone HTML, review manifest, FIXPLAN generation, and static MCP tools.
 - Offline-by-default scanning, coverage warnings, suppression handling, and irreversible secret redaction.
 - One bounded, typed audit pipeline shared by the CLI, local MCP, hosted MCP, review, and planning.
-- Report 2.0 rule outcomes that distinguish pass, finding, suppression, uncertainty, failure, and non-applicability.
+- Report 2.1 rule outcomes that distinguish pass, finding, suppression, uncertainty, failure, and non-applicability.
 - A dogfood gate: production source has zero findings, zero suppressions, and zero unexplained warnings.
 - A stateless hosted MCP surface that accepts submitted content only and never reads arbitrary filesystem paths.
 
@@ -40,7 +40,7 @@ Help developers find architecture-quality failures in Python agent applications 
 ## Success criteria
 
 The active Definition of Done is proven by `tasks/validation-report.md` and
-`.uptocode/architecture-compliance.json`. Every AA001-AA012 control has
+`.uptocode/architecture-compliance.json`. Every AA001-AA013 control has
 an implementation reference, a test reference, and a passing result.
 
 ## Stack

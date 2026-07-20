@@ -1,0 +1,7 @@
+- id: uptocode
+  name: UpToCode architecture scan
+  description: Scan Python agent applications for architecture-quality defects.
+  language: python
+  entry: uptocode scan . --fail-on critical
+  pass_filenames: false
+  always_run: true

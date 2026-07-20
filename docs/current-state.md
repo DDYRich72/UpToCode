@@ -1,5 +1,11 @@
 # Current State
 
+The working 1.1.0 source adds stable AA013 unbounded-context detection, AA007 backoff
+analysis, registry-resolved structured citations, rule maturity, Report/Baseline 2.1 debt
+tracking, expiring suppression metadata, share-safe reports, and a pre-commit adoption
+surface. The operator-gated 1.1.0 tag and publication remain pending the complete release
+gate; the published production version remains 1.0.0 until that action occurs.
+
 UpToCode 1.0.0 is a Python-first architecture-quality scanner with 188 offline
 tests, deterministic terminal/JSON/HTML/GitHub/SARIF reports, optional GPT-5.6
 Structured Outputs judgment, approval-bound FIXPLAN generation, and ten local

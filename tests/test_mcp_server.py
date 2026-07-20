@@ -79,7 +79,8 @@ def test_get_rule_returns_primary_urls_and_unknown_is_structured() -> None:
     missing = get_rule("AA999")
 
     assert found.rule and found.rule.id == "AA001"
-    assert found.rule and all(url.startswith("https://") for url in found.rule.citations)
+    assert found.rule and all(citation.url.startswith("https://") for citation in found.rule.citations)
+    assert found.rule.maturity == "stable"
     assert missing.error_code == "RULE_NOT_FOUND"
 
 

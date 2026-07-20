@@ -20,6 +20,7 @@ def render_sarif(report: Report) -> str:
             "name": finding.title,
             "shortDescription": {"text": finding.title},
             "defaultConfiguration": {"level": _LEVEL[finding.severity]},
+            "properties": {"maturity": finding.maturity, "tags": [finding.maturity]},
         }
         if citation is not None:
             rule["helpUri"] = citation.url
@@ -41,6 +42,7 @@ def render_sarif(report: Report) -> str:
                     }
                 ],
                 "partialFingerprints": {"uptocodeFinding": finding.fingerprint},
+                "properties": {"maturity": finding.maturity},
             }
         )
     payload = {

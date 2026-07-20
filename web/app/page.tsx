@@ -13,6 +13,7 @@ const rules = [
   "Output validation",
   "Agent evals",
   "Observability",
+  "Context growth",
 ];
 
 export default function Home() {
@@ -68,7 +69,7 @@ export default function Home() {
       </section>
 
       <section className="section" id="rules">
-        <p className="eyebrow">AA001—AA012</p>
+        <p className="eyebrow">AA001—AA013</p>
         <h2>A production architecture contract, not a generic quality score.</h2>
         <div className="ruleGrid">
           {rules.map((rule, index) => (
@@ -93,7 +94,7 @@ export default function Home() {
       </section>
 
       <footer>
-        <span>UpToCode 1.0 · Python 3.11+</span>
+        <span>UpToCode 1.1 · Python 3.11+</span>
         <Link href="/connect">Connection instructions</Link>
       </footer>
     </main>

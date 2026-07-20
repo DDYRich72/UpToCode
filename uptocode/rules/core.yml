@@ -2,80 +2,185 @@
   name: unbounded-agent-loop
   tier: static
   severity: critical
+  maturity: stable
   citations:
-    - https://openai.github.io/openai-agents-python/ref/run/
-    - https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
+    - publisher: OpenAI
+      title: OpenAI Agents SDK runner reference
+      url: https://openai.github.io/openai-agents-python/ref/run/
+      status: normative
+    - publisher: Anthropic
+      title: Building effective agents
+      url: https://www.anthropic.com/engineering/building-effective-agents
+      status: supporting
 - id: AA002
   name: missing-run-budget
   tier: static
   severity: critical
+  maturity: stable
   citations:
-    - https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
+    - publisher: OpenAI
+      title: A practical guide to building agents
+      url: https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
+      status: normative
+    - publisher: NIST
+      title: Artificial Intelligence Risk Management Framework Generative AI Profile
+      url: https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf
+      status: supporting
 - id: AA003
   name: ungated-destructive-action
   tier: static+judgment
   severity: critical
+  maturity: stable
   citations:
-    - https://openai.github.io/openai-agents-python/human_in_the_loop/
-    - https://developers.openai.com/api/docs/guides/agent-builder-safety
+    - publisher: OpenAI
+      title: Human-in-the-loop approvals
+      url: https://openai.github.io/openai-agents-python/human_in_the_loop/
+      status: normative
+    - publisher: OWASP GenAI Security Project
+      title: Securing Agentic Applications Guide 1.0
+      url: https://genai.owasp.org/resource/securing-agentic-applications-guide-1-0/
+      status: supporting
 - id: AA004
   name: unvalidated-tool-arguments
   tier: static
   severity: critical
+  maturity: stable
   citations:
-    - https://developers.openai.com/api/docs/guides/function-calling
-    - https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools
+    - publisher: OpenAI
+      title: Function calling
+      url: https://developers.openai.com/api/docs/guides/function-calling
+      status: normative
+    - publisher: Anthropic
+      title: Define tools
+      url: https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools
+      status: normative
+    - publisher: Model Context Protocol
+      title: MCP server primitives
+      url: https://modelcontextprotocol.io/specification/2025-06-18/server/index
+      status: supporting
 - id: AA005
   name: untrusted-content-in-prompt
   tier: judgment
   severity: critical
+  maturity: stable
   citations:
-    - https://developers.openai.com/api/docs/guides/agent-builder-safety
-    - https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/mitigate-jailbreaks
+    - publisher: OpenAI
+      title: Safety in building agents
+      url: https://developers.openai.com/api/docs/guides/agent-builder-safety
+      status: normative
+    - publisher: Anthropic
+      title: Mitigate jailbreaks and prompt injections
+      url: https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/mitigate-jailbreaks
+      status: normative
+    - publisher: OWASP GenAI Security Project
+      title: Securing Agentic Applications Guide 1.0
+      url: https://genai.owasp.org/resource/securing-agentic-applications-guide-1-0/
+      status: supporting
 - id: AA006
   name: secret-exposure
   tier: static
   severity: critical
+  maturity: stable
   citations:
-    - https://developers.openai.com/api/docs/guides/agent-builder-safety
+    - publisher: OpenAI
+      title: Safety in building agents
+      url: https://developers.openai.com/api/docs/guides/agent-builder-safety
+      status: normative
+    - publisher: NIST
+      title: Artificial Intelligence Risk Management Framework Generative AI Profile
+      url: https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf
+      status: supporting
 - id: AA007
   name: missing-resilience-controls
   tier: static
   severity: warning
+  maturity: stable
   citations:
-    - https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
+    - publisher: OpenAI
+      title: A practical guide to building agents
+      url: https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
+      status: normative
 - id: AA008
   name: unjustified-orchestration-complexity
   tier: judgment
   severity: warning
+  maturity: stable
   citations:
-    - https://www.anthropic.com/engineering/building-effective-agents
-    - https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
+    - publisher: Anthropic
+      title: Building effective agents
+      url: https://www.anthropic.com/engineering/building-effective-agents
+      status: normative
+    - publisher: OpenAI
+      title: A practical guide to building agents
+      url: https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
+      status: supporting
 - id: AA009
   name: poor-tool-schema
   tier: judgment
   severity: warning
+  maturity: stable
   citations:
-    - https://developers.openai.com/api/docs/guides/function-calling
-    - https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools
+    - publisher: OpenAI
+      title: Function calling
+      url: https://developers.openai.com/api/docs/guides/function-calling
+      status: normative
+    - publisher: Anthropic
+      title: Define tools
+      url: https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools
+      status: normative
 - id: AA010
   name: unvalidated-output-before-side-effect
   tier: static+judgment
   severity: warning
+  maturity: stable
   citations:
-    - https://developers.openai.com/api/docs/guides/function-calling
-    - https://developers.openai.com/api/docs/guides/agent-builder-safety
+    - publisher: OpenAI
+      title: Function calling
+      url: https://developers.openai.com/api/docs/guides/function-calling
+      status: normative
+    - publisher: OpenAI
+      title: Safety in building agents
+      url: https://developers.openai.com/api/docs/guides/agent-builder-safety
+      status: supporting
 - id: AA011
   name: no-agent-eval-coverage
   tier: static+judgment
   severity: warning
+  maturity: stable
   citations:
-    - https://developers.openai.com/api/docs/guides/evals
-    - https://adk.dev/evaluate/
+    - publisher: OpenAI
+      title: Working with evals
+      url: https://developers.openai.com/api/docs/guides/evals
+      status: normative
+    - publisher: Google
+      title: Agent Development Kit evaluation
+      url: https://adk.dev/evaluate/
+      status: supporting
 - id: AA012
   name: no-agent-observability
   tier: static
   severity: info
+  maturity: stable
   citations:
-    - https://openai.github.io/openai-agents-python/tracing/
-
+    - publisher: OpenAI
+      title: Agents SDK tracing
+      url: https://openai.github.io/openai-agents-python/tracing/
+      status: normative
+    - publisher: NIST
+      title: Artificial Intelligence Risk Management Framework Generative AI Profile
+      url: https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf
+      status: supporting
+- id: AA013
+  name: unbounded-context-growth
+  tier: static
+  severity: warning
+  maturity: stable
+  citations:
+    - publisher: Anthropic
+      title: Building effective agents
+      url: https://www.anthropic.com/engineering/building-effective-agents
+      status: normative
+    - publisher: OpenAI
+      title: A practical guide to building agents
+      url: https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
+      status: supporting

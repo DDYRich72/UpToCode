@@ -154,6 +154,7 @@ Each adapter records which constructs it recognizes. An unrecognized or inconclu
   "rule_id": "AA001",
   "severity": "critical|warning|info",
   "tier": "static|judgment",
+  "maturity": "stable|experimental",
   "title": "Unbounded agent loop",
   "file": "src/agent.py",
   "line": 42,
@@ -164,7 +165,7 @@ Each adapter records which constructs it recognizes. An unrecognized or inconclu
     "recommended": "Set an explicit turn cap and handle MaxTurnsExceeded.",
     "tradeoff": "A cap can truncate long tasks, so preserve partial results."
   },
-  "citations": [{"vendor": "OpenAI", "title": "Runner reference", "url": "https://openai.github.io/openai-agents-python/ref/run/"}],
+  "citations": [{"publisher": "OpenAI", "title": "Runner reference", "url": "https://openai.github.io/openai-agents-python/ref/run/", "status": "normative|supporting"}],
   "excerpt": "result = await Runner.run(agent, task, max_turns=None)",
   "context": {"function": "run", "framework": "openai-agents"},
   "remediation": {
@@ -181,8 +182,8 @@ Findings are deterministically ordered by severity, normalized path, line, and r
 
 ```json
 {
-  "schema_version": "1.0",
-  "tool_version": "0.1.0",
+  "schema_version": "2.1",
+  "tool_version": "1.1.0",
   "scan_root": ".",
   "generated_at": "RFC3339 timestamp",
   "findings": [],
@@ -192,14 +193,31 @@ Findings are deterministically ordered by severity, normalized path, line, and r
     "files_skipped": 0,
     "frameworks_detected": [],
     "rules_evaluated": [],
+    "experimental_rules_evaluated": [],
     "rules_not_applicable": []
   },
   "analysis_warnings": [],
   "judgment_status": "not-requested|completed|partial|failed",
   "redactions": {"secrets": 0, "pii": 0},
-  "suppressions": 0
+  "suppressions": 0,
+  "suppression_details": [],
+  "baseline_debt": {"new": [], "aging": [], "resolved": []}
 }
 ```
+
+Report 2.1 citations serialize `publisher`, `title`, `url`, and `status`; readers accept
+the legacy 2.0 `vendor` key. Registry maturity defaults to `stable`. Experimental findings
+remain visible but do not participate in `--fail-on` unless `--include-experimental` is set.
+
+Baseline 2.1 stores `entries` containing `fingerprint`, `rule_id`, `file`, and `first_seen`.
+The loader upgrades 2.0 bare-fingerprint baselines in memory using the baseline creation
+time as `first_seen`. Applying a baseline classifies new, aging, and resolved debt before
+aging findings are muted; updating preserves `first_seen` for persisting fingerprints.
+
+Suppressions accept `# uptocode: ignore AA001` plus optional `owner=NAME`, quoted
+`reason="TEXT"`, and `expires=YYYY-MM-DD`. An expiry equal to the scan date remains active;
+an earlier date emits `SUPPRESSION_EXPIRED` and does not suppress. Malformed metadata acts
+as a bare suppression and emits `SUPPRESSION_METADATA_INVALID`.
 
 ### Review manifest
 
@@ -223,13 +241,14 @@ The manifest stores the report fingerprint, finding fingerprints, `approved|reje
 | AA010 | Unvalidated model output before side effect | Static + judgment | warning | Model output reaches a write/destructive sink without schema or domain validation. |
 | AA011 | No agent eval coverage | Static + judgment | warning | Supported agent entrypoints exist but no tests/evals exercise them. Judgment proposes three repo-specific cases. |
 | AA012 | No agent observability | Static | info | Supported agent loop/tool execution exists without recognized logging or tracing around decisions and tool calls. |
+| AA013 | Unbounded context growth | Static | warning | In one recognized loop, a proven list is appended and passed as `messages`, `input`, or `history` to a recognized model call, with no recognized truncation in the loop or containing function. Incomplete recognition produces an analysis warning. |
 
 ### Rule behavior constraints
 
-- One finding represents one location and one actionable defect. AA007 may emit separate timeout and retry findings at the same call site.
+- One finding represents one location and one actionable defect. AA007 may emit separate timeout, retry, and retry-without-backoff findings at the same call site.
 - Static findings require source-backed evidence. Names alone may select candidates but do not prove a verdict.
 - Judgment cannot upgrade unsupported syntax into a static fact; it operates only on normalized evidence and redacted excerpts.
-- Every rule entry contains applicability, evidence requirements, severity, verdict templates, suppressions, and direct citation URLs.
+- Every rule entry contains applicability, evidence requirements, severity, maturity, verdict templates, suppressions, and structured public citations. The registry is the citation source of truth for static and judgment findings.
 - Use at least two applicable primary-vendor sources when claiming vendor convergence. Otherwise state only the individual sourced recommendation.
 
 ### Citation registry
@@ -269,6 +288,7 @@ The manifest stores the report fingerprint, finding fingerprints, `approved|reje
 uptocode scan PATH [--format terminal|json|html|github] [--output FILE]
                         [--judgment --send-code]
                         [--fail-on critical|warning|info]
+                        [--include-experimental] [--share-safe]
 uptocode review REPORT [--approve IDS|--approve-all] [--reject IDS]
                             [--non-interactive]
 uptocode plan REPORT --manifest MANIFEST [--output FIXPLAN.md]
@@ -276,6 +296,7 @@ uptocode serve
 ```
 
 - `scan` defaults to terminal format and static-only behavior.
+- `--share-safe` is valid for JSON, HTML, and SARIF only. It replaces `scan_root` with `<scan-root>`, retains `metadata.repository_revision`, and removes absolute Windows, UNC, Linux-home, macOS-home, and scan-root paths from every serialized string.
 - `--output` is required for HTML and optional for JSON/GitHub; without it, machine-readable output goes to stdout and diagnostics go to stderr.
 - Exit 0: no finding reaches the configured threshold. Exit 1: threshold breached. Exit 2: invalid configuration or unrecoverable scan error.
 - File parse failures are recoverable analysis warnings unless no supported file can be analyzed.
@@ -327,7 +348,7 @@ Package, config, public schemas, discovery, redaction, CLI shell, AA001 vertical
 
 ### Gate 2 — Python static engine
 
-All static portions of AA001–AA012, Python adapters, bad/clean fixtures, suppressions, coverage metadata, exit codes, and goldens.
+All static portions of AA001–AA013, Python adapters, bad/clean fixtures, suppressions, coverage metadata, exit codes, and goldens.
 
 ### Gate 3 — Judgment and developer surfaces
 
@@ -353,6 +374,8 @@ Never cut: Python static engine, at least two judgment rules, review manifest, F
 - Every rule: positive case, clean case, suppression case, unsupported-syntax case, and false-positive regression.
 - AA006: detected values are absent from terminal, JSON, HTML, logs, snapshots, and judgment payloads.
 - AA007: timeout and retry evidence are independent; retry recommendations are withheld for unsafe/unknown replay.
+- AA007: proven retries without Tenacity exponential waits, exponential/multiplied sleep, or OpenAI built-in `max_retries` backoff emit a distinct warning.
+- AA013: cover positive, every recognized truncation, suppression, inconclusive syntax, alias/name false positives, and nested lexical scopes.
 
 ### Pipeline tests
 
@@ -361,6 +384,7 @@ Never cut: Python static engine, at least two judgment rules, review manifest, F
 - Structured judgment success, refusal, timeout, authentication failure, and partial failure; static findings always survive.
 - Review and planning use temporary fixture copies and leave canonical fixtures and the git worktree unchanged.
 - Standalone HTML renders without a server and displays coverage, warnings, redactions, bar chart, and findings.
+- Baseline tests cover introduce/persist/resolve, stable `first_seen`, 2.0 loading, and combined apply/update behavior. Suppression tests cover bare/full/malformed metadata and yesterday/today/tomorrow. Share-safe tests render JSON, HTML, and SARIF from hostile absolute paths.
 - MCP survives malformed arguments; static-only default makes no network calls; `check_loop` and `audit_diff` detect AA001.
 
 ### Definition of Done
@@ -385,4 +409,3 @@ Never cut: Python static engine, at least two judgment rules, review manifest, F
 4. Approve selected findings and generate `FIXPLAN.md`; emphasize that v1 plans changes but does not rewrite source.
 5. Show a coding agent calling MCP `check_loop` before writing an explicitly unbounded loop.
 6. Close with rulepack extensibility, Codex build evidence, and the authorized GPT-5.6 judgment path.
-

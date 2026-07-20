@@ -6,7 +6,6 @@ from uptocode.adapters.python import LoopEvidence
 from uptocode.fingerprints import finding_fingerprint
 from uptocode.models import (
     AnalysisWarning,
-    Citation,
     Evidence,
     Finding,
     FindingContext,
@@ -14,18 +13,7 @@ from uptocode.models import (
     Severity,
     Verdict,
 )
-
-
-RUNNER_CITATION = Citation(
-    vendor="OpenAI",
-    title="OpenAI Agents SDK runner reference",
-    url="https://openai.github.io/openai-agents-python/ref/run/",
-)
-PRACTICAL_GUIDE_CITATION = Citation(
-    vendor="OpenAI",
-    title="A practical guide to building agents",
-    url="https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf",
-)
+from uptocode.rules.registry import core_rule_map
 
 
 def evaluate_aa001(
@@ -34,6 +22,7 @@ def evaluate_aa001(
     file: str,
     excerpt: str,
 ) -> tuple[Finding | None, AnalysisWarning | None]:
+    definition = core_rule_map()["AA001"]
     if loop.bound_kind in {"sdk-default", "explicit", "custom"}:
         return None, None
     if loop.bound_kind == "unknown":
@@ -57,6 +46,7 @@ def evaluate_aa001(
         rule_id="AA001",
         severity=Severity.CRITICAL,
         tier="static",
+        maturity=definition.maturity,
         title="Unbounded agent loop",
         file=file,
         line=loop.line,
@@ -67,10 +57,14 @@ def evaluate_aa001(
         verdict=Verdict(
             observed=observed,
             implies="A failed tool interaction can continue without a turn ceiling.",
-            recommended="Set a turn cap and preserve partial results when the cap is reached.",
+            recommended=(
+                "Terminate on the framework's semantic completion signal (final output, "
+                "LangGraph END, or Anthropic end_turn rather than tool_use); also enforce "
+                "a hard turn or budget ceiling and preserve partial results at that ceiling."
+            ),
             tradeoff="A cap can truncate legitimately long tasks.",
         ),
-        citations=[RUNNER_CITATION, PRACTICAL_GUIDE_CITATION],
+        citations=[citation.to_public() for citation in definition.citations],
         excerpt=excerpt,
         context=FindingContext(framework=loop.framework),
         remediation=Remediation(complexity="moderate"),

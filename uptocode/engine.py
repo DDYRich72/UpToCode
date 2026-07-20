@@ -38,12 +38,7 @@ from uptocode.rules.plugins import (
     load_rule_plugins,
 )
 from uptocode.rules.static import evaluate_file, evaluate_project
-
-
-def _is_suppressed(lines: list[str], line: int, rule_id: str) -> bool:
-    directive = f"# uptocode: ignore {rule_id}"
-    indexes = [line - 1, line - 2]
-    return any(0 <= index < len(lines) and directive in lines[index] for index in indexes)
+from uptocode.suppressions import SuppressionIndex, parse_suppressions
 
 
 def _excerpt(lines: list[str], line: int) -> str:
@@ -71,7 +66,8 @@ def _repository_revision(root: Path) -> str | None:
 
 
 def _rule_results(report: Report, *, judgment_requested: bool) -> list[RuleResult]:
-    findings = {rule_id: 0 for rule_id in (f"AA{index:03d}" for index in range(1, 13))}
+    definitions = load_core_rules()
+    findings = {definition.id: 0 for definition in definitions}
     for finding in report.findings:
         findings[finding.rule_id] = findings.get(finding.rule_id, 0) + 1
     warnings_by_rule = {
@@ -79,7 +75,7 @@ def _rule_results(report: Report, *, judgment_requested: bool) -> list[RuleResul
         for warning in report.analysis_warnings
         if warning.code.startswith("AA") and len(warning.code) >= 5
     }
-    judgment_rules = {"AA005", "AA008", "AA009"}
+    judgment_rules = {definition.id for definition in definitions if definition.tier == "judgment"}
     results: list[RuleResult] = []
     for rule_id in sorted(findings):
         count = findings[rule_id]
@@ -150,6 +146,19 @@ def _scan_path_impl(
         ),
     )
     frameworks: set[str] = set()
+    definitions = load_core_rules()
+    suppression_indexes: dict[str, SuppressionIndex] = {}
+    counted_suppressions: set[tuple[str, int, str]] = set()
+
+    def is_suppressed(file: str, line: int, rule_id: str) -> bool:
+        directive = suppression_indexes.get(file, SuppressionIndex([])).find(rule_id, line)
+        if directive is None or not directive.active:
+            return False
+        key = (file, directive.detail.line, rule_id)
+        if key not in counted_suppressions:
+            counted_suppressions.add(key)
+            report.suppressions += 1
+        return True
     project_facts: list[tuple[str, list[str], FileFacts]] = []
     judgment_sources: list[tuple[str, str]] = []
     normalized_files: list[NormalizedFileEvidence] = []
@@ -273,6 +282,10 @@ def _scan_path_impl(
             )
         frameworks.update(evidence.frameworks)
         lines = source.splitlines()
+        suppression_index, suppression_warnings = parse_suppressions(lines, file=relative)
+        suppression_indexes[relative] = suppression_index
+        report.suppression_details.extend(item.detail for item in suppression_index.directives)
+        report.analysis_warnings.extend(suppression_warnings)
         project_facts.append((relative, lines, facts))
         normalized_files.append(
             NormalizedFileEvidence(
@@ -285,8 +298,7 @@ def _scan_path_impl(
             )
         )
         for loop in evidence.loops:
-            if _is_suppressed(lines, loop.line, "AA001"):
-                report.suppressions += 1
+            if is_suppressed(relative, loop.line, "AA001"):
                 continue
             excerpt = _excerpt(lines, loop.line)
             finding, warning = evaluate_aa001(
@@ -298,6 +310,15 @@ def _scan_path_impl(
                 report.findings.append(finding)
             if warning:
                 report.analysis_warnings.append(warning)
+        for line in facts.context_growth_inconclusive:
+            report.analysis_warnings.append(
+                AnalysisWarning(
+                    code="AA013_INCONCLUSIVE_CONTEXT_GROWTH",
+                    message="Context mutation and model use were recognized, but collection identity could not be proven.",
+                    file=relative,
+                    line=line,
+                )
+            )
         report.findings.extend(evaluate_file(relative, lines, facts))
     report.findings.extend(evaluate_project(project_facts))
     if config.rulepacks:
@@ -309,9 +330,7 @@ def _scan_path_impl(
         report.analysis_warnings.extend(plugin_result.warnings)
     filtered_findings = []
     for finding in report.findings:
-        finding_lines = next((lines for file, lines, _ in project_facts if file == finding.file), [])
-        if _is_suppressed(finding_lines, finding.line, finding.rule_id):
-            report.suppressions += 1
+        if is_suppressed(finding.file, finding.line, finding.rule_id):
             continue
         finding.excerpt, counts = redact_text(finding.excerpt)
         report.redactions.add(counts)
@@ -319,12 +338,16 @@ def _scan_path_impl(
     report.findings = filtered_findings
     report.coverage.frameworks_detected = sorted(frameworks)
     if project_facts and any(facts.agent_present or facts.model_calls for _, _, facts in project_facts):
+        applicable = [definition for definition in definitions if "static" in definition.tier]
         report.coverage.rules_evaluated = [
-            "AA001", "AA002", "AA003", "AA004", "AA006", "AA007", "AA010", "AA011", "AA012"
+            definition.id for definition in applicable if definition.maturity == "stable"
+        ]
+        report.coverage.experimental_rules_evaluated = [
+            definition.id for definition in applicable if definition.maturity == "experimental"
         ]
         report.coverage.rules_not_applicable = []
     elif files:
-        report.coverage.rules_not_applicable = [f"AA{index:03d}" for index in range(1, 13)]
+        report.coverage.rules_not_applicable = [definition.id for definition in definitions]
     report.findings.sort(
         key=lambda item: (
             SEVERITY_ORDER[item.severity],
@@ -337,17 +360,9 @@ def _scan_path_impl(
         key=lambda item: (item.file or "", item.line or 0, item.code)
     )
     if judgment:
-        judgment_line_map = {
-            file: source.splitlines() for file, source in judgment_sources
-        }
         candidates = []
         for candidate in collect_judgment_candidates(judgment_sources):
-            if _is_suppressed(
-                judgment_line_map.get(candidate.file, []),
-                candidate.line,
-                candidate.rule_id,
-            ):
-                report.suppressions += 1
+            if is_suppressed(candidate.file, candidate.line, candidate.rule_id):
                 continue
             candidates.append(candidate)
         if judgment_client is None:
@@ -383,7 +398,7 @@ def _scan_path_impl(
             finding.severity = override.severity
     report.rule_results = _rule_results(report, judgment_requested=judgment)
     registry_payload = json.dumps(
-        [definition.model_dump(mode="json") for definition in load_core_rules()],
+        [definition.model_dump(mode="json") for definition in definitions],
         sort_keys=True,
     )
     report.metadata = ScanMetadata(

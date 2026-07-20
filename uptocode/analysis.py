@@ -40,6 +40,14 @@ class ModelCallFact:
     has_output_limit: bool
     has_timeout: bool
     has_retry: bool
+    has_backoff: bool
+
+
+@dataclass(frozen=True)
+class ContextGrowthFact:
+    line: int
+    collection: str
+    detail: str
 
 
 @dataclass(frozen=True)
@@ -62,6 +70,8 @@ class FileFacts:
     agent_present: bool = False
     first_agent_line: int = 1
     model_calls: list[ModelCallFact] = field(default_factory=list)
+    context_growth: list[ContextGrowthFact] = field(default_factory=list)
+    context_growth_inconclusive: list[int] = field(default_factory=list)
     tools: list[ToolFact] = field(default_factory=list)
     risky_sinks: list[SinkFact] = field(default_factory=list)
     raw_output_sinks: list[SinkFact] = field(default_factory=list)
@@ -151,8 +161,188 @@ def _is_side_effect_call(call_name: str) -> bool:
     )
 
 
+def _is_model_call(call: ast.Call) -> bool:
+    name = qualified_name(call.func)
+    return (
+        ("responses." in name and name.rsplit(".", 1)[-1] in MODEL_METHODS)
+        or name.endswith(("Runner.run", "Runner.run_sync", "Runner.run_streamed"))
+    )
+
+
+def _retry_evidence(scope: ast.AST) -> tuple[bool, bool]:
+    retry = False
+    backoff = False
+    decorators = (
+        scope.decorator_list
+        if isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef))
+        else []
+    )
+    for decorator in decorators:
+        if isinstance(decorator, ast.Call) and qualified_name(decorator.func).endswith(
+            ("retry", "tenacity.retry")
+        ):
+            retry = True
+            for keyword in decorator.keywords:
+                if keyword.arg == "wait" and any(
+                    isinstance(item, ast.Call)
+                    and qualified_name(item.func).endswith(
+                        ("wait_exponential", "wait_random_exponential")
+                    )
+                    for item in ast.walk(keyword.value)
+                ):
+                    backoff = True
+    for item in ast.walk(scope):
+        if not isinstance(item, ast.Call):
+            continue
+        name = qualified_name(item.func)
+        if name.endswith(("wait_exponential", "wait_random_exponential")):
+            retry = True
+            backoff = True
+        if name.endswith(("sleep", "asyncio.sleep", "time.sleep")) and item.args:
+            if any(isinstance(part, (ast.Mult, ast.Pow)) for part in ast.walk(item.args[0])):
+                retry = True
+                backoff = True
+    return retry, backoff
+
+
+def _walk_scope(scope: ast.AST):  # type: ignore[no-untyped-def]
+    stack = [scope]
+    while stack:
+        item = stack.pop()
+        yield item
+        children = list(ast.iter_child_nodes(item))
+        if item is not scope and isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+            continue
+        stack.extend(reversed(children))
+
+
+def _proven_collections(scope: ast.AST) -> tuple[set[str], set[str]]:
+    proven: set[str] = set()
+    bounded: set[str] = set()
+    for item in _walk_scope(scope):
+        if not isinstance(item, (ast.Assign, ast.AnnAssign)) or item.value is None:
+            continue
+        targets = item.targets if isinstance(item, ast.Assign) else [item.target]
+        names = {target.id for target in targets if isinstance(target, ast.Name)}
+        value = item.value
+        is_list = isinstance(value, ast.List) or (
+            isinstance(value, ast.Call) and qualified_name(value.func) == "list"
+        )
+        is_deque = isinstance(value, ast.Call) and qualified_name(value.func).endswith("deque")
+        if is_list or is_deque:
+            proven.update(names)
+        if isinstance(value, ast.Call) and is_deque and any(
+            keyword.arg == "maxlen" for keyword in value.keywords
+        ):
+            bounded.update(names)
+    return proven, bounded
+
+
+def _slice_of_name(node: ast.AST, name: str) -> bool:
+    return (
+        isinstance(node, ast.Subscript)
+        and isinstance(node.value, ast.Name)
+        and node.value.id == name
+        and isinstance(node.slice, ast.Slice)
+    )
+
+
+def _tail_slice_of_name(node: ast.AST, name: str) -> bool:
+    if (
+        not _slice_of_name(node, name)
+        or not isinstance(node, ast.Subscript)
+        or not isinstance(node.slice, ast.Slice)
+    ):
+        return False
+    lower = node.slice.lower
+    return (
+        isinstance(lower, ast.UnaryOp)
+        and isinstance(lower.op, ast.USub)
+        and isinstance(lower.operand, (ast.Constant, ast.Name))
+    )
+
+
+def _has_truncation(scope: ast.AST, name: str, bounded: set[str]) -> bool:
+    if name in bounded:
+        return True
+    for item in _walk_scope(scope):
+        if isinstance(item, (ast.Assign, ast.AnnAssign)) and item.value is not None:
+            targets = item.targets if isinstance(item, ast.Assign) else [item.target]
+            if any(
+                (isinstance(target, ast.Name) and target.id == name)
+                or _slice_of_name(target, name)
+                for target in targets
+            ) and _tail_slice_of_name(item.value, name):
+                return True
+        if isinstance(item, ast.Delete) and any(_slice_of_name(target, name) for target in item.targets):
+            return True
+        if isinstance(item, ast.Call) and isinstance(item.func, ast.Attribute):
+            if isinstance(item.func.value, ast.Name) and item.func.value.id == name:
+                if item.func.attr == "popleft" or (
+                    item.func.attr == "pop"
+                    and item.args
+                    and isinstance(item.args[0], ast.Constant)
+                    and item.args[0].value == 0
+                ):
+                    return True
+    return False
+
+
+def _context_growth_facts(tree: ast.Module) -> tuple[list[ContextGrowthFact], list[int]]:
+    findings: list[ContextGrowthFact] = []
+    inconclusive: set[int] = set()
+    functions = [item for item in ast.walk(tree) if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))]
+    for loop in [item for item in ast.walk(tree) if isinstance(item, (ast.For, ast.AsyncFor, ast.While))]:
+        scope = min(
+            (
+                function
+                for function in functions
+                if function.lineno <= loop.lineno <= (function.end_lineno or function.lineno)
+            ),
+            key=lambda function: (function.end_lineno or function.lineno) - function.lineno,
+            default=tree,
+        )
+        proven, bounded = _proven_collections(scope)
+        loop_nodes = list(_walk_scope(loop))
+        appended = {
+            item.func.value.id
+            for item in loop_nodes
+            if isinstance(item, ast.Call)
+            and isinstance(item.func, ast.Attribute)
+            and item.func.attr == "append"
+            and isinstance(item.func.value, ast.Name)
+        }
+        model_calls = [item for item in loop_nodes if isinstance(item, ast.Call) and _is_model_call(item)]
+        if not appended or not model_calls:
+            continue
+        matched = False
+        for call in model_calls:
+            for keyword in call.keywords:
+                if keyword.arg not in {"messages", "input", "history"} or not isinstance(keyword.value, ast.Name):
+                    continue
+                name = keyword.value.id
+                if name not in appended:
+                    continue
+                matched = True
+                if name not in proven:
+                    inconclusive.add(loop.lineno)
+                elif not _has_truncation(scope, name, bounded):
+                    findings.append(
+                        ContextGrowthFact(
+                            line=loop.lineno,
+                            collection=name,
+                            detail=f"{name} is appended and reused as {keyword.arg} inside the loop without recognized truncation.",
+                        )
+                    )
+        if not matched:
+            inconclusive.add(loop.lineno)
+    unique = {(item.line, item.collection): item for item in findings}
+    return list(unique.values()), sorted(inconclusive)
+
+
 def analyze_source(tree: ast.Module, source: str) -> FileFacts:
     facts = FileFacts()
+    facts.context_growth, facts.context_growth_inconclusive = _context_growth_facts(tree)
     budget_names: set[str] = set()
     for node in ast.walk(tree):
         if not isinstance(node, (ast.Assign, ast.AnnAssign)):
@@ -178,7 +368,8 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
     facts.has_eval_marker = "uptocode: eval agent" in source
     client_timeout = False
     client_retry = False
-    configured_clients: dict[str, tuple[bool, bool]] = {}
+    client_backoff = False
+    configured_clients: dict[str, tuple[bool, bool, bool]] = {}
     environment_secrets: set[str] = set()
     for node in ast.walk(tree):
         if not isinstance(node, (ast.Assign, ast.AnnAssign)):
@@ -203,8 +394,9 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
                 names = [target.id for target in targets if isinstance(target, ast.Name)]
                 has_timeout = any(keyword.arg == "timeout" for keyword in option_call.keywords)
                 has_retry = any(keyword.arg == "max_retries" for keyword in option_call.keywords)
+                has_backoff = has_retry
                 for name in names:
-                    configured_clients[name] = (has_timeout, has_retry)
+                    configured_clients[name] = (has_timeout, has_retry, has_backoff)
             continue
         targets = node.targets if isinstance(node, ast.Assign) else [node.target]
         environment_secrets.update(target.id for target in targets if isinstance(target, ast.Name))
@@ -220,7 +412,9 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
                 facts.observability_lines.append(node.lineno)
             if call_name.endswith("OpenAI"):
                 client_timeout |= any(keyword.arg == "timeout" for keyword in node.keywords)
-                client_retry |= any(keyword.arg in {"max_retries", "retry"} for keyword in node.keywords)
+                has_builtin_retry = any(keyword.arg == "max_retries" for keyword in node.keywords)
+                client_retry |= has_builtin_retry or any(keyword.arg == "retry" for keyword in node.keywords)
+                client_backoff |= has_builtin_retry
             is_agent = call_name.endswith("Agent") or "Runner.run" in call_name
             is_model = "responses." in call_name and call_name.rsplit(".", 1)[-1] in MODEL_METHODS
             if is_agent or is_model:
@@ -228,9 +422,20 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
                 facts.first_agent_line = min(facts.first_agent_line, node.lineno) if facts.first_agent_line != 1 else node.lineno
             if is_model:
                 root_name = call_name.split(".", 1)[0]
-                configured_timeout, configured_retry = configured_clients.get(
-                    root_name, (False, False)
+                configured_timeout, configured_retry, configured_backoff = configured_clients.get(
+                    root_name, (False, False, False)
                 )
+                enclosing = min(
+                    (
+                        scope
+                        for scope in ast.walk(tree)
+                        if isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef))
+                        and scope.lineno <= node.lineno <= (scope.end_lineno or scope.lineno)
+                    ),
+                    key=lambda scope: (scope.end_lineno or scope.lineno) - scope.lineno,
+                    default=tree,
+                )
+                scope_retry, scope_backoff = _retry_evidence(enclosing)
                 for keyword in node.keywords:
                     if keyword.arg not in {"input", "prompt", "messages"}:
                         continue
@@ -241,7 +446,8 @@ def analyze_source(tree: ast.Module, source: str) -> FileFacts:
                         line=node.lineno,
                         has_output_limit=any(keyword.arg in {"max_output_tokens", "max_tokens"} for keyword in node.keywords),
                         has_timeout=client_timeout or configured_timeout or any(keyword.arg == "timeout" for keyword in node.keywords),
-                        has_retry=client_retry or configured_retry or any(keyword.arg in {"retry", "max_retries"} for keyword in node.keywords),
+                        has_retry=client_retry or configured_retry or scope_retry or any(keyword.arg in {"retry", "max_retries"} for keyword in node.keywords),
+                        has_backoff=client_backoff or configured_backoff or scope_backoff or any(keyword.arg == "max_retries" for keyword in node.keywords),
                     )
                 )
             terminal = call_name.rsplit(".", 1)[-1]

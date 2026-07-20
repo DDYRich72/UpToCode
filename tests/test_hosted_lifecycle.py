@@ -23,7 +23,8 @@ def _available_port() -> int:
 
 
 def _wait_for_health(url: str, process: subprocess.Popen[str]) -> None:
-    for _ in range(100):
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline:
         if process.poll() is not None:
             stdout, stderr = process.communicate()
             raise AssertionError(f"Hosted MCP exited early.\n{stdout}\n{stderr}")

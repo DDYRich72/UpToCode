@@ -8,7 +8,7 @@ from pathlib import Path
 import typer
 
 from uptocode import __version__
-from uptocode.baseline import Baseline, apply_baseline, create_baseline
+from uptocode.baseline import Baseline, apply_baseline, create_baseline, load_baseline
 from uptocode.engine import scan_path
 from uptocode.models import SEVERITY_ORDER, Severity
 from uptocode.models import Report, ReviewManifest
@@ -19,6 +19,7 @@ from uptocode.reporters.github import render_github, render_github_summary
 from uptocode.reporters.terminal import render_terminal
 from uptocode.reporters.sarif import render_sarif
 from uptocode.review import create_manifest
+from uptocode.share_safe import make_share_safe
 
 app = typer.Typer(
     name="uptocode",
@@ -85,6 +86,8 @@ def scan(
     judgment: bool = typer.Option(False, "--judgment"),
     send_code: bool = typer.Option(False, "--send-code"),
     fail_on: Severity | None = typer.Option(None, "--fail-on"),
+    include_experimental: bool = typer.Option(False, "--include-experimental"),
+    share_safe: bool = typer.Option(False, "--share-safe"),
     baseline: Path | None = typer.Option(None, "--baseline"),
     update_baseline: Path | None = typer.Option(None, "--update-baseline"),
     changed_since: str | None = typer.Option(None, "--changed-since"),
@@ -102,6 +105,9 @@ def scan(
         raise typer.Exit(2)
     if output_format == OutputFormat.HTML and output is None:
         typer.echo("--format html requires --output", err=True)
+        raise typer.Exit(2)
+    if share_safe and output_format not in {OutputFormat.JSON, OutputFormat.HTML, OutputFormat.SARIF}:
+        typer.echo("--share-safe requires --format json, html, or sarif", err=True)
         raise typer.Exit(2)
     severity_overrides: dict[str, str] = {}
     for value in severity or []:
@@ -149,25 +155,45 @@ def scan(
         report.analysis_warnings = [
             item for item in report.analysis_warnings if item.file is None or item.file in changed_files
         ]
+    scanned_findings = list(report.findings)
+    baseline_data: Baseline | None = None
     if baseline is not None:
         try:
-            baseline_data = Baseline.model_validate_json(baseline.read_text(encoding="utf-8"))
-            report, _ = apply_baseline(report, baseline_data)
+            baseline_data = load_baseline(baseline.read_text(encoding="utf-8"))
+            report, _ = apply_baseline(report, baseline_data, findings=scanned_findings)
         except (OSError, ValueError) as error:
             typer.echo(f"Invalid baseline {baseline}: {error}", err=True)
             raise typer.Exit(2) from error
     if update_baseline is not None:
-        _write_output(update_baseline, create_baseline(report).model_dump_json(indent=2), create_parent=True)
+        try:
+            if baseline_data is None and update_baseline.exists():
+                baseline_data = load_baseline(update_baseline.read_text(encoding="utf-8"))
+                report, _ = apply_baseline(
+                    report,
+                    baseline_data,
+                    findings=scanned_findings,
+                    mute=False,
+                )
+        except (OSError, ValueError) as error:
+            typer.echo(f"Invalid baseline {update_baseline}: {error}", err=True)
+            raise typer.Exit(2) from error
+        updated = create_baseline(
+            report,
+            previous=baseline_data,
+            findings=scanned_findings,
+        )
+        _write_output(update_baseline, updated.model_dump_json(indent=2), create_parent=True)
+    rendered_report = make_share_safe(report) if share_safe else report
     if output_format == OutputFormat.JSON:
-        rendered = render_json(report)
+        rendered = render_json(rendered_report)
     elif output_format == OutputFormat.HTML:
-        rendered = render_html(report)
+        rendered = render_html(rendered_report)
     elif output_format == OutputFormat.SARIF:
-        rendered = render_sarif(report)
+        rendered = render_sarif(rendered_report)
     elif output_format == OutputFormat.GITHUB:
-        rendered = render_github(report)
+        rendered = render_github(rendered_report)
     else:
-        rendered = render_terminal(report)
+        rendered = render_terminal(rendered_report)
     if output is not None:
         _write_output(output, rendered)
     else:
@@ -183,6 +209,7 @@ def scan(
         raise typer.Exit(1)
     if fail_on is not None and any(
         SEVERITY_ORDER[finding.severity] <= SEVERITY_ORDER[fail_on]
+        and (finding.maturity == "stable" or include_experimental)
         for finding in report.findings
     ):
         raise typer.Exit(1)
