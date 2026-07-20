@@ -18,7 +18,7 @@ export default function ConnectPage() {
         <div className="connectIntro">
           <p className="eyebrow">Connection setup</p>
           <h1>Choose where your code is analyzed.</h1>
-          <p className="lede">Local mode reads a bounded workspace on your machine. Hosted mode analyzes only content explicitly sent through an MCP tool call; no public hosted endpoint is currently deployed.</p>
+          <p className="lede">Local mode reads a bounded workspace on your machine. The credential-protected hosted judge endpoint analyzes only content explicitly sent through an MCP tool call.</p>
         </div>
         <ConnectGenerator />
         <div className="callout">
@@ -31,7 +31,7 @@ export default function ConnectPage() {
             <li>Restart Codex, then confirm the ArchAgent server and its rule tools are listed.</li>
             <li>Run <code>check_loop</code> with synthetic code before submitting project source.</li>
           </ol>
-          <p>Hosted service health is available at the endpoint’s <code>/healthz</code> path. A healthy endpoint returns its ArchAgent version without requiring or accepting source code.</p>
+          <p>Hosted service readiness is available at the endpoint’s <code>/readyz</code> path. A ready endpoint returns its ArchAgent version without requiring or accepting source code.</p>
         </section>
       </section>
     </main>

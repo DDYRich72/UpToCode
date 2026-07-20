@@ -1,10 +1,10 @@
 # Validation Report
 
-Phase 5 deployment-preparation commit `a76ce14` passed the complete Windows and Ubuntu/WSL
-clean-clone gate and offline demo dry-run. Phase 4 is preserved as `v1.0.0-rc5` at
-`752bb02`; branch CI `29710990279`, exact-tag CI `29710992278`, and release-artifact run
-`29710992277` passed. No Cloud Run service or judge credential exists yet, so this is a
-pre-deployment checkpoint rather than the `rc6` exit gate.
+Phase 5 is deployed to the approved Cloud Run project and region. Corrective commit
+`44e9d46` passed targeted hosted tests, Ruff, and strict mypy before Cloud Build produced
+immutable image digest `sha256:298fadd434cafc4a28182a4f263ca1a2b23c2aea0d02627ac9aebe3046bd778d`.
+Revision `archagent-mcp-00002-xgh` passed the no-paid-call live smoke and payload-free-log
+verification. The complete `rc6` clean-clone exit gate is recorded below after deployment.
 
 ## Reference production gates
 
@@ -34,8 +34,9 @@ pre-deployment checkpoint rather than the `rc6` exit gate.
 - Static analysis makes no network calls and submitted-source temporary directories are removed after each request.
 - Source, prompts, keys, email addresses, and SSNs are absent from captured judgment failure logs; hosted operational logs are payload-free by policy and implementation.
 - Review and FIXPLAN generation do not modify scanned repositories.
-- No package publication, site deployment, Cloud Run deployment, judge-key generation,
-  public repository release, submission, or new paid model request was performed.
+- The operator explicitly authorized Cloud Run deployment and judge-key generation. No
+  package publication, site deployment, credential distribution, public repository release,
+  submission, or new paid model request was performed.
 - The historical single authorized synthetic GPT-5.6 smoke remains recorded in `.archagent-audit/live-smoke.json`; a post-build/post-deploy smoke requires fresh explicit approval.
 
 ## Phase 1 submission-ready evidence
@@ -188,3 +189,23 @@ publication, and MCP registry submission are post-event Phase 7 work.
 - No external mutation occurred in this checkpoint: no push, tag, Cloud Run resource,
   key generation/distribution, remote-access change, video upload, submission, or paid
   model call.
+
+## Phase 5 live hosted verification
+
+- Project `gen-lang-client-0606364192`, region `us-central1`, service `archagent-mcp`, and
+  runtime identity `archagent-mcp-runtime` were used under explicit operator approval.
+- Cloud Build `d013ca7f-ca25-4b66-89f8-93c49ef65315` built commit `44e9d46` from archive
+  SHA-256 `16990989e2a2067d95e7d8b4652f2ce7cdae1d61628e169b45cb8dd98f14d8aa` and pushed
+  immutable image digest `sha256:298fadd434cafc4a28182a4f263ca1a2b23c2aea0d02627ac9aebe3046bd778d`.
+- Cloud Run revision `archagent-mcp-00002-xgh` receives 100% of traffic at
+  `https://archagent-mcp-1015314816960.us-central1.run.app/mcp`. It uses the digest-only
+  Secret Manager allowlist, rate limit `30`, hosted judgment `false`, exact Host-header
+  allowlisting, and no `OPENAI_API_KEY`.
+- Sanitized live evidence in ignored `.archagent-audit/` records version `1.0.0`, eight
+  hosted tools, readiness PASS, unauthenticated MCP `401`, AA001 PASS, judgment-gate PASS,
+  `429` with `Retry-After` PASS, and zero paid model calls.
+- Exported Cloud Run logs passed the verifier: safe eight-character key attribution was
+  present while the raw credential, full digest, and submitted sentinel were absent.
+- The raw judge key remains outside the repository and has not been printed, committed,
+  pushed, or distributed. Push, `v1.0.0-rc6`, and credential distribution still require
+  separate operator approval.

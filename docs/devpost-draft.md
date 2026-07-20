@@ -26,7 +26,8 @@ ArchAgent finds architecture-quality risks that ordinary syntax checks miss: unb
 - Generates a Codex-ready implementation plan without changing source.
 - Exposes ten typed local MCP tools spanning source/file/repository/diff audits, focused
   loop and schema checks, the rule catalog, review decisions, and FIXPLAN generation.
-- Provides a separate hosted submitted-content surface with no filesystem-path tools.
+- Provides a live credential-protected hosted judge surface with eight submitted-content
+  tools and no filesystem-path tools.
 - Hardens hosted access with per-key in-memory rate limiting, a default-off global judgment
   gate, and payload-free short-digest attribution; local path tools share one resolved root.
 - Audits its own production source at every release gate: zero findings, zero suppressions,
@@ -47,7 +48,7 @@ real stdio and hosted MCP lifecycles, redaction, goldens, fixture non-mutation, 
 
 ## Responsible behavior
 
-Static analysis is offline. Judgment requires explicit code-sharing consent, sends bounded redacted evidence, disables storage, and preserves static results on failure. The repository has no source-changing auto-fix, public service, or automatic external action.
+Static analysis is offline. Judgment requires explicit code-sharing consent, sends bounded redacted evidence, disables storage, and preserves static results on failure. The repository has no source-changing auto-fix or automatic external action. Its optional network-reachable judge service remains protected by a separately distributed bearer key.
 
 ## Submission evidence
 
@@ -55,12 +56,13 @@ Sanitized captures are checked in under `docs/submission-evidence/`: the termina
 scan, standalone HTML report, redacted AA006 output, review manifest, approved-only FIXPLAN,
 MCP `check_loop` response, acceptance PASS, and validation matrix. Exact private-clone judge
 instructions are in the README. The Codex Session ID, public YouTube URL, repository sharing,
-and any optional hosted credentials remain operator-only submission fields.
+and hosted credential remain operator-only submission fields; the exact hosted endpoint and
+no-paid-call testing procedure are documented in the repository.
 
 ## Current limitations
 
 Version 1.0 analyzes Python, not TypeScript. It has no source-changing auto-fix, PR comment
-bot, package publication, or public hosted service. The local MCP has ten tools; hosted mode
+bot or package publication. The local MCP has ten tools; live hosted mode
 is a smaller bearer-authenticated submitted-content surface with a default 30-request/minute
 per-key process-local limit. The composite Action supports source installation for the
 private competition repository; semantic-version PyPI installation remains post-event.

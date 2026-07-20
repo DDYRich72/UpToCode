@@ -6,7 +6,7 @@ type Mode = "hosted" | "local";
 
 export function ConnectGenerator() {
   const [mode, setMode] = useState<Mode>("local");
-  const [endpoint, setEndpoint] = useState("");
+  const [endpoint, setEndpoint] = useState("https://archagent-mcp-1015314816960.us-central1.run.app/mcp");
   const [root, setRoot] = useState("/absolute/path/to/repository");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
 
@@ -56,7 +56,7 @@ export function ConnectGenerator() {
         <div id="hosted-panel" className="field" role="tabpanel" aria-labelledby="hosted-tab">
           <label htmlFor="endpoint">Hosted MCP endpoint</label>
           <input id="endpoint" type="url" value={endpoint} placeholder="https://your-approved-endpoint/mcp" onChange={(event) => setEndpoint(event.target.value)} spellCheck={false} />
-          <p className="hint">No public endpoint is deployed. Enter the private-beta endpoint supplied by the operator and set its issued key in <code>ARCHAGENT_API_KEY</code>.</p>
+          <p className="hint">The credential-protected judge endpoint is live. Set the separately issued private-beta key in <code>ARCHAGENT_API_KEY</code>; this page never receives it.</p>
         </div>
       ) : (
         <div id="local-panel" className="field" role="tabpanel" aria-labelledby="local-tab">

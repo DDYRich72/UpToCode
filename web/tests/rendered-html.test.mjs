@@ -49,8 +49,8 @@ test("server-renders connection instructions without collecting a key", async ()
   assert.match(html, /ARCHAGENT_API_KEY/);
   assert.match(html, /command = &quot;uvx&quot;/);
   assert.match(html, /Local stdio/);
-  assert.match(html, /no public hosted endpoint is currently deployed/i);
+  assert.match(html, /credential-protected hosted judge endpoint/i);
   assert.match(html, /aria-label="Connection navigation"/);
-  assert.doesNotMatch(html, /mcp\.archagent\.example/);
+  assert.match(html, /archagent-mcp-1015314816960\.us-central1\.run\.app/);
   assert.doesNotMatch(html, /type="password"|name="api[_-]?key"/i);
 });

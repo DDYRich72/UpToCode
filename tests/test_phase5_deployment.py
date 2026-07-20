@@ -85,6 +85,20 @@ def test_cloud_run_renderer_rejects_a_host_url_instead_of_a_bare_host() -> None:
         )
 
 
+def test_server_manifest_advertises_the_live_secret_bearing_remote() -> None:
+    manifest = json.loads((ROOT / "server.json").read_text(encoding="utf-8"))
+    remote = manifest["remotes"][0]
+    authorization = remote["headers"][0]
+
+    assert remote["type"] == "streamable-http"
+    assert remote["url"] == (
+        "https://archagent-mcp-1015314816960.us-central1.run.app/mcp"
+    )
+    assert authorization["name"] == "Authorization"
+    assert authorization["value"] == "Bearer {ARCHAGENT_API_KEY}"
+    assert authorization["variables"]["ARCHAGENT_API_KEY"]["isSecret"] is True
+
+
 def test_credential_destination_must_be_outside_repository(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="outside the repository"):
         validate_destination(ROOT / ".archagent-audit" / "judge-key.txt")

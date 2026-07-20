@@ -102,8 +102,9 @@ Everything the Devpost form and video need, done early so every later tag is sub
 
 Rules are already satisfied by test-build instructions; do this only if time remains after rc5.
 
-- [ ] ⛔ Operator: deploy Cloud Run privately with real secrets; generate judge keys into the env allowlist; verify `/healthz`, 401, rate limit, and an AA001 call against the live URL.
-- [ ] Add judge credentials + endpoint to submission notes (never the repo). Add the hosted URL to `server.json` `remotes`.
+- [x] ⛔ Operator: deploy Cloud Run with the digest-only secret allowlist; generate the judge key; verify public `/readyz` (with container `/healthz` liveness), 401, rate limit, and AA001 against the live URL.
+- [x] Add the hosted URL to `server.json` `remotes`.
+- [ ] ⛔ Operator: add the judge credential and endpoint to private submission notes; never put the raw credential in the repository.
 
 ### Phase 6 — ⛔ SUBMIT (operator, target Monday evening PT)
 

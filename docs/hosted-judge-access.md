@@ -12,8 +12,9 @@ no paid model call.
 
 ## Judge connection
 
-The operator places the actual endpoint and raw credential in the private Devpost testing
-notes—not in Git, `server.json` examples, screenshots, logs, or the demo video. A judge sets
+The endpoint is `https://archagent-mcp-1015314816960.us-central1.run.app/mcp`. The operator
+places only the raw credential in the private Devpost testing notes—not in Git, screenshots,
+logs, or the demo video. A judge sets
 the credential locally and registers the hosted server in Codex:
 
 ```powershell
@@ -22,7 +23,7 @@ $env:ARCHAGENT_API_KEY = "<credential supplied in private submission notes>"
 
 ```toml
 [mcp_servers.archagent]
-url = "https://<approved-cloud-run-host>/mcp"
+url = "https://archagent-mcp-1015314816960.us-central1.run.app/mcp"
 bearer_token_env_var = "ARCHAGENT_API_KEY"
 required = true
 startup_timeout_sec = 20
@@ -50,7 +51,8 @@ submission notes until the live URL passes every synthetic check.
 
 ## Evidence boundary
 
-The automated live smoke writes sanitized evidence under `.archagent-audit/`, which is
+The 2026-07-19 live smoke passed readiness, unauthorized access, hosted discovery, AA001,
+the judgment gate, and rate limiting without a paid model call. The automated live smoke writes sanitized evidence under `.archagent-audit/`, which is
 ignored by Git. It records the endpoint, version, safe eight-character key ID, tool names,
 and pass/fail controls, but never the raw key or full digest. Exported Cloud Run logs must
 then pass `scripts/verify_hosted_logs.py` before the credential is distributed.

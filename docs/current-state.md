@@ -34,12 +34,13 @@ skip navigation, reduced-motion handling, and responsive desktop/mobile evidence
 Windows and Ubuntu/WSL clones pass five site tests and the complete release gate. Branch
 CI `29710990279`, tag CI `29710992278`, and release-artifact run `29710992277` passed.
 
-Phase 5 preparation adds an immutable-digest Cloud Run renderer, operator-consent gates
-for judge-key generation and live endpoint testing, sanitized hosted smoke evidence,
-payload-free log verification, and exact judge instructions. The Cloud Run template keeps
-hosted judgment off and does not attach an OpenAI key. Fresh Windows and Ubuntu/WSL clones
-at `a76ce14` pass 184 tests and the complete offline gate. No public hosted service, judge
-credential, or published package is claimed; deployment remains operator-controlled.
+Phase 5 deploys the credential-protected judge MCP to Cloud Run in `us-central1`. Revision
+`archagent-mcp-00002-xgh` is pinned to image digest
+`sha256:298fadd434cafc4a28182a4f263ca1a2b23c2aea0d02627ac9aebe3046bd778d`, exposes eight
+submitted-content tools, and passed live readiness, unauthorized-access, AA001,
+judgment-gate, rate-limit, and payload-free-log checks. Hosted judgment remains off, no
+OpenAI key is attached, and the live test made zero paid model calls. The raw judge key is
+kept outside the repository for private submission notes; it has not been distributed.
 
 Deliberate bad fixtures and synthetic secret sentinels are test evidence, not
 production exceptions. The production compliance scan has zero findings,

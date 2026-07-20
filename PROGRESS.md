@@ -2,8 +2,8 @@
 
 ## Current gate
 
-Completion Plan v2 Phase 5 — hosted judge-access preparation for `v1.0.0-rc6`.
-The live deployment and credential remain operator-controlled and have not occurred.
+Completion Plan v2 Phase 5 — hosted judge access deployed and validating for
+`v1.0.0-rc6`. Push, tag, and credential distribution remain operator-controlled.
 
 ## Status
 
@@ -120,13 +120,17 @@ The live deployment and credential remain operator-controlled and have not occur
 - [x] The Phase 5 preparation demo sequence passed offline on Windows and Ubuntu/WSL:
   ten deliberate findings, three redactions, three review decisions, FIXPLAN, compliance,
   and fixture non-mutation.
-- [ ] Operator checkpoint: select an authenticated Google Cloud project/region and
-  explicitly authorize Cloud Run resource creation, real judge-key generation, and the
-  no-paid-call live verification. The current workstation has no `gcloud` or Docker, and
-  the GitHub repository has no GCP deployment secrets or variables.
-- [ ] After live verification, add the exact remote to `server.json`, synchronize the
-  website/submission claims, rerun the complete gate, and request approval before pushing
-  or tagging `v1.0.0-rc6`.
+- [x] Operator authorized project `gen-lang-client-0606364192`, region `us-central1`,
+  Cloud Run resource creation, judge-key generation, and no-paid-call live verification.
+- [x] Cloud Build produced the exact corrective commit image; Cloud Run revision
+  `archagent-mcp-00002-xgh` serves the immutable digest with hosted judgment off and no
+  attached OpenAI key.
+- [x] Live readiness, unauthorized access, eight-tool discovery, AA001, judgment rejection,
+  `429`/`Retry-After`, and payload-free log verification passed with zero paid model calls.
+- [x] The exact remote is in `server.json`; site, README, demo, Devpost, current-state, and
+  validation claims are synchronized without committing or distributing the raw key.
+- [ ] Pass the complete Phase 5 clean-clone gate and request approval before pushing or
+  tagging `v1.0.0-rc6`.
 
 ## Notes
 

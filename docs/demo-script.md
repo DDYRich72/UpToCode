@@ -47,6 +47,8 @@ only submitted-content tools—never repository or filesystem-path tools. Its be
 boundary applies an in-memory per-key limit, defaults hosted judgment off, and logs only a
 short credential-digest prefix. Local file, repository, and diff-base tools remain contained
 to the canonical root resolved when the server starts.
+State that the live judge endpoint passed readiness, unauthorized access, AA001, judgment-gate,
+rate-limit, and payload-free-log checks with zero paid model calls.
 
 ## Beat 6 — 2:03–2:28 — Delivery surfaces and self-audit
 

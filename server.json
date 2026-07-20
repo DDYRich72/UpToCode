@@ -12,5 +12,24 @@
         "type": "stdio"
       }
     }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://archagent-mcp-1015314816960.us-central1.run.app/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {ARCHAGENT_API_KEY}",
+          "variables": {
+            "ARCHAGENT_API_KEY": {
+              "description": "Private-beta judge credential supplied in submission testing notes.",
+              "isRequired": true,
+              "isSecret": true
+            }
+          }
+        }
+      ]
+    }
   ]
 }

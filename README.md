@@ -53,6 +53,12 @@ The remaining commands produce a report-bound review manifest and an approved-on
 registration under [MCP registration](#mcp-registration). `python scripts/acceptance.py`
 also launches a real stdio server, lists all ten tools, and calls `check_loop` offline.
 
+An optional credential-protected judge endpoint is also deployed at
+`https://archagent-mcp-1015314816960.us-central1.run.app/mcp`. The bearer credential is
+supplied only in private submission testing notes. Set it in `ARCHAGENT_API_KEY`; never
+commit it or enter it into the website. Hosted judgment is disabled and the endpoint makes
+no paid model calls.
+
 ## Scan, review, plan
 
 ```text
