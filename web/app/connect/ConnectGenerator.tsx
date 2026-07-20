@@ -1,6 +1,7 @@
 "use client";
 
 import { type KeyboardEvent, useMemo, useState } from "react";
+import { buildHostedConfig, buildLocalConfig } from "./config.mjs";
 
 type Mode = "hosted" | "local";
 const HOSTED_ENDPOINT = "https://uptocode-mcp-1015314816960.us-central1.run.app/mcp";
@@ -13,10 +14,10 @@ export function ConnectGenerator() {
 
   const config = useMemo(() => {
     if (mode === "local") {
-      return `[mcp_servers.uptocode]\ncommand = "uvx"\nargs = ["uptocode", "serve", "--transport", "stdio", "--root", "${root.replaceAll('"', '\\"')}"]\nrequired = true\nstartup_timeout_sec = 20\ntool_timeout_sec = 240`;
+      return buildLocalConfig(root);
     }
     const hostedUrl = endpoint.trim() || HOSTED_ENDPOINT;
-    return `[mcp_servers.uptocode]\nurl = "${hostedUrl.replaceAll('"', '\\"')}"\nbearer_token_env_var = "UPTOCODE_API_KEY"\nrequired = true\nstartup_timeout_sec = 20\ntool_timeout_sec = 240`;
+    return buildHostedConfig(hostedUrl);
   }, [endpoint, mode, root]);
 
   async function copyConfig() {

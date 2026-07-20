@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { parse } from "smol-toml";
+import { buildHostedConfig, buildLocalConfig } from "../app/connect/config.mjs";
 
 const root = new URL("../", import.meta.url);
 
@@ -28,6 +30,31 @@ test("connection generator defaults local and uses the verified hosted endpoint"
   assert.match(source, /aria-controls=/);
   assert.match(source, /ArrowRight/);
   assert.doesNotMatch(source, /mcp\.uptocode\.example/);
+});
+
+test("connection generator emits parseable TOML for arbitrary local paths", () => {
+  const roots = [
+    String.raw`D:\work\sample-agent`,
+    String.raw`D:\work\"quoted repository\"`,
+    String.raw`/repo/with\backslashes`,
+    "/repo/with-a-newline\n[mcp_servers.injected]\ncommand = \"evil\"",
+  ];
+
+  for (const repositoryRoot of roots) {
+    const parsed = parse(buildLocalConfig(repositoryRoot));
+    assert.deepEqual(Object.keys(parsed.mcp_servers), ["uptocode"]);
+    assert.equal(parsed.mcp_servers.uptocode.args.at(-1), repositoryRoot);
+  }
+});
+
+test("hosted endpoint cannot inject additional TOML fields", () => {
+  const endpoint = 'https://example.test/mcp\nrequired = false\nname = "injected"';
+  const parsed = parse(buildHostedConfig(endpoint));
+
+  assert.deepEqual(Object.keys(parsed.mcp_servers), ["uptocode"]);
+  assert.equal(parsed.mcp_servers.uptocode.url, endpoint);
+  assert.equal(parsed.mcp_servers.uptocode.required, true);
+  assert.equal(parsed.mcp_servers.uptocode.name, undefined);
 });
 
 test("site styles expose visible focus and reduced-motion behavior", async () => {
