@@ -49,9 +49,9 @@ test("server-renders connection instructions without collecting a key", async ()
   assert.match(html, /UPTOCODE_API_KEY/);
   assert.match(html, /command = &quot;uvx&quot;/);
   assert.match(html, /Local stdio/);
-  assert.match(html, /operator-issued hosted endpoint/i);
+  assert.match(html, /verified hosted endpoint/i);
   assert.match(html, /aria-label="Connection navigation"/);
-  assert.match(html, /never fabricates a hosted address/i);
-  assert.doesNotMatch(html, /\.run\.app/);
+  assert.match(html, /https:\/\/uptocode-mcp-1015314816960\.us-central1\.run\.app\/mcp/);
+  assert.match(html, /never collects a credential/i);
   assert.doesNotMatch(html, /type="password"|name="api[_-]?key"/i);
 });

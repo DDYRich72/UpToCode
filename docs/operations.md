@@ -6,6 +6,11 @@ limits. Cloud Run is network-reachable for standard MCP clients, while the appli
 bearer boundary protects every non-health route. This avoids a second Cloud Run IAM bearer
 token consuming the `Authorization` header intended for UpToCode.
 
+Production state: `uptocode-mcp` revision `uptocode-mcp-00001-szq` serves
+`https://uptocode-mcp-1015314816960.us-central1.run.app/mcp`, pinned to image digest
+`sha256:309f90c591b1072dacc16726366f4319fd4996c2b4cdb9230c37d14c94e12091`.
+Hosted judgment is disabled and no OpenAI key is attached.
+
 ## Pre-deploy gate
 
 1. Confirm CI, compliance, SBOM, container, and hosted MCP lifecycle artifacts are green.

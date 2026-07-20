@@ -57,11 +57,12 @@ The remaining commands produce a report-bound review manifest and an approved-on
 registration under [MCP registration](#mcp-registration). `python scripts/acceptance.py`
 also launches a real stdio server, lists all ten tools, and calls `check_loop` offline.
 
-The submitted-content hosted transport remains implemented and container-tested. Its new
-`uptocode-mcp` production endpoint is deliberately not advertised until the operator
-approves deployment and the live control checks pass. When issued, its bearer credential
-is read from `UPTOCODE_API_KEY`; never commit it or enter it into the website. Hosted
-judgment defaults off and no paid model call is required.
+The submitted-content hosted transport is deployed at
+`https://uptocode-mcp-1015314816960.us-central1.run.app/mcp`. Its bearer credential is
+issued separately and read from `UPTOCODE_API_KEY`; never commit it or enter it into the
+website. The immutable production revision passed readiness, unauthorized-access, AA001,
+tool-discovery, judgment-gate, rate-limit, and payload-free-log checks. Hosted judgment is
+off, no OpenAI key is attached, and verification made zero paid model calls.
 
 ## Scan, review, plan
 

@@ -42,7 +42,7 @@ submitted-content tools, and passed live readiness, unauthorized-access, AA001,
 judgment-gate, rate-limit, and payload-free-log checks. Hosted judgment remains off, no
 OpenAI key is attached, and the live test made zero paid model calls. The raw judge key is
 kept outside the repository for private submission notes; it has not been distributed.
-It is not advertised as the UpToCode production endpoint. Phase 5 is preserved remotely
+It is not the UpToCode production endpoint. Phase 5 is preserved remotely
 as `v1.0.0-rc6` at `f578f24`. That exact commit passes the
 complete Windows and Ubuntu/WSL submission gate: 186 tests, acceptance, compliance, Ruff,
 strict mypy, 88% branch coverage, clean site install/lint/type/build/tests, offline demo,
@@ -55,7 +55,9 @@ warnings, or suppressions.
 
 Phase 7 is active on `codex/uptocode-production`. Every current tracked surface uses the
 UpToCode identity: distribution/import/CLI `uptocode`, `UPTOCODE_*` settings,
-`io.github.DDYRich72/uptocode` registry metadata, and prepared `uptocode-mcp` deployment
-resources. The production package and MCP record remain unpublished, the repository
-remains private, and no production hosted URL is advertised pending the explicit external
-checkpoints.
+`io.github.DDYRich72/uptocode` registry metadata, and deployed `uptocode-mcp` resources.
+The production endpoint is
+`https://uptocode-mcp-1015314816960.us-central1.run.app/mcp`; its immutable revision passed
+the no-paid-call hosted control and log-safety checks. The production package and MCP
+Registry record remain unpublished, and the repository remains private pending later
+explicit checkpoints.

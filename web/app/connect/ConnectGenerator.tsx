@@ -3,10 +3,11 @@
 import { type KeyboardEvent, useMemo, useState } from "react";
 
 type Mode = "hosted" | "local";
+const HOSTED_ENDPOINT = "https://uptocode-mcp-1015314816960.us-central1.run.app/mcp";
 
 export function ConnectGenerator() {
   const [mode, setMode] = useState<Mode>("local");
-  const [endpoint, setEndpoint] = useState("");
+  const [endpoint, setEndpoint] = useState(HOSTED_ENDPOINT);
   const [root, setRoot] = useState("/absolute/path/to/repository");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
 
@@ -14,7 +15,7 @@ export function ConnectGenerator() {
     if (mode === "local") {
       return `[mcp_servers.uptocode]\ncommand = "uvx"\nargs = ["uptocode", "serve", "--transport", "stdio", "--root", "${root.replaceAll('"', '\\"')}"]\nrequired = true\nstartup_timeout_sec = 20\ntool_timeout_sec = 240`;
     }
-    const hostedUrl = endpoint.trim() || "<HOSTED_MCP_URL>";
+    const hostedUrl = endpoint.trim() || HOSTED_ENDPOINT;
     return `[mcp_servers.uptocode]\nurl = "${hostedUrl.replaceAll('"', '\\"')}"\nbearer_token_env_var = "UPTOCODE_API_KEY"\nrequired = true\nstartup_timeout_sec = 20\ntool_timeout_sec = 240`;
   }, [endpoint, mode, root]);
 
@@ -55,8 +56,8 @@ export function ConnectGenerator() {
       {mode === "hosted" ? (
         <div id="hosted-panel" className="field" role="tabpanel" aria-labelledby="hosted-tab">
           <label htmlFor="endpoint">Hosted MCP endpoint</label>
-          <input id="endpoint" type="url" value={endpoint} placeholder="https://your-approved-endpoint/mcp" onChange={(event) => setEndpoint(event.target.value)} spellCheck={false} />
-          <p className="hint">Enter only an operator-issued UpToCode endpoint. Set its separately issued key in <code>UPTOCODE_API_KEY</code>; this page never receives it.</p>
+          <input id="endpoint" type="url" value={endpoint} onChange={(event) => setEndpoint(event.target.value)} spellCheck={false} />
+          <p className="hint">The verified production endpoint is prefilled. Set its separately issued key in <code>UPTOCODE_API_KEY</code>; this page never receives it.</p>
         </div>
       ) : (
         <div id="local-panel" className="field" role="tabpanel" aria-labelledby="local-tab">

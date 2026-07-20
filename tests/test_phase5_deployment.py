@@ -108,7 +108,12 @@ def test_server_manifest_uses_the_canonical_registry_and_package_identity() -> N
             "transport": {"type": "stdio"},
         }
     ]
-    assert "remotes" not in manifest
+    remote = manifest["remotes"][0]
+    assert remote["type"] == "streamable-http"
+    assert remote["url"] == (
+        "https://uptocode-mcp-1015314816960.us-central1.run.app/mcp"
+    )
+    assert remote["headers"][0]["value"] == "Bearer {UPTOCODE_API_KEY}"
     assert "<!-- mcp-name: io.github.DDYRich72/uptocode -->" in (
         ROOT / "README.md"
     ).read_text(encoding="utf-8")

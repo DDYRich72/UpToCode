@@ -33,4 +33,26 @@ def test_public_identity_is_consistent_across_package_and_mcp_manifest() -> None
     assert project["project"]["scripts"] == {"uptocode": "uptocode.cli:app"}
     assert manifest["name"] == "io.github.DDYRich72/uptocode"
     assert manifest["packages"][0]["identifier"] == "uptocode"
+    assert manifest["remotes"] == [
+        {
+            "type": "streamable-http",
+            "url": "https://uptocode-mcp-1015314816960.us-central1.run.app/mcp",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {UPTOCODE_API_KEY}",
+                    "variables": {
+                        "UPTOCODE_API_KEY": {
+                            "description": (
+                                "Private-beta credential supplied separately by the "
+                                "UpToCode operator."
+                            ),
+                            "isRequired": True,
+                            "isSecret": True,
+                        }
+                    },
+                }
+            ],
+        }
+    ]
     assert "mcp-name: io.github.DDYRich72/uptocode" in readme

@@ -18,12 +18,13 @@ export default function ConnectPage() {
         <div className="connectIntro">
           <p className="eyebrow">Connection setup</p>
           <h1>Choose where your code is analyzed.</h1>
-          <p className="lede">Local mode reads a bounded workspace on your machine. An operator-issued hosted endpoint analyzes only content explicitly sent through an MCP tool call.</p>
+          <p className="lede">Local mode reads a bounded workspace on your machine. The verified hosted endpoint analyzes only content explicitly sent through an MCP tool call.</p>
         </div>
         <ConnectGenerator />
         <div className="callout">
-          UpToCode never fabricates a hosted address or collects a credential. Use only an
-          endpoint issued by the operator; Codex reads its key from your local
+          UpToCode publishes its verified hosted address,
+          <code>https://uptocode-mcp-1015314816960.us-central1.run.app/mcp</code>, but never
+          collects a credential. Codex reads the separately issued key from your local
           <code>UPTOCODE_API_KEY</code> environment variable.
         </div>
         <section className="connectionChecks" aria-labelledby="verify-connection">
@@ -33,7 +34,7 @@ export default function ConnectPage() {
             <li>Restart Codex, then confirm the UpToCode server and its rule tools are listed.</li>
             <li>Run <code>check_loop</code> with synthetic code before submitting project source.</li>
           </ol>
-          <p>For an issued hosted service, readiness is available at its <code>/readyz</code> path. A ready endpoint returns its UpToCode version without requiring or accepting source code.</p>
+          <p>Hosted readiness is available at the service&apos;s <code>/readyz</code> path. A ready endpoint returns its UpToCode version without requiring or accepting source code.</p>
         </section>
       </section>
     </main>

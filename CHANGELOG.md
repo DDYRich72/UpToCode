@@ -22,6 +22,9 @@
   visible focus, reduced-motion handling, responsive layouts, and no credential collection.
 - Add a production dogfood compliance gate: UpToCode audits itself with zero production
   findings, suppressions, or unexplained analysis warnings.
+- Deploy the submitted-content MCP to an immutable `uptocode-mcp` Cloud Run revision with
+  digest-only bearer authorization, default-off judgment, rate limiting, and payload-free
+  operational logs.
 - Add a tag-driven trusted-publishing workflow that separates verified package builds from
   the protected PyPI OIDC/attestation job, plus a deliberately bounded source archive.
 

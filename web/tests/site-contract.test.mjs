@@ -18,11 +18,12 @@ test("site package has no database or migration surface", async () => {
   assert.doesNotMatch(await read("worker/index.ts"), /D1Database|\bDB\b/);
 });
 
-test("connection generator defaults local and uses an explicit hosted placeholder", async () => {
+test("connection generator defaults local and uses the verified hosted endpoint", async () => {
   const source = await read("app/connect/ConnectGenerator.tsx");
 
   assert.match(source, /useState<Mode>\("local"\)/);
-  assert.match(source, /<HOSTED_MCP_URL>/);
+  assert.match(source, /https:\/\/uptocode-mcp-1015314816960\.us-central1\.run\.app\/mcp/);
+  assert.doesNotMatch(source, /<HOSTED_MCP_URL>/);
   assert.match(source, /role="tabpanel"/);
   assert.match(source, /aria-controls=/);
   assert.match(source, /ArrowRight/);

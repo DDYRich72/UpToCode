@@ -1,8 +1,7 @@
 # Hosted Judge Access
 
-This is the operator hand-off for the optional UpToCode Cloud Run service. Until the
-Phase 7 migration is explicitly approved and verified, no production URL is advertised.
-The eventual Cloud Run URL is network-reachable so a
+This is the operator hand-off for the optional UpToCode Cloud Run service. The verified
+production endpoint is network-reachable so a
 standard MCP client can use one `Authorization` header, but every non-health request is
 protected by UpToCode's high-entropy bearer key. Cloud Run IAM is deliberately disabled
 at this edge because it would otherwise consume that same header before the application.
@@ -23,7 +22,7 @@ $env:UPTOCODE_API_KEY = "<credential supplied in private submission notes>"
 
 ```toml
 [mcp_servers.uptocode]
-url = "<OPERATOR_ISSUED_UPTOCODE_MCP_URL>"
+url = "https://uptocode-mcp-1015314816960.us-central1.run.app/mcp"
 bearer_token_env_var = "UPTOCODE_API_KEY"
 required = true
 startup_timeout_sec = 20
@@ -45,9 +44,9 @@ judge endpoint, so `judgment=true` returns a clear gate error and spends no mode
 ## Operator-only deployment sequence
 
 The commands and evidence procedure are maintained in [Hosted MCP Operations](operations.md).
-They require separate authorization for deployment and credential generation. Do not add a
-real `server.json` remote, change the website's no-endpoint claim, or prepare private
-submission notes until the live URL passes every synthetic check.
+They require separate authorization for deployment and credential generation. The Phase 7
+migration passed every synthetic check before the real `server.json` remote and website
+endpoint were added.
 
 ## Evidence boundary
 
