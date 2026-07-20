@@ -22,7 +22,7 @@ export default function ConnectPage() {
         </div>
         <ConnectGenerator />
         <div className="callout">
-          Private-beta endpoints and keys are issued separately. This page never asks for the key; Codex reads it from your local <code>ARCHAGENT_API_KEY</code> environment variable.
+          The private-beta judge endpoint is <code>https://archagent-mcp-1015314816960.us-central1.run.app/mcp</code>. The key is issued separately; this page never asks for it, and Codex reads it from your local <code>ARCHAGENT_API_KEY</code> environment variable.
         </div>
         <section className="connectionChecks" aria-labelledby="verify-connection">
           <h2 id="verify-connection">Verify the connection</h2>
