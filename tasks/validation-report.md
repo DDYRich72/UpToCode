@@ -250,6 +250,9 @@ publication, and MCP registry submission are post-event Phase 7 work.
 
 ## Phase 7 UpToCode production preparation
 
+- Exact verified implementation commit: `ef126c6` (`refactor: establish UpToCode
+  production identity`). Fresh local Windows and WSL clones checked out that commit and
+  finished with clean Git trees.
 - D008, `specs/003-uptocode-production-identity.md`, and
   `tasks/phase7-production-plan.md` define one canonical identity: product UpToCode;
   distribution/import/CLI `uptocode`; settings `UPTOCODE_*`; MCP Registry name

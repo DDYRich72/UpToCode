@@ -29,6 +29,8 @@ remain operator-controlled.
 - [x] Phase 7 Windows and POSIX gates pass: 188 tests, acceptance, compliance, Ruff,
   strict mypy over 30 files, 88% branch coverage, clean site installs, lint/type/build,
   five site tests, and the high-severity npm threshold.
+- [x] Exact implementation commit `ef126c6` repeated that complete gate from fresh local
+  Windows and WSL clones; both post-gate trees were clean.
 - [x] Separate unimplemented 1.1 specifications added for Firestore beta access control
   and TypeScript analysis.
 - [ ] Docker is unavailable locally; the renamed container lifecycle must pass the first
