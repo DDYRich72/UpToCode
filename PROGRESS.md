@@ -2,7 +2,8 @@
 
 ## Current gate
 
-Completion Plan v2 Phase 4 — design and product polish for `v1.0.0-rc5`.
+Completion Plan v2 Phase 5 — hosted judge-access preparation for `v1.0.0-rc6`.
+The live deployment and credential remain operator-controlled and have not occurred.
 
 ## Status
 
@@ -105,7 +106,27 @@ Completion Plan v2 Phase 4 — design and product polish for `v1.0.0-rc5`.
   375px mobile widths: assets 200, no console errors or overflow, keyboard tabs and
   focus movement correct, and no fabricated endpoint or credential field.
 - [x] Phase 4 gate evidence recorded for the rc5 candidate.
-- [ ] Obtain operator approval before any Phase 4 push or `v1.0.0-rc5` tag.
+- [x] The three Phase 4 commits and annotated `v1.0.0-rc5` tag were pushed after
+  operator approval; branch CI `29710990279`, tag CI `29710992278`, and release-artifact
+  run `29710992277` all passed.
+- [x] Phase 5 preparation commit `a76ce14` adds immutable Cloud Run manifest rendering,
+  explicit consent-gated judge-key and live-smoke helpers, payload-free log verification,
+  and exact hosted judge instructions.
+- [x] The Cloud Run template is network-reachable but application-authenticated, leaves
+  hosted judgment off, and attaches no `OPENAI_API_KEY`.
+- [x] Exact preparation commit `a76ce14` passed fresh Windows and Ubuntu/WSL gates:
+  184 tests, acceptance, compliance, Ruff, strict mypy over 30 files, 88% branch
+  coverage, clean npm installs, and five site tests.
+- [x] The Phase 5 preparation demo sequence passed offline on Windows and Ubuntu/WSL:
+  ten deliberate findings, three redactions, three review decisions, FIXPLAN, compliance,
+  and fixture non-mutation.
+- [ ] Operator checkpoint: select an authenticated Google Cloud project/region and
+  explicitly authorize Cloud Run resource creation, real judge-key generation, and the
+  no-paid-call live verification. The current workstation has no `gcloud` or Docker, and
+  the GitHub repository has no GCP deployment secrets or variables.
+- [ ] After live verification, add the exact remote to `server.json`, synchronize the
+  website/submission claims, rerun the complete gate, and request approval before pushing
+  or tagging `v1.0.0-rc6`.
 
 ## Notes
 

@@ -1,6 +1,6 @@
 # Current State
 
-ArchAgent 1.0.0 is a Python-first architecture-quality scanner with 175 offline
+ArchAgent 1.0.0 is a Python-first architecture-quality scanner with 184 offline
 tests, deterministic terminal/JSON/HTML/GitHub/SARIF reports, optional GPT-5.6
 Structured Outputs judgment, approval-bound FIXPLAN generation, and ten local
 stdio MCP tools.
@@ -24,14 +24,22 @@ The rc4 release candidate passes 175 tests, acceptance and compliance, Ruff, str
 run `29703827878` was the first full burn-in; exact rc4 tag run `29706598903` also
 passed all nine
 Python/OS cells plus the package/site, isolated wheel-audit, and container lifecycle jobs.
-No public hosted service or published package is claimed.
 
-The Phase 4 rc5 candidate removes the unused Drizzle/D1 starter surface, safely updates
+Phase 4 is preserved remotely as `v1.0.0-rc5` at `752bb02`. It removes the unused
+Drizzle/D1 starter surface, safely updates
 the direct Cloudflare/Vite and framework patch dependencies, and documents the remaining
 Next/PostCSS advisory risk. The site remains exactly `/` and `/connect`, defaults to honest
 local setup, uses an explicit hosted placeholder, and now has keyboard tabs, visible focus,
 skip navigation, reduced-motion handling, and responsive desktop/mobile evidence. Fresh
-Windows and Ubuntu/WSL clones pass five site tests and the complete release gate.
+Windows and Ubuntu/WSL clones pass five site tests and the complete release gate. Branch
+CI `29710990279`, tag CI `29710992278`, and release-artifact run `29710992277` passed.
+
+Phase 5 preparation adds an immutable-digest Cloud Run renderer, operator-consent gates
+for judge-key generation and live endpoint testing, sanitized hosted smoke evidence,
+payload-free log verification, and exact judge instructions. The Cloud Run template keeps
+hosted judgment off and does not attach an OpenAI key. Fresh Windows and Ubuntu/WSL clones
+at `a76ce14` pass 184 tests and the complete offline gate. No public hosted service, judge
+credential, or published package is claimed; deployment remains operator-controlled.
 
 Deliberate bad fixtures and synthetic secret sentinels are test evidence, not
 production exceptions. The production compliance scan has zero findings,

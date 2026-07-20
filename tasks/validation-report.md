@@ -1,16 +1,17 @@
 # Validation Report
 
-Phase 4 implementation commit `6e396ea` passed the complete Windows and Ubuntu/WSL
-clean-clone gate and offline demo dry-run. Phase 3 remains preserved as `v1.0.0-rc4` at
-corrected commit `4fe8a61`; exact-tag CI run `29706598903` and release-artifact run
-`29706598904` passed. The complete evidence is recorded below.
+Phase 5 deployment-preparation commit `a76ce14` passed the complete Windows and Ubuntu/WSL
+clean-clone gate and offline demo dry-run. Phase 4 is preserved as `v1.0.0-rc5` at
+`752bb02`; branch CI `29710990279`, exact-tag CI `29710992278`, and release-artifact run
+`29710992277` passed. No Cloud Run service or judge credential exists yet, so this is a
+pre-deployment checkpoint rather than the `rc6` exit gate.
 
 ## Reference production gates
 
 | Gate | Status | Evidence |
 |---|---|---|
-| Python suite | PASS | GitHub's nine Python/OS cells: `python -m pytest -q` → 175 passed in every cell; final clean-clone results below |
-| Offline product acceptance | PASS | All nine GitHub cells: 175 tests, real installed-process stdio MCP, malformed-call recovery, CLI/report/review/plan/non-mutation, clean/bad fixtures |
+| Python suite | PASS | Phase 5 fresh Windows and Ubuntu/WSL clones: `python -m pytest -q` → 184 passed; latest published rc5 nine-cell CI remains 175 passed in every cell |
+| Offline product acceptance | PASS | Phase 5 clean clones: 184 tests, real installed-process stdio MCP, malformed-call recovery, CLI/report/review/plan/non-mutation, clean/bad fixtures |
 | Production dogfood | PASS | Fresh clones on both platforms: zero production findings, zero suppressions, zero analysis warnings; `.archagent-audit/architecture-compliance.json` |
 | Ruff | PASS | Fresh clones on both platforms: all checks passed |
 | Strict typing | PASS | All nine GitHub cells: no issues in 30 source files |
@@ -26,15 +27,15 @@ corrected commit `4fe8a61`; exact-tag CI run `29706598903` and release-artifact 
 | Packaging/release | PASS (artifact level) | non-root Dockerfile, Cloud Run limits/secrets/probes, protected release environment, retained wheel/distributions/SBOMs/compliance evidence, public-repository provenance workflow, operations/rollback runbook; private-repository attestation is deferred to Phase 7 |
 | Functional site | PASS | Fresh Windows and Ubuntu/WSL clones build `/` and `/connect`; five rendered/contract tests pass. Real Worker delivery was browser-verified at desktop and 375px mobile widths with CSS/JS assets returning 200, no console errors or overflow, and working keyboard tabs. |
 | Site dependency audit | PASS WITH DATED ACCEPTED RISK | Direct patched dependencies remove all high/critical records. `npm audit --omit=dev --audit-level=high` exits 0 with the two Next/nested-PostCSS records for GHSA-qx2v-qp2m-jg93; exposure, rationale, and 2026-08-02 review date are in `SECURITY.md`. |
-| Container lifecycle | PASS | Exact-tag GitHub run `29706598903`: build, health 200, unauthenticated MCP 401, and bounded graceful shutdown all passed |
+| Container lifecycle | PASS | Exact rc5 tag CI `29710992278`: build, health 200, unauthenticated MCP 401, and bounded graceful shutdown all passed |
 
 ## Safety and external actions
 
 - Static analysis makes no network calls and submitted-source temporary directories are removed after each request.
 - Source, prompts, keys, email addresses, and SSNs are absent from captured judgment failure logs; hosted operational logs are payload-free by policy and implementation.
 - Review and FIXPLAN generation do not modify scanned repositories.
-- No package publication, site deployment, Cloud Run deployment, public repository
-  release, submission, or new paid model request was performed.
+- No package publication, site deployment, Cloud Run deployment, judge-key generation,
+  public repository release, submission, or new paid model request was performed.
 - The historical single authorized synthetic GPT-5.6 smoke remains recorded in `.archagent-audit/live-smoke.json`; a post-build/post-deploy smoke requires fresh explicit approval.
 
 ## Phase 1 submission-ready evidence
@@ -154,5 +155,36 @@ publication, and MCP registry submission are post-event Phase 7 work.
 - The offline demo sequence passed in both exact-commit clones. The deliberate bad fixture
   produced ten findings and three redactions; JSON, standalone HTML, report-bound review,
   approved-only FIXPLAN, and compliance commands succeeded. Both Git trees remained clean.
-- No push, tag, deployment, repository access change, publication, credential distribution,
-  video upload, paid model call, or submission occurred during Phase 4.
+- The three Phase 4 commits and annotated `v1.0.0-rc5` tag were pushed with explicit
+  operator approval. Branch CI `29710990279`, tag CI `29710992278`, and release-artifact
+  run `29710992277` all completed successfully. No deployment, repository access change,
+  publication, credential distribution, video upload, paid model call, or submission
+  occurred during Phase 4.
+
+## Phase 5 pre-deployment checkpoint
+
+- Exact preparation commit `a76ce14` was cloned independently on Windows and Ubuntu/WSL.
+  Windows used Python 3.13.7 and Node 22.19.0; WSL used Python 3.13.12 and Node 22.22.2.
+- Both clean clones passed 184 tests, offline acceptance, production compliance, Ruff,
+  strict mypy over 30 source files, and 88% branch coverage.
+- Windows installed 493 site packages and WSL installed 494 platform-adjusted packages.
+  Both passed ESLint, `tsc --noEmit`, the production build for exactly `/` and `/connect`,
+  five site tests, and the high-severity npm release threshold. The two moderate
+  Next/PostCSS records remain the dated accepted risk in `SECURITY.md`.
+- The offline demo dry-run passed in both clones. The deliberate fixture returned the
+  expected critical exit 1, ten findings, three redactions, three bound review decisions,
+  an approved-only FIXPLAN, zero-finding compliance, and an unchanged fixture hash.
+- Targeted deployment/MCP tests validate immutable digest rendering, placeholder
+  rejection, application-bearer Cloud Run annotations, omission of `OPENAI_API_KEY`,
+  explicit refusal without key/live-test authorization, and log checks that require safe
+  eight-character attribution while rejecting raw keys, full digests, and submitted
+  sentinels.
+- `scripts/render_cloud_run.py` produced a validated secret-free example locally and
+  explicitly performed no deployment or credential operation.
+- The current Windows environment has no Google Cloud CLI or Docker. GitHub exposes only
+  the existing `release-approval` environment and no GCP repository variables or secrets.
+  A real project, region, authenticated deployment path, judge key, endpoint, live smoke,
+  log export, and `server.json` remote remain outstanding.
+- No external mutation occurred in this checkpoint: no push, tag, Cloud Run resource,
+  key generation/distribution, remote-access change, video upload, submission, or paid
+  model call.
