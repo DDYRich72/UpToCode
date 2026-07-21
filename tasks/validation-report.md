@@ -452,3 +452,20 @@ publication, and MCP registry submission are post-event Phase 7 work.
 - **PASS — Windows gate:** Ruff, strict mypy over 41 source files, 225 tests, 87% branch
   coverage, offline acceptance, production compliance, site build, and all seven site tests
   pass. No live runner, model call, merge, publication, or tag operation was performed.
+
+## Batch 3 Lane 3.2 — MCP architecture and control rules / 1.9.0
+
+- **PASS — stable controls:** AA014 recognizes authenticated FastMCP network transports,
+  AA015 requires explicit tool annotations, and AA016 requires strict argument schemas.
+  Stdio is not applicable and unresolved transport/composition evidence is reported as a
+  coverage warning rather than a clean result.
+- **PASS — experimental controls:** AA017 detects undifferentiated generic tool failures
+  and AA018 detects prompt-only critical prerequisites. Ambiguous cases are nominated for
+  judgment; experimental findings remain outside thresholds unless explicitly included.
+- **PASS — evidence:** dedicated bad/clean MCP fixtures and 11 focused tests cover positive,
+  clean, suppression, stdio, dynamic, false-positive, registry, and judgment-candidate
+  behavior. The compliance map now covers AA001-AA018.
+- **PASS — Windows gate:** Ruff, strict mypy over 41 production modules, 236 tests, 87%
+  branch coverage, offline acceptance, zero-finding production compliance, site build, and
+  all seven site tests pass. No live model, release, publication, deployment, or tag action
+  was performed.

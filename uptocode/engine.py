@@ -421,6 +421,15 @@ def _scan_path_impl(
                     line=line,
                 )
             )
+        for item in facts.inconclusive:
+            report.analysis_warnings.append(
+                AnalysisWarning(
+                    code=item.code,
+                    message=item.detail,
+                    file=relative,
+                    line=item.line,
+                )
+            )
         report.findings.extend(evaluate_file(relative, lines, facts))
     report.findings.extend(evaluate_project(project_facts))
     report.findings.extend(

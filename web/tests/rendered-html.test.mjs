@@ -31,7 +31,8 @@ test("server-renders the functional UpToCode landing page", async () => {
   assert.match(html, /<title>UpToCode/);
   assert.match(html, /Find the failure mode before your agent finds it in production/);
   assert.match(html, /AA001/);
-  assert.match(html, /AA013/);
+  assert.match(html, /Network MCP auth/);
+  assert.match(html, /Enforced prompt policies/);
   assert.match(html, /Local stdio MCP/);
   assert.match(html, /Hosted MCP/);
   assert.match(html, /href="\/connect"/);

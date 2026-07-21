@@ -39,6 +39,38 @@ def _contains_validation(node: ast.AST) -> bool:
     )
 
 
+def _is_registered_tool(function: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    return any(
+        "function_tool" in qualified_name(item.func if isinstance(item, ast.Call) else item)
+        or qualified_name(item.func if isinstance(item, ast.Call) else item).endswith(".tool")
+        for item in function.decorator_list
+    )
+
+
+def _has_exception_handler(function: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    return any(isinstance(item, ast.ExceptHandler) for item in ast.walk(function))
+
+
+def _has_structured_error_contract(function: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    text = " ".join(
+        str(item.value).lower()
+        for item in ast.walk(function)
+        if isinstance(item, ast.Constant) and isinstance(item.value, str)
+    )
+    return any(token in text for token in ("iserror", "is_error")) and (
+        "category" in text or "retryable" in text
+    )
+
+
+def _looks_like_ordered_critical_policy(value: str) -> bool:
+    text = value.lower()
+    return (
+        any(token in text for token in ("before", "prior to", "only after"))
+        and any(token in text for token in ("approval", "approve", "identity", "authenticate", "confirm"))
+        and any(token in text for token in ("delet", "destroy", "pay", "transfer", "send", "publish"))
+    )
+
+
 def collect_judgment_candidates(
     sources: list[tuple[str, str]],
 ) -> list[JudgmentCandidate]:
@@ -90,7 +122,7 @@ def collect_judgment_candidates(
                         )
                     )
         for function in [node for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]:
-            is_tool = any("function_tool" in qualified_name(item.func if isinstance(item, ast.Call) else item) for item in function.decorator_list)
+            is_tool = _is_registered_tool(function)
             if not is_tool:
                 continue
             candidates.append(JudgmentCandidate("AA009", file, function.lineno, "Tool schema requires semantic quality review.", _excerpt(lines, function.lineno)))
@@ -102,6 +134,31 @@ def collect_judgment_candidates(
             )
             if ambiguous_name and writes:
                 candidates.append(JudgmentCandidate("AA003", file, function.lineno, "Ambiguously named tool contains a write-like operation.", _excerpt(lines, function.lineno)))
+            if _has_exception_handler(function) and not _has_structured_error_contract(function):
+                candidates.append(
+                    JudgmentCandidate(
+                        "AA017",
+                        file,
+                        function.lineno,
+                        "Tool exception behavior requires semantic review for differentiated, actionable errors.",
+                        _excerpt(lines, function.lineno),
+                    )
+                )
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Constant)
+                and isinstance(node.value, str)
+                and _looks_like_ordered_critical_policy(node.value)
+            ):
+                candidates.append(
+                    JudgmentCandidate(
+                        "AA018",
+                        file,
+                        node.lineno,
+                        "A prompt states a critical prerequisite; semantic review must confirm programmatic enforcement.",
+                        _excerpt(lines, node.lineno),
+                    )
+                )
     if len(agent_locations) > 1:
         file, line, lines = agent_locations[0]
         candidates.append(JudgmentCandidate("AA008", file, line, f"Repository defines {len(agent_locations)} agents.", _excerpt(lines, line)))

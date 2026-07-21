@@ -187,7 +187,7 @@ Findings are deterministically ordered by severity, normalized path, line, and r
 ```json
 {
   "schema_version": "2.2",
-  "tool_version": "1.8.0",
+  "tool_version": "1.9.0",
   "scan_root": ".",
   "generated_at": "RFC3339 timestamp",
   "findings": [],
@@ -248,6 +248,11 @@ The manifest stores the report fingerprint, finding fingerprints, `approved|reje
 | AA011 | No agent eval coverage | Static + judgment | warning | Supported agent entrypoints exist but no tests/evals exercise them. Judgment proposes three repo-specific cases. |
 | AA012 | No agent observability | Static | info | Supported agent loop/tool execution exists without recognized logging or tracing around decisions and tool calls. |
 | AA013 | Unbounded context growth | Static | warning | In one recognized loop, a proven list is appended and passed as `messages`, `input`, or `history` to a recognized model call, with no recognized truncation in the loop or containing function. Incomplete recognition produces an analysis warning. |
+| AA014 | Network MCP without authentication | Static | critical | Recognized SSE/Streamable HTTP exposure without SDK authentication or a validated bearer-denying ASGI boundary. Stdio is not applicable; dynamic composition is inconclusive. |
+| AA015 | MCP tools without annotations | Static | warning | Recognized `tool`/`add_tool` registration omits annotations or sets them to `None`; dynamic wrappers are inconclusive. |
+| AA016 | Non-strict MCP tool arguments | Static | warning | A registered tool lacks a strict Pydantic argument model or statically linked `additionalProperties: false` schema hardening. |
+| AA017 | Undifferentiated tool errors | Static + judgment | warning | Experimental: a registered tool catches exceptions and returns one generic string without category, retryability, or structured error evidence. |
+| AA018 | Prompt-only policy enforcement | Static + judgment | warning | Experimental: prompt text states an ordered approval/identity prerequisite for a critical action but no hook, interceptor, prerequisite check, or constrained tool selection enforces it. |
 
 ### Rule behavior constraints
 
@@ -364,7 +369,7 @@ Package, config, public schemas, discovery, redaction, CLI shell, AA001 vertical
 
 ### Gate 2 — Python static engine
 
-All static portions of AA001–AA013, Python adapters, bad/clean fixtures, suppressions, coverage metadata, exit codes, and goldens.
+All static portions of AA001–AA018, Python adapters, bad/clean fixtures, suppressions, coverage metadata, exit codes, and goldens.
 
 ### Gate 3 — Judgment and developer surfaces
 

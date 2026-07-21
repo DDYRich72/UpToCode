@@ -10,7 +10,7 @@ UpToCode is a design-time architecture-quality scanner for Python and TypeScript
 The product is deliberately narrower than a general agent-security scanner. Version 1.7 recognizes OpenAI, Anthropic, CrewAI, PydanticAI, LlamaIndex, LangGraph, conservative custom Python/TypeScript loops, and positive evidence of unbounded context growth. Static scans are local and offline. Optional GPT‑5.6 judgment remains explicit, bounded, redacted, and code-sharing gated.
 
 > The Python distribution, import package, and command are all `uptocode`. Version 1.0.0
-> is the published baseline; this source tree is prepared as 1.8.0 for the operator-gated Batch 3 release train.
+> is the published baseline; this source tree is prepared as 1.9.0 for the operator-gated Batch 3 release train.
 
 ## Install locally
 
@@ -192,6 +192,11 @@ No live API call is part of the offline test or acceptance suite. The submission
 | AA011 | No agent eval coverage | Static + judgment | warning | [OpenAI evals](https://developers.openai.com/api/docs/guides/evals), [Google ADK evaluation](https://adk.dev/evaluate/) |
 | AA012 | No agent observability | Static | info | [Agents SDK tracing](https://openai.github.io/openai-agents-python/tracing/) |
 | AA013 | Unbounded context growth | Static | warning | [Anthropic effective agents](https://www.anthropic.com/engineering/building-effective-agents), [OpenAI practical guide](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf) |
+| AA014 | Network MCP without authentication | Static | critical | [MCP authorization](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization), [FastMCP token verification](https://gofastmcp.com/v2/servers/auth/token-verification) |
+| AA015 | MCP tools without annotations | Static | warning | [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools) |
+| AA016 | Non-strict MCP tool arguments | Static | warning | [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), [Pydantic configuration](https://docs.pydantic.dev/latest/api/config/#pydantic.config.ConfigDict.extra) |
+| AA017 | Undifferentiated tool errors | Static + judgment (experimental) | warning | [MCP tool errors](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), [Claude tool-call errors](https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls) |
+| AA018 | Prompt-only policy enforcement | Static + judgment (experimental) | warning | [NIST AI 600-1](https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf), [OWASP Excessive Agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/) |
 
 Each static verdict requires recognized syntax and source-backed evidence. Unsupported or dynamic constructs produce coverage gaps or analysis warnings; they are never silently declared clean.
 

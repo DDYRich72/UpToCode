@@ -86,11 +86,80 @@ def evaluate_file(file: str, lines: list[str], facts: FileFacts) -> list[Finding
                 "Bound retained context with semantic summarization or explicit truncation before the next model call.",
             )
         )
-    for tool in facts.tools:
-        if tool.destructive and not tool.approval:
-            findings.append(_finding("AA003", "Ungated destructive action", file, tool.line, "missing-approval", f"Tool {tool.name} can change state without a recognized approval gate.", excerpt(tool.line), "Require an explicit approval mechanism before execution."))
-        if tool.argument_risk:
-            findings.append(_finding("AA004", "Unvalidated tool arguments", file, tool.line, "model-arg-to-sensitive-sink", f"Tool {tool.name} sends an argument to a sensitive sink without recognized validation.", excerpt(tool.line), "Validate and constrain arguments before the sink."))
+    for transport in facts.mcp_transports:
+        if not transport.authenticated:
+            findings.append(
+                _finding(
+                    "AA014",
+                    "Network MCP transport without authentication evidence",
+                    file,
+                    transport.line,
+                    "mcp-network-without-auth",
+                    transport.detail + " No recognized authentication boundary is composed.",
+                    excerpt(transport.line),
+                    "Add transport-level bearer/OAuth verification before exposing the MCP application.",
+                    "complex",
+                )
+            )
+    for mcp_tool in facts.mcp_tools:
+        if not mcp_tool.has_annotations:
+            findings.append(
+                _finding(
+                    "AA015",
+                    "MCP tool has no annotations",
+                    file,
+                    mcp_tool.line,
+                    "mcp-tool-without-annotations",
+                    f"Registered MCP tool {mcp_tool.name} has no recognized ToolAnnotations.",
+                    excerpt(mcp_tool.line),
+                    "Declare read-only, destructive, idempotent, and open-world hints explicitly.",
+                )
+            )
+        if not mcp_tool.strict_arguments:
+            findings.append(
+                _finding(
+                    "AA016",
+                    "MCP tool arguments accept unknown fields",
+                    file,
+                    mcp_tool.line,
+                    "mcp-tool-arguments-not-strict",
+                    f"Registered MCP tool {mcp_tool.name} has no recognized strict argument model or schema hardening.",
+                    excerpt(mcp_tool.line),
+                    "Reject unknown argument fields with a strict model or explicit additionalProperties=false hardening.",
+                )
+            )
+        if mcp_tool.generic_error:
+            findings.append(
+                _finding(
+                    "AA017",
+                    "Undifferentiated tool error",
+                    file,
+                    mcp_tool.line,
+                    "generic-tool-error",
+                    f"Registered MCP tool {mcp_tool.name} returns one generic error without category or retryability evidence.",
+                    excerpt(mcp_tool.line),
+                    "Return structured tool errors that distinguish validation, permission, transient, and business failures and identify retryability.",
+                )
+            )
+    for policy in facts.policy_prompts:
+        findings.append(
+            _finding(
+                "AA018",
+                "Prompt-only policy enforcement",
+                file,
+                policy.line,
+                "critical-policy-only-in-prompt",
+                policy.detail,
+                excerpt(policy.line),
+                "Enforce the prerequisite in a tool hook, interceptor, constrained tool selection, or the tool body before the side effect.",
+                "complex",
+            )
+        )
+    for standard_tool in facts.tools:
+        if standard_tool.destructive and not standard_tool.approval:
+            findings.append(_finding("AA003", "Ungated destructive action", file, standard_tool.line, "missing-approval", f"Tool {standard_tool.name} can change state without a recognized approval gate.", excerpt(standard_tool.line), "Require an explicit approval mechanism before execution."))
+        if standard_tool.argument_risk:
+            findings.append(_finding("AA004", "Unvalidated tool arguments", file, standard_tool.line, "model-arg-to-sensitive-sink", f"Tool {standard_tool.name} sends an argument to a sensitive sink without recognized validation.", excerpt(standard_tool.line), "Validate and constrain arguments before the sink."))
     for sink in facts.risky_sinks:
         if not any(tool.argument_risk and tool.line <= sink.line for tool in facts.tools):
             findings.append(_finding("AA004", "Unvalidated tool arguments", file, sink.line, "model-arg-to-sensitive-sink", f"A model-controlled value reaches {sink.kind} without recognized validation.", excerpt(sink.line), "Validate and constrain arguments before the sink."))
@@ -129,7 +198,10 @@ def evaluate_project(
         line = facts.first_agent_line
         findings.append(_finding("AA011", "No agent eval coverage", file, line, "missing-eval", "Supported agent code has no recognized test or eval artifact.", "\n".join(lines[max(0, line - 2):line + 1]), "Add representative evals that exercise the agent entrypoint."))
     for file, lines, facts in agent_entries:
-        if any(abs(line - facts.first_agent_line) <= 25 for line in facts.observability_lines):
+        if (
+            any(abs(line - facts.first_agent_line) <= 25 for line in facts.observability_lines)
+            or ((facts.mcp_transports or facts.mcp_tools) and facts.has_observability)
+        ):
             continue
         line = facts.first_agent_line
         findings.append(_finding("AA012", "No agent observability", file, line, "missing-observability", "Agent code has no recognized logging or tracing evidence.", "\n".join(lines[max(0, line - 2):line + 1]), "Log or trace loop decisions and tool execution without sensitive payloads."))

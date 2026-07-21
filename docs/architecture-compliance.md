@@ -15,6 +15,11 @@
 | AA011 | Every rule and public transport has positive, clean, adversarial, unsupported, and regression coverage. | rule matrix, official-client stdio/HTTP acceptance, nine-cell cross-platform CI, isolated wheel audit, site and container smokes | `test_rule_contract_matrix.py`, `test_hosted_lifecycle.py`, `test_github_ci_surface.py`, `scripts/acceptance.py` |
 | AA012 | Payload-free timing, counts, safe key attribution, error classes, model usage, synchronized versions, and correlation-capable MCP requests exist at boundaries. | Report metadata/usage, MCP lifecycle logs, version contract, operations policy | `test_gate1.py`, `test_judgment.py`, `test_mcp_hardening.py`, `test_hosted_lifecycle.py` |
 | AA013 | Scanner context and report collections are bounded by source, request, and output budgets; no production loop reuses an ever-growing model context list. | `analysis.py`, scan budgets, bounded judgment candidate payloads | `test_batch1_quick_wins.py`, production dogfood scan |
+| AA014 | Hosted MCP is protected by a bearer-verifying, fail-closed ASGI boundary; local MCP remains stdio. | `mcp_server.py`, `BearerKeyMiddleware` | `test_batch3_mcp_rules.py`, `test_hosted_lifecycle.py` |
+| AA015 | Every registered MCP tool has explicit behavioral annotations. | `mcp_server.py`, shared annotation constants | `test_batch3_mcp_rules.py`, `test_mcp_hardening.py` |
+| AA016 | MCP input models reject unknown fields and generated schemas are hardened. | strict models, `_harden_tool_contracts` | `test_batch3_mcp_rules.py`, `test_mcp_hardening.py` |
+| AA017 | Tool failures remain categorized and actionable at public boundaries. | typed service errors and MCP adapters | `test_batch3_mcp_rules.py`, `test_mcp_server.py` |
+| AA018 | Critical mutation policy is enforced in code and never delegated to prompt prose. | review manifest, isolated fix preflight | `test_batch3_mcp_rules.py`, `test_batch3_fix.py` |
 
 `scripts/compliance.py` scans only production Python source and emits
 `.uptocode/architecture-compliance.json`. It fails on any production

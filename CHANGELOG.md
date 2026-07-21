@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.0 - 2026-07-20
+
+- Add stable MCP authentication, tool-annotation, and strict-schema controls AA014-AA016,
+  plus opt-in experimental differentiated-error and prompt-policy enforcement controls
+  AA017-AA018 with explicit uncertainty and judgment-candidate coverage.
+
 ## 1.8.0 - 2026-07-20
 
 - Add approval-bound `uptocode fix` dry-runs and explicit external-runner remediation in

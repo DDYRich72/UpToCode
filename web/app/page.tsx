@@ -14,6 +14,11 @@ const rules = [
   "Agent evals",
   "Observability",
   "Context growth",
+  "Network MCP auth",
+  "Tool annotations",
+  "Strict tool inputs",
+  "Actionable tool errors",
+  "Enforced prompt policies",
 ];
 
 export default function Home() {
@@ -69,7 +74,7 @@ export default function Home() {
       </section>
 
       <section className="section" id="rules">
-        <p className="eyebrow">AA001—AA013</p>
+        <p className="eyebrow">AA001—AA018</p>
         <h2>A production architecture contract, not a generic quality score.</h2>
         <div className="ruleGrid">
           {rules.map((rule, index) => (

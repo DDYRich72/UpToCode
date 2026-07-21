@@ -10,10 +10,10 @@ from uptocode.rules.registry import load_core_rules
 ROOT = Path(__file__).parents[1]
 
 
-def test_core_registry_has_thirteen_ordered_rules_and_structured_citations() -> None:
+def test_core_registry_has_eighteen_ordered_rules_and_structured_citations() -> None:
     rules = load_core_rules()
 
-    assert [rule.id for rule in rules] == [f"AA{index:03d}" for index in range(1, 14)]
+    assert [rule.id for rule in rules] == [f"AA{index:03d}" for index in range(1, 19)]
     assert all(rule.citations for rule in rules)
     assert all(str(citation.url).startswith("https://") for rule in rules for citation in rule.citations)
     assert all(citation.publisher and citation.title for rule in rules for citation in rule.citations)

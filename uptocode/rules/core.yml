@@ -184,3 +184,69 @@
       title: A practical guide to building agents
       url: https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
       status: supporting
+- id: AA014
+  name: network-mcp-without-authentication
+  tier: static
+  severity: critical
+  maturity: stable
+  citations:
+    - publisher: Model Context Protocol
+      title: Authorization
+      url: https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization
+      status: normative
+    - publisher: FastMCP
+      title: Token verification
+      url: https://gofastmcp.com/v2/servers/auth/token-verification
+      status: supporting
+- id: AA015
+  name: mcp-tools-without-annotations
+  tier: static
+  severity: warning
+  maturity: stable
+  citations:
+    - publisher: Model Context Protocol
+      title: Tools
+      url: https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+      status: normative
+- id: AA016
+  name: non-strict-mcp-tool-arguments
+  tier: static
+  severity: warning
+  maturity: stable
+  citations:
+    - publisher: Model Context Protocol
+      title: Tools
+      url: https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+      status: normative
+    - publisher: Pydantic
+      title: Extra instance attributes
+      url: https://docs.pydantic.dev/latest/api/config/#pydantic.config.ConfigDict.extra
+      status: supporting
+- id: AA017
+  name: undifferentiated-tool-errors
+  tier: static+judgment
+  severity: warning
+  maturity: experimental
+  citations:
+    - publisher: Model Context Protocol
+      title: Tools error handling
+      url: https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+      status: normative
+    - publisher: Anthropic
+      title: Handle tool calls
+      url: https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls
+      status: normative
+- id: AA018
+  name: prompt-only-policy-enforcement
+  tier: static+judgment
+  severity: warning
+  maturity: experimental
+  citations:
+    - publisher: NIST
+      title: Artificial Intelligence Risk Management Framework Generative AI Profile
+      url: https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf
+      status: normative
+    - publisher: OWASP GenAI Security Project
+      title: Excessive Agency
+      url: https://genai.owasp.org/llmrisk/llm062025-excessive-agency/
+      status: supporting
