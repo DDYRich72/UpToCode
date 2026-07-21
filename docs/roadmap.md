@@ -9,6 +9,7 @@
 7. Reference MCP: bounded local stdio plus stateless hosted Streamable HTTP with typed tools.
 8. Product access: functional Sites landing/connect surface and approval-gated Cloud Run deployment.
 9. Release gate: cross-platform CI, compliance artifact, and zero-finding production self-scan.
+10. Batch 2: cross-vendor Python adapters, TypeScript subset, Report 2.2, and interactive HTML review.
 
 The detailed backlog and sequencing live in [gap-analysis.md](gap-analysis.md)
 and [the production feature spec](../specs/002-reference-production.md).

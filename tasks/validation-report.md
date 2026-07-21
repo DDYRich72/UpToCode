@@ -1,5 +1,47 @@
 # Validation Report
 
+## Batch 2 audience expansion — 2026-07-20
+
+Status: **local implementation gate passed; operator-hosted CI/release actions pending**.
+
+### Acceptance mapping
+
+- **Shared evidence and Python adapters — passed.** Language-neutral loop, model-call,
+  tool, budget, resilience, enforcement, validation, and observability evidence feeds the
+  existing AA evaluators. Anthropic, CrewAI, PydanticAI, and LlamaIndex bad/clean fixtures
+  and positive/clean/suppression/unsupported/false-positive tests pass.
+- **TypeScript subset and Report 2.2 — passed locally.** Tree-sitter parses `.ts`, `.tsx`,
+  and `.mts`; mixed repositories expose strict per-language coverage; syntax recovery and
+  dynamic configuration warn; CLI/reporters/review/MCP accept the new contract.
+- **Parser wheel matrix — configured, external confirmation pending.** Windows/Python 3.13
+  installed `tree-sitter 0.26.0` and `tree-sitter-typescript 0.23.2` successfully. CI now
+  parses TypeScript explicitly in all Python 3.11-3.13 x Ubuntu/Windows/macOS cells.
+- **Interactive HTML review — passed.** CSP, hostile JSON escaping, accessible decision
+  controls, manifest model shape/order, and no-network assertions pass. Browser dry-run
+  approved one finding, rejected one, downloaded ReviewManifest 2.0, and successfully ran
+  `uptocode plan` against JSON emitted from the same scan via `--json-output`.
+- **Version/docs contract — passed.** Package/runtime/server versions agree at 1.7.0;
+  CHANGELOG records the fixed 1.2.0-1.7.0 sequence; specs, decisions, framework memos,
+  README, architecture, roadmap, and current-state claims match implemented behavior.
+
+### Local evidence
+
+```text
+python -m pytest -q                         221 passed
+python scripts/acceptance.py                PASS
+python scripts/compliance.py                PASS (0 findings/warnings/suppressions)
+python -m ruff check uptocode tests scripts PASS
+python -m mypy uptocode                     PASS (40 source files)
+coverage --branch                           87% (minimum 85%)
+web npm test                                7 passed; production build passed
+interactive HTML → manifest → plan          PASS
+```
+
+The site test used the existing dependency installation in the original workspace
+because a fresh `npm ci` in the isolated worktree timed out; the tracked `web/` tree is
+unchanged between those worktrees. No tag, package publication, deployment, paid API call,
+or production-data action was performed.
+
 Phase 5 is deployed to the approved Cloud Run project and region. Corrective commit
 `44e9d46` passed targeted hosted tests, Ruff, and strict mypy before Cloud Build produced
 immutable image digest `sha256:298fadd434cafc4a28182a4f263ca1a2b23c2aea0d02627ac9aebe3046bd778d`.

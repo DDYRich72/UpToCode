@@ -42,3 +42,17 @@ MCP Registry server name; and `uptocode-mcp` for hosted resources. The AA001–A
 identifiers remain stable because they are versioned report-contract identifiers, not a
 product-name abbreviation. No legacy-branded public alias is published because the prior
 distribution was never released to PyPI.
+
+## D009 — Batch 2 TypeScript implementation approved (2026-07-20)
+
+The operator's instruction to implement the approved Batch 2 plan is the explicit gate
+for `specs/005-typescript-analysis.md`. TypeScript uses tree-sitter, adds no Node runtime,
+and feeds the existing normalized evidence and AA rule pipeline. Report 2.2 adds strict
+per-language coverage; ReviewManifest remains 2.0.
+
+## D010 — LlamaIndex is the fourth Python adapter (2026-07-20)
+
+The implementation-time PyPI Stats comparison selected LlamaIndex: approximately
+7,189,570 downloads in the prior month versus 609,455 for PyAutoGen and 634,739 for AG2.
+The fourth adapter therefore targets current LlamaIndex agents and workflows. Counts are
+a dated prioritization signal, not a product quality claim.

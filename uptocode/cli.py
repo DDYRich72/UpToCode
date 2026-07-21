@@ -23,7 +23,7 @@ from uptocode.share_safe import make_share_safe
 
 app = typer.Typer(
     name="uptocode",
-    help="UpToCode architecture-quality analysis for Python agent applications.",
+    help="UpToCode architecture-quality analysis for Python and TypeScript agent applications.",
     no_args_is_help=True,
 )
 
@@ -83,6 +83,11 @@ def scan(
         "--format",
     ),
     output: Path | None = typer.Option(None, "--output"),
+    json_output: Path | None = typer.Option(
+        None,
+        "--json-output",
+        help="Also write the exact Report JSON used by another output format.",
+    ),
     judgment: bool = typer.Option(False, "--judgment"),
     send_code: bool = typer.Option(False, "--send-code"),
     fail_on: Severity | None = typer.Option(None, "--fail-on"),
@@ -99,7 +104,7 @@ def scan(
     github_summary: Path | None = typer.Option(None, "--github-summary"),
     verbose: bool = typer.Option(False, "--verbose"),
 ) -> None:
-    """Scan a Python repository for architecture-quality findings."""
+    """Scan supported source files for architecture-quality findings."""
     if judgment and not send_code:
         typer.echo("--judgment requires --send-code consent", err=True)
         raise typer.Exit(2)
@@ -128,7 +133,7 @@ def scan(
         typer.echo(str(error), err=True)
         raise typer.Exit(2) from error
     if (report.coverage.files_discovered or report.coverage.files_skipped) and not report.coverage.files_analyzed:
-        typer.echo("No discovered Python file could be analyzed", err=True)
+        typer.echo("No discovered supported source file could be analyzed", err=True)
         raise typer.Exit(2)
     selected = _selectors(select)
     ignored = _selectors(ignore)
@@ -139,7 +144,17 @@ def scan(
     if changed_since:
         try:
             changed = subprocess.run(
-                ["git", "diff", "--name-only", f"{changed_since}...HEAD", "--", "*.py"],
+                [
+                    "git",
+                    "diff",
+                    "--name-only",
+                    f"{changed_since}...HEAD",
+                    "--",
+                    "*.py",
+                    "*.ts",
+                    "*.tsx",
+                    "*.mts",
+                ],
                 cwd=path if path.is_dir() else path.parent,
                 capture_output=True,
                 text=True,
@@ -198,6 +213,8 @@ def scan(
         _write_output(output, rendered)
     else:
         typer.echo(rendered)
+    if json_output is not None:
+        _write_output(json_output, render_json(rendered_report), create_parent=True)
     summary_destination = github_summary
     if summary_destination is None and os.environ.get("GITHUB_STEP_SUMMARY"):
         summary_destination = Path(os.environ["GITHUB_STEP_SUMMARY"])

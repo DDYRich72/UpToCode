@@ -26,6 +26,7 @@ from pydantic import Field
 
 from uptocode import __version__
 from uptocode.adapters.python import extract_python_evidence
+from uptocode.config import SUPPORTED_SOURCE_EXTENSIONS
 from uptocode.diffing import reconstruct_unified_diff
 from uptocode.engine import AuditService
 from uptocode.models import (
@@ -243,8 +244,12 @@ def _scan_sources(
             _bounded_text(filename, name="filename", maximum=512)
             _bounded_text(source, name=filename)
             relative = Path(filename)
-            if relative.is_absolute() or ".." in relative.parts or relative.suffix.lower() != ".py":
-                raise ValueError("Submitted filenames must be contained relative Python paths")
+            if (
+                relative.is_absolute()
+                or ".." in relative.parts
+                or relative.suffix.lower() not in SUPPORTED_SOURCE_EXTENSIONS
+            ):
+                raise ValueError("Submitted filenames must be contained relative supported-source paths")
             target = root / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(source, encoding="utf-8")
@@ -259,7 +264,7 @@ def _scan_sources(
             )
         )
     if report.coverage.files_analyzed == 0:
-        raise ValueError("Submitted Python source could not be analyzed")
+        raise ValueError("Submitted source could not be analyzed")
     report.scan_root = "<submitted-code>"
     return report
 
@@ -270,7 +275,7 @@ def audit_source(
     judgment: JudgmentFlag = False,
     send_code: SendCodeFlag = False,
 ) -> Report:
-    """Audit one explicitly submitted Python source document."""
+    """Audit one explicitly submitted Python or TypeScript source document."""
     return _scan_sources(
         {filename: source}, judgment=judgment, send_code=send_code
     )
@@ -285,8 +290,11 @@ def audit_file(
 ) -> Report:
     """Audit one local Python file contained by the configured workspace root."""
     source_path = _contained_path(path, workspace_root)
-    if not source_path.is_file() or source_path.suffix.lower() != ".py":
-        raise ValueError(f"Python file not found: {source_path}")
+    if (
+        not source_path.is_file()
+        or source_path.suffix.lower() not in SUPPORTED_SOURCE_EXTENSIONS
+    ):
+        raise ValueError(f"Supported source file not found: {source_path}")
     try:
         source = source_path.read_text(encoding="utf-8")
     except UnicodeDecodeError as error:
@@ -336,10 +344,12 @@ def audit_diff(
     sources = {
         item.new_path: item.source
         for item in patched
-        if item.new_path is not None and item.new_path.lower().endswith(".py") and not item.deleted
+        if item.new_path is not None
+        and Path(item.new_path).suffix.lower() in SUPPORTED_SOURCE_EXTENSIONS
+        and not item.deleted
     }
     if not sources:
-        raise ValueError("Diff contains no analyzable Python files")
+        raise ValueError("Diff contains no analyzable supported source files")
     return _scan_sources(sources, judgment=judgment, send_code=send_code)
 
 

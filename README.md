@@ -5,12 +5,12 @@
 [![PyPI version](https://img.shields.io/pypi/v/uptocode.svg)](https://pypi.org/project/uptocode/)
 [![Scanned with UpToCode](https://img.shields.io/badge/scanned%20with-UpToCode-175cd3)](https://github.com/DDYRich72/UpToCode)
 
-UpToCode is a design-time architecture-quality scanner for Python agent applications. It finds missing execution bounds, run budgets, approvals, validation, resilience controls, evals, and observability; explains the evidence; and produces an approval-driven plan for Codex without rewriting source code.
+UpToCode is a design-time architecture-quality scanner for Python and TypeScript agent applications. It finds missing execution bounds, run budgets, approvals, validation, resilience controls, evals, and observability; explains the evidence; and produces an approval-driven plan for Codex without rewriting source code.
 
-The product is deliberately narrower than a general agent-security scanner. Version 1.1 recognizes OpenAI Agents SDK patterns, LangGraph limits, conservative custom Python agent loops, and positive evidence of unbounded context growth. Static scans are local and offline. Optional GPT‑5.6 judgment is explicit, bounded, redacted, and code-sharing gated.
+The product is deliberately narrower than a general agent-security scanner. Version 1.7 recognizes OpenAI, Anthropic, CrewAI, PydanticAI, LlamaIndex, LangGraph, conservative custom Python/TypeScript loops, and positive evidence of unbounded context growth. Static scans are local and offline. Optional GPT‑5.6 judgment remains explicit, bounded, redacted, and code-sharing gated.
 
 > The Python distribution, import package, and command are all `uptocode`. Version 1.0.0
-> is the published PyPI release; this source tree is prepared as 1.1.0 for the operator-gated release.
+> is the published baseline; this source tree is prepared as 1.7.0 for the operator-gated Batch 2 release train.
 
 ## Install locally
 
@@ -197,12 +197,13 @@ Recognized evidence includes:
 - `while True` loops with detectable exits, constant bounds, and simple recursive base cases.
 - OpenAI Responses model calls, output caps, client/call timeouts, bounded client retries, and simple source-level run budgets.
 - `@function_tool` approvals, its model-controlled parameters reaching common SQL/shell/file/network sinks, parameter-linked validation, agent eval markers/tests, and nearby logging/tracing evidence.
+- Anthropic Messages/Agent SDK, CrewAI, PydanticAI, and LlamaIndex framework contracts documented under `docs/frameworks/`.
+- Tree-sitter analysis for `.ts`, `.tsx`, and `.mts`: custom infinite loops, OpenAI Agents JS `maxTurns`, LangGraph.js `recursionLimit`, token/timeout/retry options, Zod tool parameters, and tracing imports.
 
 Known limitations:
 
-- Python analysis only; TypeScript analysis remains deferred to 1.1. GitHub workflow
-  annotations, Markdown summaries, SARIF, and the reusable composite Action are delivery
-  surfaces for the Python scanner, not TypeScript analyzers.
+- TypeScript coverage is intentionally limited to AA001, AA002, AA004, AA007, and AA012;
+  every other rule is reported per-language as not applicable.
 - Dynamic imports, metaprogramming, dispatch beyond the supported one-hop project call graph, and runtime-only behavior remain inconclusive and produce coverage warnings when recognized.
 - Static side-effect and schema analysis is conservative and can produce false positives; findings should be reviewed before planning.
 - Secret/PII recognition covers a small explicit pattern set, not arbitrary credentials or personal data.
@@ -219,7 +220,19 @@ exclude:
 max_file_size: 1048576
 ```
 
-Paths in reports are normalized relative to the scan root. Coverage records discovered, analyzed, and skipped files; detected frameworks; evaluated rules; rules not applicable; suppressions; analysis warnings; judgment status; and redaction counts.
+Paths in reports are normalized relative to the scan root. Report 2.2 coverage records aggregate and per-language discovered/analyzed files, detected frameworks, evaluated/not-applicable rules, suppressions, warnings, judgment status, and redaction counts.
+
+Standalone HTML reports include keyboard-accessible Approve/Reject decisions and download
+a report-bound ReviewManifest 2.0 locally through a Blob. The report performs no network
+requests; `uptocode plan` remains the only manifest consumer and never edits source.
+
+Generate matching HTML and JSON from one scan before reviewing:
+
+```text
+uptocode scan . --format html --output report.html --json-output report.json
+# Review report.html and download uptocode-review-manifest.json
+uptocode plan report.json --manifest uptocode-review-manifest.json --output FIXPLAN.md
+```
 
 ## MCP registration
 

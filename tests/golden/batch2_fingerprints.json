@@ -1,0 +1,44 @@
+{
+  "bad_anthropic": [
+    "b7479d5ef311aa722b2ff193",
+    "4f86dedf79328012c4708164",
+    "a75f0be5b3c00b9af2dac64d",
+    "9400f0b2ae64e871ae373160",
+    "0c4abd385de9e7f4f77735b2",
+    "ebf2637034791dc5f2646e3d",
+    "3516fc29739c534c828198b1",
+    "1eb9a2d9fdc037a519cb6b06",
+    "94db50bd817a60f811ec6e76",
+    "daab6fb858e1de6e64804bd2"
+  ],
+  "bad_crewai": [
+    "960398e91a6a4c7bb54fd33d",
+    "724264de370ec7c1199d2999",
+    "3aacdb369f91601d9f7613f9",
+    "af4b9034de6a62c1ad494d8b",
+    "fe9c4aa8238c0638d9d228ef"
+  ],
+  "bad_pydantic_ai": [
+    "df8ca343b043cd9d244fb4ea",
+    "5c89a2d9598b12927ea54b62",
+    "a1efafa202218a79b1d25aa0",
+    "31e89287591f510b6383046a",
+    "06fbe635d171dd3bd3dfff81"
+  ],
+  "bad_llamaindex": [
+    "992d19300f116ce5841f1328",
+    "c15989c086deb3ca2558153e",
+    "fadef472ee78f91e97f046ae",
+    "04fa01e93e715f9200a55413",
+    "c938d076f96ccec541840902"
+  ],
+  "bad_ts": [
+    "931f24961c81e7ba5976df66",
+    "0cd49930a6309efc0102be4d",
+    "583dfafee7a2ec45865269ef",
+    "235ef752c6645e5a66367ccc",
+    "bc6ee4ba0c5604cb5ece1502",
+    "651b243ed899d229b004d8e2",
+    "0a3160cb82433097085a41c9"
+  ]
+}

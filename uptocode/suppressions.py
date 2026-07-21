@@ -9,7 +9,7 @@ import re
 from uptocode.models import AnalysisWarning, SuppressionDetail
 
 
-_DIRECTIVE = re.compile(r"#\s*uptocode:\s*ignore\s+(AA\d{3})(?P<meta>.*)$")
+_DIRECTIVE = re.compile(r"(?:#|//)\s*uptocode:\s*ignore\s+(AA\d{3})(?P<meta>.*)$")
 _TOKEN = re.compile(
     r"(?:owner=(?P<owner>[A-Za-z0-9_.@-]+)|"
     r'reason="(?P<reason>[^"\r\n]*)"|'

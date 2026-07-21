@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.7.0 - 2026-07-20
+
+- Add keyboard-accessible approve/reject controls and local report-bound ReviewManifest
+  downloads to standalone HTML, with explicit CSP and script-block XSS hardening.
+
+## 1.6.0 - 2026-07-20
+
+- Add tree-sitter `.ts`, `.tsx`, and `.mts` analysis, Report 2.2 per-language coverage,
+  supported-extension MCP inputs, mixed-language fixtures, and nine-cell wheel probing.
+
+## 1.5.0 - 2026-07-20
+
+- Add LlamaIndex `FunctionAgent`, `ReActAgent`, and `AgentWorkflow` evidence and warnings.
+
+## 1.4.0 - 2026-07-20
+
+- Add PydanticAI agent execution, usage-limit, model-setting, and tool provenance evidence.
+
+## 1.3.0 - 2026-07-20
+
+- Add CrewAI Agent/Crew/process, iteration, execution-time, retry, and tool evidence.
+
+## 1.2.0 - 2026-07-20
+
+- Add language-neutral evidence contracts and the Anthropic Messages/Agent SDK adapter,
+  including structured stop-reason termination and pause-turn coverage warnings.
+
 ## 1.1.0 - 2026-07-20
 
 - Add stable AA013 detection for positive-evidence unbounded context growth and extend

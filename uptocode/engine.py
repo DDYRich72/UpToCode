@@ -11,15 +11,29 @@ from pathlib import Path
 from typing import Any
 
 from uptocode import __version__
-from uptocode.analysis import FileFacts, analyze_source, qualified_name
-from uptocode.adapters.python import extract_python_evidence
-from uptocode.config import RuleOverride, discover_python_files_detailed, load_config
+from uptocode.analysis import (
+    FileFacts,
+    ModelCallFact,
+    ToolFact,
+    analyze_source,
+    qualified_name,
+)
+from uptocode.adapters.registry import extract_framework_evidence
+from uptocode.adapters.python import PythonEvidence, extract_python_evidence
+from uptocode.adapters.typescript import extract_typescript_evidence
+from uptocode.config import (
+    SUPPORTED_SOURCE_EXTENSIONS,
+    RuleOverride,
+    discover_source_files_detailed,
+    load_config,
+)
 from uptocode.fingerprints import content_fingerprint
 from uptocode.judgment import run_judgment
 from uptocode.judgment_candidates import collect_judgment_candidates
 from uptocode.models import (
     AnalysisWarning,
     Coverage,
+    LanguageCoverage,
     Report,
     RuleResult,
     RuleStatus,
@@ -39,6 +53,9 @@ from uptocode.rules.plugins import (
 )
 from uptocode.rules.static import evaluate_file, evaluate_project
 from uptocode.suppressions import SuppressionIndex, parse_suppressions
+
+
+TYPESCRIPT_STATIC_RULES = {"AA001", "AA002", "AA004", "AA007", "AA012"}
 
 
 def _excerpt(lines: list[str], line: int) -> str:
@@ -108,8 +125,10 @@ def _scan_path_impl(
         raise ValueError("Judgment requires explicit --send-code authorization.")
     started = time.monotonic()
     target = Path(root).resolve()
-    if not target.exists() or (target.is_file() and target.suffix.lower() != ".py"):
-        raise ValueError(f"Scan target must be a Python file or directory: {target}")
+    if not target.exists() or (
+        target.is_file() and target.suffix.lower() not in SUPPORTED_SOURCE_EXTENSIONS
+    ):
+        raise ValueError(f"Scan target must be a supported source file or directory: {target}")
     scan_root = target.parent if target.is_file() else target
     config = load_config(scan_root)
     if extra_excludes:
@@ -135,7 +154,7 @@ def _scan_path_impl(
             files = [target]
             skipped_details = []
     else:
-        files, skipped_details = discover_python_files_detailed(scan_root, config)
+        files, skipped_details = discover_source_files_detailed(scan_root, config)
     report = Report(
         tool_version=__version__,
         scan_root=str(scan_root),
@@ -160,9 +179,16 @@ def _scan_path_impl(
             report.suppressions += 1
         return True
     project_facts: list[tuple[str, list[str], FileFacts]] = []
+    typescript_project_facts: list[tuple[str, list[str], FileFacts]] = []
     judgment_sources: list[tuple[str, str]] = []
     normalized_files: list[NormalizedFileEvidence] = []
     total_source_size = 0
+    discovered_by_language = {
+        "python": sum(path.suffix.lower() == ".py" for path in files),
+        "typescript": sum(path.suffix.lower() in {".ts", ".tsx", ".mts"} for path in files),
+    }
+    analyzed_by_language = {"python": 0, "typescript": 0}
+    agent_by_language = {"python": False, "typescript": False}
     for path in files:
         if cancelled is not None and cancelled():
             report.analysis_warnings.append(
@@ -197,14 +223,25 @@ def _scan_path_impl(
                     )
                 )
                 break
-            evidence = extract_python_evidence(source)
-            tree = ast.parse(source)
-            facts = analyze_source(tree, source)
+            is_python = path.suffix.lower() == ".py"
+            tree: ast.Module | None
+            if is_python:
+                evidence = extract_python_evidence(source)
+                tree = ast.parse(source)
+                facts = analyze_source(tree, source)
+                framework_evidence = extract_framework_evidence(tree, source, file=relative)
+                language = "python"
+            else:
+                evidence = PythonEvidence()
+                tree = None
+                facts = FileFacts()
+                framework_evidence = extract_typescript_evidence(source, file=relative)
+                language = "typescript"
         except OSError:
             report.analysis_warnings.append(
                 AnalysisWarning(
                     code="FILE_READ_ERROR",
-                    message="Python source could not be read; remaining files were preserved.",
+                    message="Source could not be read; remaining files were preserved.",
                     file=relative,
                 )
             )
@@ -220,10 +257,25 @@ def _scan_path_impl(
                 )
             )
             continue
-        if (
-            ("tools=" in source or "tools =" in source or "@tool" in source)
+        has_structural_tool_wiring = tree is not None and any(
+            (
+                isinstance(node, ast.Call)
+                and any(keyword.arg == "tools" for keyword in node.keywords)
+            )
+            or (
+                isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and any(
+                    qualified_name(decorator.func if isinstance(decorator, ast.Call) else decorator).endswith("tool")
+                    for decorator in node.decorator_list
+                )
+            )
+            for node in ast.walk(tree)
+        )
+        if tree is not None and (
+            has_structural_tool_wiring
             and "@function_tool" not in source
             and any(token in source for token in ("Agent", "graph", "langgraph"))
+            and not framework_evidence.frameworks
         ):
             report.analysis_warnings.append(
                 AnalysisWarning(
@@ -236,8 +288,10 @@ def _scan_path_impl(
                 )
             )
         report.coverage.files_analyzed += 1
-        judgment_sources.append((relative, source))
-        has_agent_reference = any(
+        analyzed_by_language[language] += 1
+        if tree is not None:
+            judgment_sources.append((relative, source))
+        has_agent_reference = tree is not None and any(
             isinstance(node, (ast.Name, ast.Attribute))
             and any(
                 token in qualified_name(node)
@@ -245,7 +299,7 @@ def _scan_path_impl(
             )
             for node in ast.walk(tree)
         )
-        has_dynamic_dispatch = any(
+        has_dynamic_dispatch = tree is not None and any(
             isinstance(node, ast.Call)
             and (
                 (
@@ -280,16 +334,64 @@ def _scan_path_impl(
                     file=relative,
                 )
             )
+        protocol_lines = {
+            loop.line
+            for loop in framework_evidence.loops
+            if loop.bound_kind == "protocol"
+        }
+        if protocol_lines:
+            evidence.loops = [
+                loop
+                for loop in evidence.loops
+                if not (loop.line in protocol_lines and loop.framework == "custom-python")
+            ]
+        evidence.loops.extend(framework_evidence.loops)
+        evidence.frameworks.update(framework_evidence.frameworks)
+        evidence.warnings.extend(framework_evidence.warnings)
+        facts.agent_present = facts.agent_present or framework_evidence.agent_present
+        if framework_evidence.agent_present:
+            facts.first_agent_line = min(
+                facts.first_agent_line, framework_evidence.first_agent_line
+            )
+        facts.has_run_budget = facts.has_run_budget or framework_evidence.has_run_budget
+        facts.observability_lines.extend(framework_evidence.observability_lines)
+        facts.has_observability = bool(facts.observability_lines)
+        facts.model_calls.extend(
+            ModelCallFact(
+                line=item.line,
+                has_output_limit=item.has_output_limit,
+                has_timeout=item.has_timeout,
+                has_retry=item.has_retry,
+                has_backoff=item.has_backoff,
+            )
+            for item in framework_evidence.model_calls
+        )
+        facts.tools.extend(
+            ToolFact(
+                line=item.line,
+                name=item.name,
+                destructive=item.destructive,
+                approval=item.approval,
+                argument_risk=item.argument_risk,
+            )
+            for item in framework_evidence.tools
+        )
+        report.analysis_warnings.extend(evidence.warnings)
         frameworks.update(evidence.frameworks)
+        agent_by_language[language] = agent_by_language[language] or facts.agent_present
         lines = source.splitlines()
         suppression_index, suppression_warnings = parse_suppressions(lines, file=relative)
         suppression_indexes[relative] = suppression_index
         report.suppression_details.extend(item.detail for item in suppression_index.directives)
         report.analysis_warnings.extend(suppression_warnings)
-        project_facts.append((relative, lines, facts))
+        if language == "python":
+            project_facts.append((relative, lines, facts))
+        else:
+            typescript_project_facts.append((relative, lines, facts))
         normalized_files.append(
             NormalizedFileEvidence(
                 file=relative,
+                language=language,
                 frameworks=sorted(evidence.frameworks),
                 agent_present=facts.agent_present,
                 model_call_count=len(facts.model_calls),
@@ -321,6 +423,11 @@ def _scan_path_impl(
             )
         report.findings.extend(evaluate_file(relative, lines, facts))
     report.findings.extend(evaluate_project(project_facts))
+    report.findings.extend(
+        finding
+        for finding in evaluate_project(typescript_project_facts)
+        if finding.rule_id == "AA012"
+    )
     if config.rulepacks:
         plugin_result = evaluate_plugins(
             load_rule_plugins(config.rulepacks, root=scan_root),
@@ -337,15 +444,58 @@ def _scan_path_impl(
         filtered_findings.append(finding)
     report.findings = filtered_findings
     report.coverage.frameworks_detected = sorted(frameworks)
-    if project_facts and any(facts.agent_present or facts.model_calls for _, _, facts in project_facts):
-        applicable = [definition for definition in definitions if "static" in definition.tier]
-        report.coverage.rules_evaluated = [
-            definition.id for definition in applicable if definition.maturity == "stable"
-        ]
-        report.coverage.experimental_rules_evaluated = [
-            definition.id for definition in applicable if definition.maturity == "experimental"
-        ]
-        report.coverage.rules_not_applicable = []
+    language_coverage: list[LanguageCoverage] = []
+    for language in ("python", "typescript"):
+        if not discovered_by_language[language]:
+            continue
+        if language == "python" and agent_by_language[language]:
+            applicable_ids = {definition.id for definition in definitions}
+            evaluated = [definition for definition in definitions if "static" in definition.tier]
+        elif language == "typescript" and agent_by_language[language]:
+            applicable_ids = TYPESCRIPT_STATIC_RULES
+            evaluated = [
+                definition
+                for definition in definitions
+                if definition.id in TYPESCRIPT_STATIC_RULES and "static" in definition.tier
+            ]
+        else:
+            applicable_ids = set()
+            evaluated = []
+        language_coverage.append(
+            LanguageCoverage(
+                language=language,  # type: ignore[arg-type]
+                files_discovered=discovered_by_language[language],
+                files_analyzed=analyzed_by_language[language],
+                rules_evaluated=[
+                    definition.id for definition in evaluated if definition.maturity == "stable"
+                ],
+                experimental_rules_evaluated=[
+                    definition.id
+                    for definition in evaluated
+                    if definition.maturity == "experimental"
+                ],
+                rules_not_applicable=[
+                    definition.id for definition in definitions if definition.id not in applicable_ids
+                ],
+            )
+        )
+    report.coverage.language_coverage = language_coverage
+    if language_coverage and any(agent_by_language.values()):
+        evaluated_ids = {
+            rule_id
+            for item in language_coverage
+            for rule_id in item.rules_evaluated
+        }
+        experimental_ids = {
+            rule_id
+            for item in language_coverage
+            for rule_id in item.experimental_rules_evaluated
+        }
+        not_applicable_sets = [set(item.rules_not_applicable) for item in language_coverage]
+        globally_not_applicable = set.intersection(*not_applicable_sets) if not_applicable_sets else set()
+        report.coverage.rules_evaluated = sorted(evaluated_ids)
+        report.coverage.experimental_rules_evaluated = sorted(experimental_ids)
+        report.coverage.rules_not_applicable = sorted(globally_not_applicable)
     elif files:
         report.coverage.rules_not_applicable = [definition.id for definition in definitions]
     report.findings.sort(

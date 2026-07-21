@@ -12,6 +12,12 @@ def render_terminal(report: Report) -> str:
         f"Findings: {len(report.findings)} | Warnings: {len(report.analysis_warnings)} | Redactions: {report.redactions.secrets + report.redactions.pii}",
         f"Experimental rules evaluated: {len(report.coverage.experimental_rules_evaluated)}",
     ]
+    lines.extend(
+        f"Language {item.language.title()}: {item.files_analyzed}/{item.files_discovered} files; "
+        f"{len(item.rules_evaluated) + len(item.experimental_rules_evaluated)} rules evaluated; "
+        f"{len(item.rules_not_applicable)} not applicable"
+        for item in report.coverage.language_coverage
+    )
     if report.baseline_debt.new or report.baseline_debt.aging or report.baseline_debt.resolved:
         lines.append(
             "Baseline debt: "

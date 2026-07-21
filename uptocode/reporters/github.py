@@ -61,6 +61,14 @@ def render_github_summary(report: Report) -> str:
         f"- Suppressions: **{report.suppressions}**",
         f"- Experimental rules evaluated: **{len(report.coverage.experimental_rules_evaluated)}**",
         "",
+    ]
+    lines.extend(
+        f"- {_markdown_cell(item.language.title())}: **{item.files_analyzed}/{item.files_discovered} files**, "
+        f"**{len(item.rules_evaluated) + len(item.experimental_rules_evaluated)} rules evaluated**"
+        for item in report.coverage.language_coverage
+    )
+    lines.extend([
+        "",
         "| Severity | Findings |",
         "|---|---:|",
         f"| Critical | {totals[Severity.CRITICAL]} |",
@@ -69,7 +77,7 @@ def render_github_summary(report: Report) -> str:
         "",
         f"## Top findings (up to {MAX_SUMMARY_FINDINGS})",
         "",
-    ]
+    ])
     if report.findings:
         lines.extend(
             [

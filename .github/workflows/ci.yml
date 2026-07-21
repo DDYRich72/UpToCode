@@ -30,6 +30,9 @@ jobs:
         run: |
           python -m pip install --upgrade "pip>=26.1.2"
           python -m pip install -e ".[test]"
+      - name: Prove TypeScript parser wheels and grammar
+        run: |
+          python -c "from tree_sitter import Language, Parser; import tree_sitter_typescript as ts; tree = Parser(Language(ts.language_typescript())).parse(b'while (true) {}'); assert not tree.root_node.has_error"
       - name: Lint
         run: python -m ruff check uptocode tests scripts
       - name: Type check

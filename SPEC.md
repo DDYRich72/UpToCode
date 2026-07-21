@@ -6,7 +6,7 @@
 
 **Event:** OpenAI Build Week, Developer Tools track  
 **Deadline:** Tuesday, July 21, 2026 at 5:00 PM PT  
-**One-line description:** A design-time architecture-quality linter for Python agent applications that finds missing execution bounds, budgets, approvals, validation, evals, and observability before the application reaches production.
+**One-line description:** A design-time architecture-quality linter for Python and TypeScript agent applications that finds missing execution bounds, budgets, approvals, validation, evals, and observability before the application reaches production.
 
 UpToCode is not positioned as the first or only agent-security scanner. Its wedge is architecture-quality review backed by explainable static evidence and optional GPT-5.6 judgment, followed by an approval-driven, Codex-ready remediation plan.
 
@@ -182,8 +182,8 @@ Findings are deterministically ordered by severity, normalized path, line, and r
 
 ```json
 {
-  "schema_version": "2.1",
-  "tool_version": "1.1.0",
+  "schema_version": "2.2",
+  "tool_version": "1.7.0",
   "scan_root": ".",
   "generated_at": "RFC3339 timestamp",
   "findings": [],
@@ -194,7 +194,8 @@ Findings are deterministically ordered by severity, normalized path, line, and r
     "frameworks_detected": [],
     "rules_evaluated": [],
     "experimental_rules_evaluated": [],
-    "rules_not_applicable": []
+    "rules_not_applicable": [],
+    "language_coverage": []
   },
   "analysis_warnings": [],
   "judgment_status": "not-requested|completed|partial|failed",
@@ -205,7 +206,8 @@ Findings are deterministically ordered by severity, normalized path, line, and r
 }
 ```
 
-Report 2.1 citations serialize `publisher`, `title`, `url`, and `status`; readers accept
+Report 2.2 adds strict per-language coverage while preserving aggregate coverage fields.
+Report citations serialize `publisher`, `title`, `url`, and `status`; readers accept
 the legacy 2.0 `vendor` key. Registry maturity defaults to `stable`. Experimental findings
 remain visible but do not participate in `--fail-on` unless `--include-experimental` is set.
 
@@ -214,7 +216,7 @@ The loader upgrades 2.0 bare-fingerprint baselines in memory using the baseline 
 time as `first_seen`. Applying a baseline classifies new, aging, and resolved debt before
 aging findings are muted; updating preserves `first_seen` for persisting fingerprints.
 
-Suppressions accept `# uptocode: ignore AA001` plus optional `owner=NAME`, quoted
+Suppressions accept `# uptocode: ignore AA001` or `// uptocode: ignore AA001` plus optional `owner=NAME`, quoted
 `reason="TEXT"`, and `expires=YYYY-MM-DD`. An expiry equal to the scan date remains active;
 an earlier date emits `SUPPRESSION_EXPIRED` and does not suppress. Malformed metadata acts
 as a bare suppression and emits `SUPPRESSION_METADATA_INVALID`.

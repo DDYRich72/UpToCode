@@ -48,6 +48,15 @@
 
 Stretch TypeScript and GitHub output are inactive and are not part of the active Definition of Done. Judgment-enabled MCP arguments are present behind the same explicit code-sharing boundary; static MCP remains the default.
 
+## Batch 2 audience expansion
+
+- [x] Normalize framework evidence and add Anthropic, CrewAI, PydanticAI, and LlamaIndex adapters.
+- [x] Approve and implement `specs/005-typescript-analysis.md` with tree-sitter and Report 2.2.
+- [x] Synchronize supported extensions across discovery, CLI, reporters, review, and MCP.
+- [x] Add CSP-bounded interactive HTML decisions and ReviewManifest 2.0 download.
+- [x] Complete the full local release gate and record Batch 2 validation evidence.
+- [ ] Confirm the committed nine-cell parser-wheel probe after the operator pushes the branch.
+
 ## Production 1.0 / Report 2.0
 
 - [x] Strict Report 2.0 contracts, rule-result states, stable content fingerprints, metadata, usage, and Report 1.0 read compatibility.

@@ -97,7 +97,7 @@ def test_cli_returns_two_when_no_discovered_python_file_can_be_parsed(tmp_path: 
     result = runner.invoke(app, ["scan", str(tmp_path)])
 
     assert result.exit_code == 2
-    assert "No discovered Python file could be analyzed" in result.output
+    assert "No discovered supported source file could be analyzed" in result.output
 
 
 def test_custom_exclude_and_size_limit_are_reported(tmp_path: Path) -> None:

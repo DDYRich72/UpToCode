@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from uptocode.adapters.python import LoopEvidence
+from uptocode.evidence import LoopEvidence
 from uptocode.fingerprints import finding_fingerprint
 from uptocode.models import (
     AnalysisWarning,
@@ -23,7 +23,7 @@ def evaluate_aa001(
     excerpt: str,
 ) -> tuple[Finding | None, AnalysisWarning | None]:
     definition = core_rule_map()["AA001"]
-    if loop.bound_kind in {"sdk-default", "explicit", "custom"}:
+    if loop.bound_kind in {"sdk-default", "explicit", "custom", "protocol"}:
         return None, None
     if loop.bound_kind == "unknown":
         return None, AnalysisWarning(
@@ -32,14 +32,21 @@ def evaluate_aa001(
             file=file,
             line=loop.line,
         )
+    disabled_frameworks = {
+        "openai-agents",
+        "langgraph",
+        "crewai",
+        "openai-agents-js",
+        "langgraph-js",
+    }
     evidence_kind = (
         "explicit-disabled-limit"
-        if loop.framework in {"openai-agents", "langgraph"}
+        if loop.framework in disabled_frameworks
         else "custom-loop-no-exit"
     )
     observed = (
-        "Runner.run explicitly disables its turn limit."
-        if loop.framework in {"openai-agents", "langgraph"}
+        f"The {loop.framework} loop bound is explicitly disabled."
+        if loop.framework in disabled_frameworks
         else "A custom while-True agent loop has no detectable exit."
     )
     finding = Finding(

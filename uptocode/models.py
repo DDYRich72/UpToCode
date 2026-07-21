@@ -120,6 +120,16 @@ class Coverage(StrictModel):
     baseline_findings: int = 0
     baseline_new: int = 0
     baseline_resolved: int = 0
+    language_coverage: list["LanguageCoverage"] = Field(default_factory=list)
+
+
+class LanguageCoverage(StrictModel):
+    language: Literal["python", "typescript"]
+    files_discovered: int = 0
+    files_analyzed: int = 0
+    rules_evaluated: list[str] = Field(default_factory=list)
+    experimental_rules_evaluated: list[str] = Field(default_factory=list)
+    rules_not_applicable: list[str] = Field(default_factory=list)
 
 
 class SuppressionDetail(StrictModel):
@@ -169,7 +179,7 @@ class RedactionCounts(StrictModel):
 
 
 class Report(StrictModel):
-    schema_version: str = "2.1"
+    schema_version: str = "2.2"
     tool_version: str = __version__
     scan_root: str
     generated_at: datetime = Field(

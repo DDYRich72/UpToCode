@@ -55,8 +55,8 @@ def create_baseline(
     findings: list[Finding] | None = None,
     now: datetime | None = None,
 ) -> Baseline:
-    if report.schema_version not in {"2.0", "2.1"}:
-        raise ValueError("Only Report 2.0 or 2.1 can create a baseline")
+    if report.schema_version not in {"2.0", "2.1", "2.2"}:
+        raise ValueError("Only Report 2.0, 2.1, or 2.2 can create a baseline")
     timestamp = now or datetime.now(timezone.utc)
     previous_by_fingerprint = {
         entry.fingerprint: entry for entry in (previous.entries if previous else [])
@@ -97,7 +97,7 @@ def apply_baseline(
     now: datetime | None = None,
     mute: bool = True,
 ) -> tuple[Report, list[Finding]]:
-    if report.schema_version not in {"2.0", "2.1"}:
+    if report.schema_version not in {"2.0", "2.1", "2.2"}:
         raise ValueError("Baseline requires a Report 2.x document")
     timestamp = now or datetime.now(timezone.utc)
     scanned = list(findings if findings is not None else report.findings)

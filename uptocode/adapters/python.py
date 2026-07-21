@@ -5,15 +5,8 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass, field
 
+from uptocode.evidence import LoopEvidence
 from uptocode.models import AnalysisWarning
-
-
-@dataclass(frozen=True)
-class LoopEvidence:
-    line: int
-    framework: str
-    bound_kind: str
-    detail: str
 
 
 @dataclass

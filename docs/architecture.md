@@ -17,7 +17,7 @@ discover → parse → normalize evidence → static rules → optional judgment
 - Reporters share the same report envelope.
 - Review and planning consume existing reports and never rescan or modify source.
 - Suppressions are parsed once per file, baselines classify debt before muting known
-  findings, and share-safe rendering sanitizes a copied Report 2.1 envelope.
+  findings, and share-safe rendering sanitizes a copied Report 2.2 envelope.
 - MCP wraps the same engine; static-only is its default.
 
 ```text
@@ -27,7 +27,7 @@ application (audit, review, plan, baseline)
               ↓
 domain (evidence, findings, policies, rule outcomes)
               ↑
-adapters (Python AST, filesystem, diff, OpenAI, rulepacks)
+adapters (Python AST, TypeScript tree-sitter, frameworks, filesystem, diff, rulepacks)
 ```
 
 Public boundaries use strict Pydantic contracts. Domain and deterministic rule

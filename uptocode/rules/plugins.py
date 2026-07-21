@@ -19,6 +19,7 @@ _CUSTOM_ID = re.compile(r"^[A-Z][A-Z0-9_-]*/[A-Z0-9_-]+$")
 
 class NormalizedFileEvidence(StrictModel):
     file: str
+    language: str = "python"
     frameworks: list[str] = Field(default_factory=list)
     agent_present: bool = False
     model_call_count: int = 0

@@ -26,8 +26,8 @@ def create_manifest(
     reject: set[str] | None = None,
     approve_all: bool = False,
 ) -> ReviewManifest:
-    if report.schema_version not in {"2.0", "2.1"}:
-        raise ValueError("Review decision reuse requires Report 2.0 or 2.1")
+    if report.schema_version not in {"2.0", "2.1", "2.2"}:
+        raise ValueError("Review decision reuse requires Report 2.0, 2.1, or 2.2")
     approve = approve or set()
     reject = reject or set()
     matched_approve: set[str] = set()

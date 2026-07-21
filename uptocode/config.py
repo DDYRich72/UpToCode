@@ -1,4 +1,4 @@
-"""Strict configuration and bounded, pruned Python source discovery."""
+"""Strict configuration and bounded, pruned supported-source discovery."""
 
 from __future__ import annotations
 
@@ -25,8 +25,12 @@ DEFAULT_EXCLUDES = [
     "generated/",
     "**/generated/",
     "*.generated.py",
+    "*.generated.ts",
+    "*.generated.tsx",
     "*_pb2.py",
 ]
+
+SUPPORTED_SOURCE_EXTENSIONS = frozenset({".py", ".ts", ".tsx", ".mts"})
 
 
 class RuleOverride(StrictModel):
@@ -123,7 +127,7 @@ def _matches_nested(
     return ignored
 
 
-def discover_python_files_detailed(
+def discover_source_files_detailed(
     root: Path, config: ScanConfig
 ) -> tuple[list[Path], list[SkippedFile]]:
     """Discover files without descending into known excluded trees."""
@@ -156,7 +160,7 @@ def discover_python_files_detailed(
                 kept_names.append(name)
         names[:] = kept_names
         for name in sorted(files):
-            if not name.lower().endswith(".py"):
+            if Path(name).suffix.lower() not in SUPPORTED_SOURCE_EXTENSIONS:
                 continue
             path = directory_path / name
             relative = path.relative_to(root).as_posix()
@@ -181,7 +185,14 @@ def discover_python_files_detailed(
     return sorted(included), sorted(skipped, key=lambda item: (item.path, item.reason))
 
 
+def discover_python_files_detailed(
+    root: Path, config: ScanConfig
+) -> tuple[list[Path], list[SkippedFile]]:
+    """Backward-compatible alias for supported-source discovery."""
+    return discover_source_files_detailed(root, config)
+
+
 def discover_python_files(root: Path, config: ScanConfig) -> tuple[list[Path], int]:
     """Backward-compatible discovery count API."""
-    files, skipped = discover_python_files_detailed(root, config)
+    files, skipped = discover_source_files_detailed(root, config)
     return files, len(skipped)

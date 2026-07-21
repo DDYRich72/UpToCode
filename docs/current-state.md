@@ -1,10 +1,10 @@
 # Current State
 
-The working 1.1.0 source adds stable AA013 unbounded-context detection, AA007 backoff
-analysis, registry-resolved structured citations, rule maturity, Report/Baseline 2.1 debt
-tracking, expiring suppression metadata, share-safe reports, and a pre-commit adoption
-surface. The operator-gated 1.1.0 tag and publication remain pending the complete release
-gate; the published production version remains 1.0.0 until that action occurs.
+The working 1.7.0 Batch 2 source adds normalized Anthropic, CrewAI, PydanticAI, and
+LlamaIndex framework evidence; tree-sitter TypeScript/TSX/MTS analysis; strict Report 2.2
+per-language coverage; TypeScript MCP inputs; and a CSP-bounded interactive standalone
+HTML review manifest download. The fixed 1.2.0-1.7.0 release train remains operator-gated;
+no release tag, publication, or deployment is performed by implementation agents.
 
 UpToCode 1.0.0 is a Python-first architecture-quality scanner with 188 offline
 tests, deterministic terminal/JSON/HTML/GitHub/SARIF reports, optional GPT-5.6
