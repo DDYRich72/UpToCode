@@ -13,7 +13,7 @@ from typer.testing import CliRunner
 
 from uptocode.baseline import apply_baseline, create_baseline
 from uptocode.config import ScanConfig, load_config
-from uptocode.cli import app
+from uptocode.cli import _validate_rule_selectors, app
 from uptocode.diffing import DiffReconstructionError, reconstruct_unified_diff
 from uptocode.engine import AuditService, scan_path
 from uptocode.fingerprints import finding_fingerprint
@@ -319,6 +319,54 @@ def test_cli_severity_override_and_github_output(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert "::warning" in result.stdout
     assert "title=AA001" in result.stdout
+
+
+@pytest.mark.parametrize("option", ["--select", "--ignore"])
+def test_cli_rejects_unknown_rule_selectors(option: str, tmp_path: Path) -> None:
+    source = tmp_path / "loop.py"
+    source.write_text("while True:\n    work()\n", encoding="utf-8")
+
+    result = CliRunner().invoke(app, ["scan", str(source), option, "AA999"])
+
+    assert result.exit_code == 2
+    assert result.output.strip() == f"Unknown rule IDs for {option}: AA999"
+
+
+def test_cli_normalizes_and_deduplicates_valid_rule_selectors(tmp_path: Path) -> None:
+    source = tmp_path / "loop.py"
+    source.write_text("while True:\n    work()\n", encoding="utf-8")
+
+    selected = CliRunner().invoke(
+        app,
+        ["scan", str(source), "--format", "json", "--select", " aa001,AA001 "],
+    )
+    absent = CliRunner().invoke(
+        app,
+        ["scan", str(source), "--format", "json", "--select", "AA018"],
+    )
+    mixed = CliRunner().invoke(
+        app,
+        ["scan", str(source), "--select", "AA001, aa999"],
+    )
+
+    assert selected.exit_code == 0, selected.output
+    assert {item["rule_id"] for item in json.loads(selected.stdout)["findings"]} == {
+        "AA001"
+    }
+    assert absent.exit_code == 0, absent.output
+    assert json.loads(absent.stdout)["findings"] == []
+    assert mixed.exit_code == 2
+    assert mixed.output.strip() == "Unknown rule IDs for --select: AA999"
+
+
+def test_scan_selector_accepts_custom_rule_exposed_by_report(tmp_path: Path) -> None:
+    source = tmp_path / "loop.py"
+    source.write_text("while True:\n    work()\n", encoding="utf-8")
+    report = scan_path(source)
+    custom = report.findings[0].model_copy(update={"rule_id": "ACME/CUSTOM"})
+    report.findings.append(custom)
+
+    _validate_rule_selectors(report, {"ACME/CUSTOM"}, option="--select")
 
 
 def test_cli_eager_version_and_sarif_output(tmp_path: Path) -> None:

@@ -26,6 +26,7 @@ from uptocode.reporters.github import render_github, render_github_summary
 from uptocode.reporters.terminal import render_terminal
 from uptocode.reporters.sarif import render_sarif
 from uptocode.review import create_manifest
+from uptocode.rules.registry import core_rule_map
 from uptocode.share_safe import make_share_safe
 
 app = typer.Typer(
@@ -142,8 +143,14 @@ def scan(
     if (report.coverage.files_discovered or report.coverage.files_skipped) and not report.coverage.files_analyzed:
         typer.echo("No discovered supported source file could be analyzed", err=True)
         raise typer.Exit(2)
-    selected = _selectors(select)
-    ignored = _selectors(ignore)
+    selected = _rule_selectors(select)
+    ignored = _rule_selectors(ignore)
+    try:
+        _validate_rule_selectors(report, selected, option="--select")
+        _validate_rule_selectors(report, ignored, option="--ignore")
+    except ValueError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(2) from error
     if selected:
         report.findings = [item for item in report.findings if item.rule_id in selected]
     if ignored:
@@ -256,6 +263,21 @@ def _read_report(path: Path) -> Report:
 
 def _selectors(value: str | None) -> set[str]:
     return {item.strip() for item in (value or "").split(",") if item.strip()}
+
+
+def _rule_selectors(value: str | None) -> set[str]:
+    return {item.upper() for item in _selectors(value)}
+
+
+def _validate_rule_selectors(
+    report: Report, selectors: set[str], *, option: str
+) -> None:
+    known = set(core_rule_map())
+    known.update(item.rule_id for item in report.rule_results)
+    known.update(item.rule_id for item in report.findings)
+    unknown = sorted(selectors - known)
+    if unknown:
+        raise ValueError(f"Unknown rule IDs for {option}: {', '.join(unknown)}")
 
 
 @app.command("review")

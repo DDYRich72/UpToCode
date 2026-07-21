@@ -65,6 +65,17 @@ Stretch TypeScript and GitHub output are inactive and are not part of the active
 - [x] Operator acknowledged the spec and D013 on 2026-07-21 before RED tests or code.
 - [x] Implement and validate only Batch 4.1; stop for demand reassessment before 4.2.
 
+## Release QA hardening
+
+- [x] Approve the ordered MCP applicability, installed-version, selector-validation, and
+  ignored-artifact cleanup plan while retaining version 1.11.0.
+- [x] Make AA014-AA018 explicitly applicable to recognized Python MCP evidence and prove
+  finding/coverage parity with and without experimental inclusion.
+- [x] Refresh and enforce installed distribution metadata, then reject unknown scan rule
+  selectors with exit code 2.
+- [x] Replace the malformed cache and web recovery trees with one clean dependency install.
+- [x] Run the complete release gate and record exact readiness evidence without deployment.
+
 ## Production 1.0 / Report 2.0
 
 - [x] Strict Report 2.0 contracts, rule-result states, stable content fingerprints, metadata, usage, and Report 1.0 read compatibility.

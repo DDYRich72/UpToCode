@@ -56,6 +56,7 @@ from uptocode.suppressions import SuppressionIndex, parse_suppressions
 
 
 TYPESCRIPT_STATIC_RULES = {"AA001", "AA002", "AA004", "AA007", "AA012"}
+MCP_RULES = {"AA014", "AA015", "AA016", "AA017", "AA018"}
 
 
 def _excerpt(lines: list[str], line: int) -> str:
@@ -189,6 +190,7 @@ def _scan_path_impl(
     }
     analyzed_by_language = {"python": 0, "typescript": 0}
     agent_by_language = {"python": False, "typescript": False}
+    mcp_by_language = {"python": False, "typescript": False}
     for path in files:
         if cancelled is not None and cancelled():
             report.analysis_warnings.append(
@@ -379,6 +381,9 @@ def _scan_path_impl(
         report.analysis_warnings.extend(evidence.warnings)
         frameworks.update(evidence.frameworks)
         agent_by_language[language] = agent_by_language[language] or facts.agent_present
+        mcp_by_language[language] = mcp_by_language[language] or bool(
+            facts.mcp_transports or facts.mcp_tools
+        )
         lines = source.splitlines()
         suppression_index, suppression_warnings = parse_suppressions(lines, file=relative)
         suppression_indexes[relative] = suppression_index
@@ -457,10 +462,20 @@ def _scan_path_impl(
     for language in ("python", "typescript"):
         if not discovered_by_language[language]:
             continue
-        if language == "python" and agent_by_language[language]:
-            applicable_ids = {definition.id for definition in definitions}
-            evaluated = [definition for definition in definitions if "static" in definition.tier]
-        elif language == "typescript" and agent_by_language[language]:
+        if language == "python":
+            applicable_ids = (
+                {definition.id for definition in definitions}
+                if agent_by_language[language]
+                else set()
+            )
+            if mcp_by_language[language]:
+                applicable_ids.update(MCP_RULES)
+            evaluated = [
+                definition
+                for definition in definitions
+                if definition.id in applicable_ids and "static" in definition.tier
+            ]
+        elif agent_by_language[language]:
             applicable_ids = TYPESCRIPT_STATIC_RULES
             evaluated = [
                 definition
@@ -489,7 +504,7 @@ def _scan_path_impl(
             )
         )
     report.coverage.language_coverage = language_coverage
-    if language_coverage and any(agent_by_language.values()):
+    if language_coverage:
         evaluated_ids = {
             rule_id
             for item in language_coverage

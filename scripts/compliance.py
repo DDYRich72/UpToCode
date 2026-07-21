@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.metadata
 import json
 import sys
 import tomllib
@@ -43,15 +44,23 @@ def version_contract() -> dict[str, object]:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     manifest = json.loads((ROOT / "server.json").read_text(encoding="utf-8"))
     package_versions = sorted({item["version"] for item in manifest["packages"]})
+    try:
+        installed_metadata: str | None = importlib.metadata.version("uptocode")
+    except importlib.metadata.PackageNotFoundError:
+        installed_metadata = None
     values = {
         "project": project["project"]["version"],
         "runtime": __version__,
+        "installed_metadata": installed_metadata,
         "server": manifest["version"],
         "server_packages": package_versions,
     }
     values["status"] = (
         "passed"
-        if values["project"] == values["runtime"] == values["server"]
+        if values["project"]
+        == values["runtime"]
+        == values["installed_metadata"]
+        == values["server"]
         and package_versions == [__version__]
         else "failed"
     )

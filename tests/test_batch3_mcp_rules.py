@@ -1,16 +1,24 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
+from typer.testing import CliRunner
 
+from uptocode import engine
+from uptocode.cli import app
 from uptocode.engine import scan_path
 from uptocode.judgment_candidates import collect_judgment_candidates
+from uptocode.models import Report
 from uptocode.rules.registry import core_rule_map
 
 
 ROOT = Path(__file__).parents[1]
 RULES = {"AA014", "AA015", "AA016", "AA017", "AA018"}
+STABLE_RULES = {"AA014", "AA015", "AA016"}
+EXPERIMENTAL_RULES = {"AA017", "AA018"}
+runner = CliRunner()
 
 
 def _rule_ids(path: Path) -> set[str]:
@@ -18,10 +26,59 @@ def _rule_ids(path: Path) -> set[str]:
 
 
 def test_bad_and_clean_mcp_fixtures() -> None:
-    assert RULES <= _rule_ids(ROOT / "fixtures" / "bad_mcp_server")
+    bad = scan_path(ROOT / "fixtures" / "bad_mcp_server")
+    assert RULES <= {finding.rule_id for finding in bad.findings}
+    python = next(
+        item for item in bad.coverage.language_coverage if item.language == "python"
+    )
+    assert STABLE_RULES <= set(python.rules_evaluated)
+    assert EXPERIMENTAL_RULES <= set(python.experimental_rules_evaluated)
+    assert not (RULES & set(python.rules_not_applicable))
+    assert STABLE_RULES <= set(bad.coverage.rules_evaluated)
+    assert EXPERIMENTAL_RULES <= set(bad.coverage.experimental_rules_evaluated)
+    assert not (RULES & set(bad.coverage.rules_not_applicable))
     clean = scan_path(ROOT / "fixtures" / "clean_mcp_server")
     assert not (RULES & {finding.rule_id for finding in clean.findings})
     assert not [warning for warning in clean.analysis_warnings if warning.code.startswith("AA01")]
+
+
+@pytest.mark.parametrize("extra", [[], ["--include-experimental"]])
+def test_bad_mcp_cli_findings_and_coverage_are_visible(extra: list[str]) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            str(ROOT / "fixtures" / "bad_mcp_server"),
+            "--format",
+            "json",
+            *extra,
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    report = Report.model_validate(json.loads(result.stdout))
+    assert RULES <= {finding.rule_id for finding in report.findings}
+    assert STABLE_RULES <= set(report.coverage.rules_evaluated)
+    assert EXPERIMENTAL_RULES <= set(report.coverage.experimental_rules_evaluated)
+    assert not (RULES & set(report.coverage.rules_not_applicable))
+
+
+def test_mcp_applicability_does_not_depend_on_agent_presence(monkeypatch: pytest.MonkeyPatch) -> None:
+    analyze_source = engine.analyze_source
+
+    def analyze_without_agent(*args: object, **kwargs: object):
+        facts = analyze_source(*args, **kwargs)  # type: ignore[arg-type]
+        facts.agent_present = False
+        return facts
+
+    monkeypatch.setattr(engine, "analyze_source", analyze_without_agent)
+    report = scan_path(ROOT / "fixtures" / "bad_mcp_server" / "server.py")
+    python = report.coverage.language_coverage[0]
+
+    assert RULES <= {finding.rule_id for finding in report.findings}
+    assert STABLE_RULES <= set(python.rules_evaluated)
+    assert EXPERIMENTAL_RULES <= set(python.experimental_rules_evaluated)
+    assert not (RULES & set(python.rules_not_applicable))
 
 
 def test_stdio_is_not_applicable(tmp_path: Path) -> None:

@@ -513,3 +513,35 @@ publication, and MCP registry submission are post-event Phase 7 work.
   and push on 2026-07-21. No `v1.11.0` tag, PyPI release, VS Code Marketplace publication,
   deployment, credential operation, network judgment, or paid model call was performed.
   Batch 4 stops here pending demand reassessment before selecting 4.2–4.5.
+
+## Release QA hardening / 1.11.0
+
+- **PASS — MCP applicability and accounting:** the standalone FastMCP fixture reports
+  AA014-AA018 through the installed CLI both with and without
+  `--include-experimental`. Python coverage records AA014-AA016 in `rules_evaluated`,
+  AA017-AA018 in `experimental_rules_evaluated`, and none of AA014-AA018 in
+  `rules_not_applicable`; global coverage aggregates the same applicable sets. A focused
+  regression test clears generic `agent_present` evidence and still requires all five
+  findings and coverage entries.
+- **PASS — installed version contract:** the editable install was refreshed from this
+  repository. Runtime `__version__`, `importlib.metadata`, `pyproject.toml`, `server.json`,
+  `pip show`, and the installed executable all report 1.11.0. Compliance tests reject
+  missing and deliberately mismatched installed metadata, and `pip check` reports no
+  broken requirements.
+- **PASS — selector validation:** unknown `scan --select AA999` and
+  `scan --ignore AA999` each emit an option-specific error and exit 2. Tests cover mixed
+  lists, normalization, whitespace, deduplication, valid rules without findings, unchanged
+  valid filtering, and report-exposed custom rule IDs.
+- **PASS — artifact cleanup and web install:** the malformed `CUsersnokes` tree and all
+  six `web/node_modules.*` recovery trees are absent. The former junction target was not
+  deleted. A clean Node 22/npm 10 `npm ci --ignore-scripts --no-audit --no-fund` installed
+  495 lockfile packages on WSL's native filesystem; that exact tree was materialized as a
+  real local `web/node_modules` directory after direct DrvFS installs stalled. Final local
+  `npm ls --depth=0`, ESLint, `tsc --noEmit`, production build, and all seven web tests pass.
+- **PASS — fresh Windows gate:** 273 tests pass in 35.77 seconds under branch coverage;
+  total branch coverage is 87% against the 85% floor. Ruff, strict mypy over 42 source
+  files, offline acceptance (273 tests plus self-scan), production compliance, and the
+  installed FastMCP CLI repro all pass.
+- No deployment, tag, publication, Marketplace change, live-service mutation, credential
+  operation, network judgment, or paid model call was performed. The 1.11.0 tree is ready
+  for operator review and redeployment; the live 1.0.0 service remains untouched.

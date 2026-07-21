@@ -7,6 +7,11 @@
   citation, and exact-fingerprint FIXPLAN actions.
 - Add the public `uptocode lsp` stdio command, a 200 ms warm latency contract, an
   in-process protocol harness, and an offline representative benchmark.
+- Make MCP applicability independent of generic agent detection so AA014-AA018 remain
+  visible in Python and global rule coverage for recognized FastMCP servers.
+- Reject unknown `scan --select` and `scan --ignore` rule IDs with exit code 2, and bind
+  production compliance to the installed `uptocode` distribution version.
+- Remove stale recovery dependency trees and validate one lockfile-exact local web install.
 
 ## 1.10.0 - 2026-07-20
 

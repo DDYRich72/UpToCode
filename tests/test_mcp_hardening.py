@@ -9,6 +9,7 @@ from typing import cast
 
 import pytest
 
+from scripts import compliance
 import uptocode.mcp_server as mcp_module
 from uptocode import __version__
 from uptocode.mcp_server import (
@@ -244,3 +245,29 @@ def test_package_runtime_and_server_manifest_versions_agree() -> None:
     assert project["project"]["version"] == __version__
     assert manifest["version"] == __version__
     assert package_versions == {__version__}
+    assert package_version("uptocode") == __version__
+
+
+def test_compliance_version_contract_rejects_installed_metadata_drift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    assert compliance.version_contract()["status"] == "passed"
+
+    monkeypatch.setattr(compliance.importlib.metadata, "version", lambda _: "0.0.0")
+    contract = compliance.version_contract()
+
+    assert contract["installed_metadata"] == "0.0.0"
+    assert contract["status"] == "failed"
+
+
+def test_compliance_version_contract_rejects_missing_distribution(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def missing(_: str) -> str:
+        raise compliance.importlib.metadata.PackageNotFoundError
+
+    monkeypatch.setattr(compliance.importlib.metadata, "version", missing)
+    contract = compliance.version_contract()
+
+    assert contract["installed_metadata"] is None
+    assert contract["status"] == "failed"
