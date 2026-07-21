@@ -60,3 +60,12 @@ The implementation-time PyPI Stats comparison selected LlamaIndex: approximately
 7,189,570 downloads in the prior month versus 609,455 for PyAutoGen and 634,739 for AG2.
 The fourth adapter therefore targets current LlamaIndex agents and workflows. Counts are
 a dated prioritization signal, not a product quality claim.
+
+## D012 — Explicit isolated remediation is approved (2026-07-20)
+
+The operator approved Batch 3 implementation and the associated product-contract change.
+Scanning, review, and planning remain non-mutating. `uptocode fix` is dry-run by default;
+only `fix --apply` may drive an external coding runner, and it does so in retained isolated
+Git branches/worktrees created from a clean invoking checkout. UpToCode never edits source
+itself, never changes the invoking checkout, never commits or merges runner changes, and
+never deletes remediation work automatically.

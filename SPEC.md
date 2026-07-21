@@ -20,7 +20,9 @@ A developer or architect building Python agent applications with the OpenAI Agen
 
 ### MVP outcome
 
-The user can scan a repository, understand every supported finding and every analysis gap, approve selected findings, and generate a non-mutating `FIXPLAN.md` for Codex.
+The user can scan a repository, understand every supported finding and every analysis gap,
+approve selected findings, generate a non-mutating `FIXPLAN.md`, and explicitly ask an
+external coding runner to remediate approved findings in isolated Git worktrees.
 
 ### MVP surfaces
 
@@ -33,7 +35,8 @@ The user can scan a repository, understand every supported finding and every ana
 
 - No linting of `AGENTS.md`, `CLAUDE.md`, or other instruction files.
 - No runtime tracing or production observability service.
-- No source-changing auto-fix or codemods.
+- No in-process source-changing codemods, mutation of the invoking checkout, automatic
+  commits, automatic merges, or automatic deletion of remediation work.
 - No claim that unsupported code is clean.
 - No public deployment, package publication, or paid integration without approval.
 - TypeScript and GitHub Actions are stretch work, not committed MVP scope.
@@ -46,7 +49,8 @@ The user can scan a repository, understand every supported finding and every ana
 - Static scans make no network calls.
 - Judgment runs only when both `--judgment` and `--send-code` are supplied.
 - Secret values never appear in reports, logs, snapshots, or judgment payloads.
-- Review and planning never modify scanned source files.
+- Scan, review, planning, and `fix` dry-runs never modify scanned source files.
+- `fix --apply` invokes an external runner only in retained isolated branches/worktrees.
 - The active Definition of Done and validation report agree after any authorized cut.
 
 ---
@@ -294,6 +298,8 @@ uptocode scan PATH [--format terminal|json|html|github] [--output FILE]
 uptocode review REPORT [--approve IDS|--approve-all] [--reject IDS]
                             [--non-interactive]
 uptocode plan REPORT --manifest MANIFEST [--output FIXPLAN.md]
+uptocode fix REPORT --manifest MANIFEST --runner codex|command
+                    [--command TEMPLATE] [--verify-command COMMAND] [--apply]
 uptocode serve
 ```
 
@@ -304,6 +310,9 @@ uptocode serve
 - File parse failures are recoverable analysis warnings unless no supported file can be analyzed.
 - `review` consumes an existing JSON report and never rescans implicitly.
 - `plan` includes only approved findings from a matching manifest and never edits scanned files.
+- `fix` includes only approved findings from a matching manifest and defaults to a
+  no-write dry-run. `--apply` requires a clean Git checkout and confines each external
+  runner invocation to a retained `uptocode/fix-<fingerprint12>` branch/worktree.
 
 ### HTML
 
@@ -330,15 +339,20 @@ Static-only is the default. Judgment requires both flags and uses the same redac
 
 ---
 
-## 7. Review and Remediation Planning
+## 7. Review and Remediation
 
-Flow: `scan → review → plan`.
+Flow: `scan → review → plan → optional fix --apply`.
 
 1. Scan writes a versioned JSON report.
 2. Review records explicit approval/rejection decisions in `.uptocode/manifest.json` or a requested path.
 3. Plan verifies report/manifest fingerprints and writes `FIXPLAN.md` for approved findings.
 4. Each plan entry contains finding ID/fingerprint, objective, evidence, files likely affected, ordered steps, acceptance checks, risks/tradeoffs, and a copy-paste Codex prompt.
-5. No command in v1 changes scanned source code.
+5. `fix` previews its branches, runner argv, and verification steps without writing by
+   default. With `--apply`, it invokes the selected external runner in one retained
+   isolated branch/worktree per approved finding, rescans for fingerprint absence, and
+   optionally runs a caller-supplied verification command.
+6. UpToCode never edits source directly, changes the invoking checkout, commits, merges,
+   or deletes remediation work.
 
 ---
 
@@ -408,6 +422,8 @@ Never cut: Python static engine, at least two judgment rules, review manifest, F
 1. Problem and positioning: architecture-quality failures remain easy to ship even when code is syntactically valid.
 2. Scan a deliberately bad Python fixture; show terminal output and coverage-aware HTML.
 3. Explain one deterministic finding and one GPT-5.6 judgment finding, including direct citations and redaction.
-4. Approve selected findings and generate `FIXPLAN.md`; emphasize that v1 plans changes but does not rewrite source.
+4. Approve selected findings and generate `FIXPLAN.md`; preview `uptocode fix` and explain
+   that mutation requires explicit `--apply` and occurs only through an external runner in
+   an isolated worktree.
 5. Show a coding agent calling MCP `check_loop` before writing an explicitly unbounded loop.
 6. Close with rulepack extensibility, Codex build evidence, and the authorized GPT-5.6 judgment path.

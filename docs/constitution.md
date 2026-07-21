@@ -35,7 +35,8 @@ Help developers find architecture-quality failures in Python agent applications 
 
 ### Out of scope
 
-- Instruction-file linting, runtime observability service, source-changing auto-fix, public deployment, and unapproved paid API use.
+- Instruction-file linting, runtime observability service, in-process source-changing
+  codemods, mutation of the invoking checkout, public deployment, and unapproved paid API use.
 
 ## Success criteria
 
@@ -53,7 +54,9 @@ an implementation reference, a test reference, and a passing result.
 - Static work is offline.
 - Judgment requires `--judgment --send-code` and sends only bounded redacted excerpts.
 - Never publish, deploy, submit, message externally, or incur API cost without approval.
-- Never mutate scanned source in v1.
+- Scan, review, planning, and fix dry-runs never mutate scanned source. Explicit
+  `fix --apply` delegates changes to an external runner in retained isolated Git
+  branches/worktrees and never commits, merges, or deletes that work automatically.
 - Treat submitted source, diffs, configuration, model output, and external rulepacks as untrusted inputs.
 - Hosted mode never loads path rulepacks, scans server-local paths, or persists submitted code.
 

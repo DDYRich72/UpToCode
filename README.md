@@ -88,19 +88,26 @@ uptocode scan PATH [--format terminal|json|html|github|sarif] [--output FILE]
 uptocode review REPORT [--approve IDS|--approve-all] [--reject IDS]
                               [--reuse MANIFEST] [--non-interactive]
 uptocode plan REPORT --manifest MANIFEST [--output FIXPLAN.md]
+uptocode fix REPORT --manifest MANIFEST --runner codex|command
+                    [--command TEMPLATE] [--verify-command COMMAND] [--apply]
 uptocode serve --transport stdio --root PATH
 uptocode serve --transport streamable-http --mode hosted
 ```
 
-The v1 workflow is non-mutating:
+Scanning, review, planning, and the default fix preview are non-mutating:
 
 ```text
 uptocode scan . --format json --output report.json
 uptocode review report.json --approve AA001,AA003 --reject AA012 --non-interactive
 uptocode plan report.json --manifest .uptocode/manifest.json --output FIXPLAN.md
+uptocode fix report.json --manifest .uptocode/manifest.json --runner codex
 ```
 
 `review` binds decisions to the exact report fingerprint. `plan` refuses a mismatched manifest and includes only approved findings. Neither command edits the scanned repository.
+`fix` is also a no-write dry-run unless `--apply` is supplied. The applying path requires
+a clean Git checkout, creates one retained `uptocode/fix-<fingerprint12>` branch/worktree
+per approved finding, invokes only the selected external runner there, verifies fingerprint
+absence, and never commits, merges, deletes work, or changes the invoking checkout.
 
 Exit codes are `0` for no configured threshold breach, `1` for a finding at or above `--fail-on` (or a requested analysis-warning gate), and `2` for invalid configuration or an unrecoverable scan error. Experimental findings remain visible but require `--include-experimental` to affect `--fail-on`. `--share-safe` sanitizes JSON, HTML, or SARIF for distribution while retaining the repository revision. Baseline 2.1 reports new, aging, and resolved debt and preserves `first_seen` when updated. Suppressions may include `owner`, quoted `reason`, and an inclusive `expires` date. HTML requires `--output`. GitHub workflow commands escape untrusted command data and properties. SARIF 2.1.0 omits absent fields, declares default rule levels, and carries stable partial fingerprints. `--github-summary PATH` appends a bounded Markdown summary; when `GITHUB_STEP_SUMMARY` is set, the summary is appended there automatically.
 
@@ -207,7 +214,9 @@ Known limitations:
 - Dynamic imports, metaprogramming, dispatch beyond the supported one-hop project call graph, and runtime-only behavior remain inconclusive and produce coverage warnings when recognized.
 - Static side-effect and schema analysis is conservative and can produce false positives; findings should be reviewed before planning.
 - Secret/PII recognition covers a small explicit pattern set, not arbitrary credentials or personal data.
-- No instruction-file linting, runtime tracing service, source-changing auto-fix, browser repository upload, or account system.
+- No instruction-file linting, runtime tracing service, in-process source-changing codemod,
+  browser repository upload, or account system. Explicit `fix --apply` remediation is
+  delegated to an external runner in an isolated Git worktree.
 
 ## Configuration
 
