@@ -2,12 +2,17 @@
 
 ## Current gate
 
-Completion Plan v2 Phase 7 — complete. UpToCode 1.0.0 is public, published, attested,
-deployed, and registered. Credential distribution and any additional paid-model use remain
+Batch 4.1 full LSP integration — implemented and locally validated as 1.11.0 on Windows
+and POSIX. Release tagging, publication, and the choice of any subsequent Batch 4 bet remain
 operator-controlled.
 
 ## Status
 
+- [x] Operator approved spec 006 and D013 before Batch 4.1 implementation.
+- [x] Persistent pygls diagnostics, explicit suppression/citation/FIXPLAN actions, the
+  VS Code language client, per-rule parity tests, and the sub-200 ms latency gate pass.
+- [x] Batch 4.1 Windows and POSIX exit gates pass; no tag, release, Marketplace listing,
+  deployment, live model call, or other external action occurred.
 - [x] Operator declared UpToCode the canonical identity for the program and MCP; D008 and
   `specs/003-uptocode-production-identity.md` record the complete public contract.
 - [x] Post-submission work moved to `codex/uptocode-production`; the submitted branch and

@@ -69,3 +69,16 @@ only `fix --apply` may drive an external coding runner, and it does so in retain
 Git branches/worktrees created from a clean invoking checkout. UpToCode never edits source
 itself, never changes the invoking checkout, never commits or merges runner changes, and
 never deletes remediation work automatically.
+
+## D013 — Explicit LSP suppression edit approved (2026-07-21)
+
+Batch 4.1 makes a narrow exception to D012's statement that UpToCode never edits source
+itself. The VS Code client may apply one version-checked suppression directive to the active
+Python or TypeScript document only after the user invokes **Suppress with metadata**, enters
+valid owner, reason, and expiry values, and accepts the workspace edit. The action does not
+save automatically and may not edit any other file, run a coding agent, invoke judgment,
+perform Git operations, or create commits or merges. All other scanning, review, planning,
+and language-server behavior remains non-mutating.
+
+The operator explicitly acknowledged D013 and `specs/006-full-lsp-integration.md` on
+2026-07-21 before RED tests, dependencies, or implementation were added.

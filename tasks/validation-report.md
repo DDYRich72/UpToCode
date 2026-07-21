@@ -483,3 +483,33 @@ publication, and MCP registry submission are post-event Phase 7 work.
 - **PASS — extension gate:** strict TypeScript checking, nine Vitest tests, esbuild bundle,
   and `@vscode/vsce` packaging produce a local 9.74 KB VSIX. CI has a separate Node 22
   lockfile-scoped job; Marketplace listing and publication remain operator-only.
+
+## Batch 4.1 — Full LSP integration / 1.11.0
+
+- **PASS — approval and scope:** the operator acknowledged spec 006 and D013 before RED
+  tests or implementation. The only new mutation is an explicit, metadata-validated,
+  version-checked suppression edit in the active document; it does not auto-save.
+- **PASS — persistent protocol:** `uptocode lsp` completes initialize, incremental sync,
+  open/save diagnostics, close clearing, shutdown, and exit through the pytest-lsp client
+  harness. Scans run outside the protocol loop, remain file-scoped and static-only, and
+  generation checks reject stale results.
+- **PASS — parity and actions:** parameterized fixtures cover every default static rule
+  AA001-AA004, AA006-AA007, and AA010-AA018; AA005/AA008/AA009 remain `not_requested`.
+  Python and TypeScript suppression round-trips, citation payloads, exact-fingerprint and
+  missing/stale FIXPLAN states, multi-root selection, spaced paths, malformed source,
+  unsupported URIs, and bounded failure logs pass.
+- **PASS — latency:** the checked-in 492-line fixture completed 20 warm file-analysis
+  cycles at 144.61 ms p95 on Windows and 45.80 ms p95 on POSIX, below the 200 ms budget.
+- **PASS — Windows gate:** 264 tests, offline acceptance, production compliance, Ruff,
+  strict mypy over 42 modules, and 87% branch coverage pass. Site lint/type/build and all
+  seven tests pass. A clean temporary npm install passes extension typecheck, four action
+  tests, esbuild, and VSIX packaging (334.44 KB). The 1.11.0 wheel/sdist build and an
+  isolated wheel install pass version agreement and `pip check`.
+- **PASS — POSIX gate:** an exact tracked working-tree snapshot passes 264 tests, offline
+  acceptance, compliance, Ruff, strict mypy, 87% branch coverage, the latency budget,
+  clean extension install/typecheck/tests/build/VSIX, and clean site install/lint/type/build
+  with all seven tests.
+- **OPERATOR GATES REMAIN:** the operator authorized the reviewed Batch 4.1 branch commit
+  and push on 2026-07-21. No `v1.11.0` tag, PyPI release, VS Code Marketplace publication,
+  deployment, credential operation, network judgment, or paid model call was performed.
+  Batch 4 stops here pending demand reassessment before selecting 4.2–4.5.

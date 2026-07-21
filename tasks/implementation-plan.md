@@ -57,6 +57,14 @@ Stretch TypeScript and GitHub output are inactive and are not part of the active
 - [x] Complete the full local release gate and record Batch 2 validation evidence.
 - [ ] Confirm the committed nine-cell parser-wheel probe after the operator pushes the branch.
 
+## Batch 4.1 full LSP integration
+
+- [x] Draft `specs/006-full-lsp-integration.md` with explicit performance, parity,
+  mutation, and non-goal contracts.
+- [x] Draft D013 as the narrow explicit suppression-edit exception to D012.
+- [x] Operator acknowledged the spec and D013 on 2026-07-21 before RED tests or code.
+- [x] Implement and validate only Batch 4.1; stop for demand reassessment before 4.2.
+
 ## Production 1.0 / Report 2.0
 
 - [x] Strict Report 2.0 contracts, rule-result states, stable content fingerprints, metadata, usage, and Report 1.0 read compatibility.

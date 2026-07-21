@@ -239,6 +239,14 @@ def scan(
         raise typer.Exit(1)
 
 
+@app.command()
+def lsp() -> None:
+    """Run the persistent UpToCode language server over stdio."""
+    from uptocode.lsp_server import run_stdio
+
+    run_stdio()
+
+
 def _read_report(path: Path) -> Report:
     try:
         return Report.model_validate_json(path.read_text(encoding="utf-8"))

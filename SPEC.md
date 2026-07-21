@@ -29,6 +29,7 @@ external coding runner to remediate approved findings in isolated Git worktrees.
 - Terminal, JSON, and standalone HTML reports.
 - Review manifest and generated remediation plan.
 - MCP server exposing fast static checks to coding agents.
+- Persistent file-scoped LSP diagnostics and explicit editor evidence actions.
 - Optional GPT-5.6 judgment tier using the Responses API and Pydantic Structured Outputs.
 
 ### Non-goals for v1
@@ -264,12 +265,14 @@ The manifest stores the report fingerprint, finding fingerprints, `approved|reje
 
 ### VS Code file diagnostics
 
-The standalone extension invokes `uptocode scan <absolute-file> --format json` from the
-containing workspace on Python saves and the `uptocode.scanFile` command. It reserves
-`--format`, `--output`, and `--fail-on` from extra arguments, accepts report exits 0 and 1,
-maps finding severity/citation/one-based lines, and clears stale diagnostics on clean or
-invalid outcomes. Per-document generations prevent older scans from replacing newer
-results. The extension has no LSP, daemon, repository scan, code action, or auto-fix.
+The standalone extension launches `uptocode lsp` as a persistent stdio language server for
+supported Python and TypeScript documents. Open/save scans use the same static
+`AuditService` as the CLI, remain file-scoped, publish matching finding data, and perform no
+background repository indexing or judgment. Per-document generations prevent older scans
+from replacing newer results. Explicit code actions open the primary registry citation or
+exact-fingerprint FIXPLAN entry. After owner/reason/expiry validation and confirmation, the
+suppression action may insert one version-checked directive in the active document; it does
+not save automatically and is not an auto-fix.
 
 ### Citation registry
 
@@ -314,6 +317,7 @@ uptocode review REPORT [--approve IDS|--approve-all] [--reject IDS]
 uptocode plan REPORT --manifest MANIFEST [--output FIXPLAN.md]
 uptocode fix REPORT --manifest MANIFEST --runner codex|command
                     [--command TEMPLATE] [--verify-command COMMAND] [--apply]
+uptocode lsp
 uptocode serve
 ```
 
@@ -365,8 +369,9 @@ Flow: `scan → review → plan → optional fix --apply`.
    default. With `--apply`, it invokes the selected external runner in one retained
    isolated branch/worktree per approved finding, rescans for fingerprint absence, and
    optionally runs a caller-supplied verification command.
-6. UpToCode never edits source directly, changes the invoking checkout, commits, merges,
-   or deletes remediation work.
+6. UpToCode never changes the invoking checkout through scan/review/plan, commits, merges,
+   or deletes remediation work. D013 permits only the explicitly confirmed LSP suppression
+   edit in the active document; `fix --apply` remains isolated in retained worktrees.
 
 ---
 

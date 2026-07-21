@@ -5,12 +5,12 @@
 [![PyPI version](https://img.shields.io/pypi/v/uptocode.svg)](https://pypi.org/project/uptocode/)
 [![Scanned with UpToCode](https://img.shields.io/badge/scanned%20with-UpToCode-175cd3)](https://github.com/DDYRich72/UpToCode)
 
-UpToCode is a design-time architecture-quality scanner for Python and TypeScript agent applications. It finds missing execution bounds, run budgets, approvals, validation, resilience controls, evals, and observability; explains the evidence; and produces an approval-driven plan for Codex without rewriting source code.
+UpToCode is a design-time architecture-quality scanner for Python and TypeScript agent applications. It finds missing execution bounds, run budgets, approvals, validation, resilience controls, evals, and observability; explains the evidence; and produces an approval-driven plan for Codex. Scanning is non-mutating; the editor can insert one structured suppression only after explicit user confirmation.
 
 The product is deliberately narrower than a general agent-security scanner. Version 1.7 recognizes OpenAI, Anthropic, CrewAI, PydanticAI, LlamaIndex, LangGraph, conservative custom Python/TypeScript loops, and positive evidence of unbounded context growth. Static scans are local and offline. Optional GPT‑5.6 judgment remains explicit, bounded, redacted, and code-sharing gated.
 
 > The Python distribution, import package, and command are all `uptocode`. Version 1.0.0
-> is the published baseline; this source tree is prepared as 1.10.0 for the operator-gated Batch 3 release train.
+> is the published baseline; this source tree is prepared as 1.11.0 for the operator-gated Batch 4.1 release.
 
 ## Install locally
 
@@ -202,9 +202,12 @@ Each static verdict requires recognized syntax and source-backed evidence. Unsup
 
 ## VS Code
 
-The standalone extension in `editor/vscode-uptocode/` scans Python documents on save and
-turns valid UpToCode JSON findings into file diagnostics. It runs no daemon or background
-repository scan and provides no auto-fix. Build and install a local package with:
+The standalone extension in `editor/vscode-uptocode/` starts `uptocode lsp` and publishes
+file-scoped Python and TypeScript findings after open/save without background repository
+indexing. Each diagnostic can open its public citation or exact FIXPLAN entry. The explicit
+**Suppress with metadata** action validates owner, reason, and expiry, asks for confirmation,
+and inserts one version-checked directive without saving the document. There is no auto-fix.
+Build and install a local package with:
 
 ```text
 cd editor/vscode-uptocode
@@ -213,8 +216,9 @@ npm run verify
 code --install-extension uptocode-vscode.vsix
 ```
 
-Configure `uptocode.executable`, `uptocode.extraArgs`, and `uptocode.failOn` in VS Code.
-Marketplace publication remains operator-only.
+Configure `uptocode.executable` in VS Code and put scan policy in `.uptocode.yml`. The old
+subprocess-only `uptocode.extraArgs` and `uptocode.failOn` settings were removed in extension
+0.2.0. Marketplace publication remains operator-only.
 
 ## Supported and unsupported constructs
 

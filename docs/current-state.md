@@ -1,10 +1,11 @@
 # Current State
 
-The working 1.7.0 Batch 2 source adds normalized Anthropic, CrewAI, PydanticAI, and
-LlamaIndex framework evidence; tree-sitter TypeScript/TSX/MTS analysis; strict Report 2.2
-per-language coverage; TypeScript MCP inputs; and a CSP-bounded interactive standalone
-HTML review manifest download. The fixed 1.2.0-1.7.0 release train remains operator-gated;
-no release tag, publication, or deployment is performed by implementation agents.
+The working 1.11.0 Batch 4.1 source adds a persistent pygls server and VS Code language
+client for file-scoped Python and TypeScript diagnostics. Open/save scans share the CLI's
+`AuditService`, discard stale versions, remain offline, and perform no workspace indexing.
+Explicit code actions can open the registry citation or matching FIXPLAN fingerprint and,
+after metadata validation and user confirmation, insert one structured suppression without
+auto-saving. Release tags, publication, and deployment remain operator-gated.
 
 UpToCode 1.0.0 is a Python-first architecture-quality scanner with 188 offline
 tests, deterministic terminal/JSON/HTML/GitHub/SARIF reports, optional GPT-5.6

@@ -1,69 +1,128 @@
-import * as path from "node:path";
 import * as vscode from "vscode";
+import {
+  LanguageClient,
+  type LanguageClientOptions,
+  type ServerOptions,
+} from "vscode-languageclient/node";
 
-import type { Severity } from "./report.js";
-import { GenerationGate, scanFile, type FailOn } from "./scanner.js";
-import { toDiagnosticUpdate } from "./updates.js";
+import {
+  buildSuppressionText,
+  findFixplanFingerprintOffset,
+  findSafeInsertionLine,
+  formatLocalDate,
+  validateExpiry,
+  validateOwner,
+  validateReason,
+  type SuppressionPayload,
+} from "./actions.js";
 
-const severityMap: Record<Severity, vscode.DiagnosticSeverity> = {
-  critical: vscode.DiagnosticSeverity.Error,
-  warning: vscode.DiagnosticSeverity.Warning,
-  info: vscode.DiagnosticSeverity.Information,
-};
+let client: LanguageClient | undefined;
 
-export function activate(context: vscode.ExtensionContext): void {
-  const diagnostics = vscode.languages.createDiagnosticCollection("uptocode");
-  const output = vscode.window.createOutputChannel("UpToCode");
-  const gate = new GenerationGate();
-
-  const scan = async (document: vscode.TextDocument): Promise<void> => {
-    if (document.languageId !== "python" || document.uri.scheme !== "file") return;
-    const key = document.uri.toString();
-    const generation = gate.next(key);
-    const config = vscode.workspace.getConfiguration("uptocode", document.uri);
-    const executable = config.get<string>("executable", "uptocode");
-    const extraArgs = config.get<string[]>("extraArgs", []);
-    const failOn = config.get<FailOn>("failOn", "off");
-    const cwd = vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath
-      ?? path.dirname(document.uri.fsPath);
-    const outcome = await scanFile(executable, document.uri.fsPath, cwd, extraArgs, failOn);
-    if (!gate.isCurrent(key, generation)) return;
-    const update = toDiagnosticUpdate(outcome);
-    if (!outcome.report) {
-      diagnostics.delete(document.uri);
-      for (const message of update.messages) output.appendLine(`${document.uri.fsPath}: ${message}`);
-      return;
-    }
-    const mapped = update.diagnostics.map((item) => {
-      const line = Math.min(item.line - 1, Math.max(0, document.lineCount - 1));
-      const diagnostic = new vscode.Diagnostic(
-        new vscode.Range(line, 0, line, document.lineAt(line).text.length),
-        item.message,
-        severityMap[item.severity],
-      );
-      diagnostic.source = "uptocode";
-      diagnostic.code = item.href
-        ? { value: item.code, target: vscode.Uri.parse(item.href) }
-        : item.code;
-      return diagnostic;
-    });
-    diagnostics.set(document.uri, mapped);
-    for (const message of update.messages) output.appendLine(message);
-  };
-
-  context.subscriptions.push(
-    diagnostics,
-    output,
-    vscode.workspace.onDidSaveTextDocument((document) => void scan(document)),
-    vscode.workspace.onDidCloseTextDocument((document) => {
-      gate.close(document.uri.toString());
-      diagnostics.delete(document.uri);
-    }),
-    vscode.commands.registerCommand("uptocode.scanFile", () => {
-      const document = vscode.window.activeTextEditor?.document;
-      if (document) void scan(document);
-    }),
+async function suppressWithMetadata(payload: SuppressionPayload): Promise<void> {
+  const document = await vscode.workspace.openTextDocument(vscode.Uri.parse(payload.uri));
+  if (vscode.window.activeTextEditor?.document.uri.toString() !== document.uri.toString()) {
+    void vscode.window.showErrorMessage("Open the finding document before applying its suppression.");
+    return;
+  }
+  if (document.version !== payload.version) {
+    void vscode.window.showErrorMessage("The document changed; request the suppression action again.");
+    return;
+  }
+  const owner = await vscode.window.showInputBox({
+    title: `Suppress ${payload.ruleId}`,
+    prompt: "Owner (letters, numbers, ., _, @, and -)",
+    validateInput: validateOwner,
+  });
+  if (owner === undefined) return;
+  const reason = await vscode.window.showInputBox({
+    title: `Suppress ${payload.ruleId}`,
+    prompt: "Reason",
+    validateInput: validateReason,
+  });
+  if (reason === undefined) return;
+  const defaultExpiry = new Date();
+  defaultExpiry.setDate(defaultExpiry.getDate() + 30);
+  const expires = await vscode.window.showInputBox({
+    title: `Suppress ${payload.ruleId}`,
+    prompt: "Expiry (YYYY-MM-DD)",
+    value: formatLocalDate(defaultExpiry),
+    validateInput: (value) => validateExpiry(value, new Date()),
+  });
+  if (expires === undefined) return;
+  const confirmation = await vscode.window.showWarningMessage(
+    `Insert a suppression for ${payload.ruleId} in the active document?`,
+    { modal: true },
+    "Apply",
   );
+  if (confirmation !== "Apply") return;
+  if (
+    vscode.window.activeTextEditor?.document.uri.toString() !== document.uri.toString()
+    || document.version !== payload.version
+  ) {
+    void vscode.window.showErrorMessage("The active document changed; request the action again.");
+    return;
+  }
+
+  const lines = document.getText().split(/\r?\n/);
+  const insertionLine = findSafeInsertionLine(lines, payload.line, document.languageId);
+  const indentation = document.lineAt(insertionLine).text.match(/^\s*/)?.[0] ?? "";
+  const eol = document.eol === vscode.EndOfLine.CRLF ? "\r\n" : "\n";
+  const edit = new vscode.WorkspaceEdit();
+  edit.insert(
+    document.uri,
+    new vscode.Position(insertionLine, 0),
+    `${indentation}${buildSuppressionText(document.languageId, payload.ruleId, owner, reason, expires)}${eol}`,
+  );
+  if (!(await vscode.workspace.applyEdit(edit))) {
+    void vscode.window.showErrorMessage("VS Code could not apply the suppression edit.");
+  }
 }
 
-export function deactivate(): void {}
+async function openFixplan(payload: { uri: string; fingerprint: string }): Promise<void> {
+  const document = await vscode.workspace.openTextDocument(vscode.Uri.parse(payload.uri));
+  const offset = findFixplanFingerprintOffset(document.getText(), payload.fingerprint);
+  if (offset < 0) {
+    void vscode.window.showErrorMessage("The FIXPLAN entry is no longer present.");
+    return;
+  }
+  const editor = await vscode.window.showTextDocument(document);
+  const position = document.positionAt(offset);
+  editor.selection = new vscode.Selection(position, position);
+  editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+}
+
+export function activate(context: vscode.ExtensionContext): void {
+  const executable = vscode.workspace.getConfiguration("uptocode").get<string>("executable", "uptocode");
+  const serverOptions: ServerOptions = { command: executable, args: ["lsp"] };
+  const clientOptions: LanguageClientOptions = {
+    documentSelector: [
+      { scheme: "file", language: "python" },
+      { scheme: "file", language: "typescript" },
+      { scheme: "file", language: "typescriptreact" },
+    ],
+    outputChannelName: "UpToCode",
+  };
+  client = new LanguageClient("uptocode", "UpToCode", serverOptions, clientOptions);
+
+  context.subscriptions.push(
+    client,
+    vscode.commands.registerCommand("uptocode.suppressWithMetadata", suppressWithMetadata),
+    vscode.commands.registerCommand("uptocode.openCitation", (url: string) =>
+      vscode.env.openExternal(vscode.Uri.parse(url)),
+    ),
+    vscode.commands.registerCommand("uptocode.openFixplan", openFixplan),
+    vscode.commands.registerCommand("uptocode.scanFile", () => {
+      const document = vscode.window.activeTextEditor?.document;
+      if (document?.uri.scheme === "file") {
+        void client?.sendNotification("textDocument/didSave", {
+          textDocument: { uri: document.uri.toString() },
+        });
+      }
+    }),
+  );
+  void client.start();
+}
+
+export async function deactivate(): Promise<void> {
+  await client?.stop();
+}

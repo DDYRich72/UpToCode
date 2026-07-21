@@ -18,10 +18,13 @@ discover → parse → normalize evidence → static rules → optional judgment
 - Review and planning consume existing reports and never rescan or modify source.
 - Suppressions are parsed once per file, baselines classify debt before muting known
   findings, and share-safe rendering sanitizes a copied Report 2.2 envelope.
-- MCP wraps the same engine; static-only is its default.
+- MCP and the persistent pygls server wrap the same engine; static-only is their default.
+- The LSP accepts incremental document synchronization but analyzes only the affected file
+  on open/save. Version generations prevent stale scans from replacing current diagnostics;
+  it performs no workspace indexing or judgment calls.
 
 ```text
-interfaces (CLI, MCP, reporters)
+interfaces (CLI, MCP, LSP, reporters)
               ↓
 application (audit, review, plan, baseline)
               ↓

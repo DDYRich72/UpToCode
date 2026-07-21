@@ -329,7 +329,7 @@ def test_cli_eager_version_and_sarif_output(tmp_path: Path) -> None:
     sarif = CliRunner().invoke(app, ["scan", str(source), "--format", "sarif"])
 
     assert version.exit_code == 0
-    assert version.stdout.strip() == "1.10.0"
+    assert version.stdout.strip() == "1.11.0"
     assert sarif.exit_code == 0
     assert json.loads(sarif.stdout)["version"] == "2.1.0"
 

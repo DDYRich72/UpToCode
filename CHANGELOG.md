@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.11.0 - 2026-07-21
+
+- Replace per-save CLI processes with a persistent pygls server for Python and TypeScript,
+  CLI-equivalent file diagnostics, stale-result protection, structured suppression,
+  citation, and exact-fingerprint FIXPLAN actions.
+- Add the public `uptocode lsp` stdio command, a 200 ms warm latency contract, an
+  in-process protocol harness, and an offline representative benchmark.
+
 ## 1.10.0 - 2026-07-20
 
 - Add a standalone save-time VS Code extension with file-scoped JSON scans, mapped

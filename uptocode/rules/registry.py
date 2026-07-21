@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from importlib.resources import files
 from typing import Literal
 
@@ -35,10 +36,16 @@ class RuleDefinition(StrictModel):
     citations: list[RegistryCitation]
 
 
-def load_core_rules() -> list[RuleDefinition]:
+@lru_cache(maxsize=1)
+def _cached_core_rules() -> tuple[RuleDefinition, ...]:
     resource = files("uptocode.rules").joinpath("core.yml")
     raw = yaml.safe_load(resource.read_text(encoding="utf-8"))
-    return [RuleDefinition.model_validate(item) for item in raw]
+    return tuple(RuleDefinition.model_validate(item) for item in raw)
+
+
+def load_core_rules() -> list[RuleDefinition]:
+    """Return a fresh list backed by immutable, process-cached definitions."""
+    return list(_cached_core_rules())
 
 
 def core_rule_map() -> dict[str, RuleDefinition]:
