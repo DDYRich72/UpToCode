@@ -16,3 +16,9 @@ and [the production feature spec](../specs/002-reference-production.md).
 The reviewed defect list lives in
 [the production work order](../tasks/production-workorder.md); the authoritative
 competition-first sequencing is [completion plan v2](../tasks/completion-plan-v2.md).
+Post-1.0 feature work is planned in five batch files:
+[batch 0 — site fixes](../tasks/batch-0-site-fixes.md),
+[batch 1 — quick wins](../tasks/batch-1-quick-wins.md),
+[batch 2 — audience expansion](../tasks/batch-2-audience-expansion.md),
+[batch 3 — differentiation](../tasks/batch-3-differentiation.md),
+[batch 4 — bets](../tasks/batch-4-bets.md).

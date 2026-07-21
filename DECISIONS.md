@@ -29,6 +29,10 @@ Per the official rules (https://openai.devpost.com/rules), the submission reposi
 
 Every phase in `tasks/completion-plan-v2.md` must exit through the Submission-Ready Gate: full offline suite, acceptance, compliance, lint, strict typing, coverage floor, site tests, claims exactly matching the shipped surface, a successful demo dry-run, a clean tree, and a tagged release candidate. If the deadline arrives mid-phase, the previous tag is submitted as-is.
 
+## D011 — Vendor-neutral rule taxonomy; confidential sources are discovery-only (2026-07-20)
+
+The AA rules are vendor-neutral control objectives; framework-specific recognition lives in adapters behind the normalized evidence contract (Anthropic/Claude adapter promoted to first in the Batch 2 queue). Citations shipped in the rulepack and reports must be public, accessible primary documentation — Anthropic and OpenAI docs, the MCP specification, NIST AI 600-1, OWASP agentic guidance. Confidential or need-to-know material (e.g., certification exam guides) may inform requirements discovery but is never cited, quoted, or committed to the repository. Registry citation records are the single source of truth; every report surface resolves citations from the registry (Batch 1 §1.7).
+
 ## D008 — UpToCode is the canonical production identity (2026-07-20)
 
 The operator directed that every current association with the program and MCP use the
