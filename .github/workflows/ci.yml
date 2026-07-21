@@ -12,6 +12,31 @@ permissions:
   contents: read
 
 jobs:
+  vscode-extension:
+    name: VS Code extension / Node 22
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: editor/vscode-uptocode/package-lock.json
+      - name: Install extension dependencies
+        working-directory: editor/vscode-uptocode
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Type check, test, bundle, and package extension
+        working-directory: editor/vscode-uptocode
+        run: npm run verify
+      - name: Retain VSIX
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: uptocode-vscode
+          path: editor/vscode-uptocode/uptocode-vscode.vsix
+          if-no-files-found: error
+          retention-days: 14
+
   python:
     name: Python ${{ matrix.python }} / ${{ matrix.os }}
     timeout-minutes: 20

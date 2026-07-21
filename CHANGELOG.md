@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.0 - 2026-07-20
+
+- Add a standalone save-time VS Code extension with file-scoped JSON scans, mapped
+  diagnostics and citations, race-safe replacement, actionable failure output, a local
+  VSIX workflow, and a dedicated Node 22 CI job.
+
 ## 1.9.0 - 2026-07-20
 
 - Add stable MCP authentication, tool-annotation, and strict-schema controls AA014-AA016,

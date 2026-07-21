@@ -10,7 +10,7 @@ UpToCode is a design-time architecture-quality scanner for Python and TypeScript
 The product is deliberately narrower than a general agent-security scanner. Version 1.7 recognizes OpenAI, Anthropic, CrewAI, PydanticAI, LlamaIndex, LangGraph, conservative custom Python/TypeScript loops, and positive evidence of unbounded context growth. Static scans are local and offline. Optional GPT‑5.6 judgment remains explicit, bounded, redacted, and code-sharing gated.
 
 > The Python distribution, import package, and command are all `uptocode`. Version 1.0.0
-> is the published baseline; this source tree is prepared as 1.9.0 for the operator-gated Batch 3 release train.
+> is the published baseline; this source tree is prepared as 1.10.0 for the operator-gated Batch 3 release train.
 
 ## Install locally
 
@@ -199,6 +199,22 @@ No live API call is part of the offline test or acceptance suite. The submission
 | AA018 | Prompt-only policy enforcement | Static + judgment (experimental) | warning | [NIST AI 600-1](https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf), [OWASP Excessive Agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/) |
 
 Each static verdict requires recognized syntax and source-backed evidence. Unsupported or dynamic constructs produce coverage gaps or analysis warnings; they are never silently declared clean.
+
+## VS Code
+
+The standalone extension in `editor/vscode-uptocode/` scans Python documents on save and
+turns valid UpToCode JSON findings into file diagnostics. It runs no daemon or background
+repository scan and provides no auto-fix. Build and install a local package with:
+
+```text
+cd editor/vscode-uptocode
+npm ci
+npm run verify
+code --install-extension uptocode-vscode.vsix
+```
+
+Configure `uptocode.executable`, `uptocode.extraArgs`, and `uptocode.failOn` in VS Code.
+Marketplace publication remains operator-only.
 
 ## Supported and unsupported constructs
 

@@ -187,7 +187,7 @@ Findings are deterministically ordered by severity, normalized path, line, and r
 ```json
 {
   "schema_version": "2.2",
-  "tool_version": "1.9.0",
+  "tool_version": "1.10.0",
   "scan_root": ".",
   "generated_at": "RFC3339 timestamp",
   "findings": [],
@@ -261,6 +261,15 @@ The manifest stores the report fingerprint, finding fingerprints, `approved|reje
 - Judgment cannot upgrade unsupported syntax into a static fact; it operates only on normalized evidence and redacted excerpts.
 - Every rule entry contains applicability, evidence requirements, severity, maturity, verdict templates, suppressions, and structured public citations. The registry is the citation source of truth for static and judgment findings.
 - Use at least two applicable primary-vendor sources when claiming vendor convergence. Otherwise state only the individual sourced recommendation.
+
+### VS Code file diagnostics
+
+The standalone extension invokes `uptocode scan <absolute-file> --format json` from the
+containing workspace on Python saves and the `uptocode.scanFile` command. It reserves
+`--format`, `--output`, and `--fail-on` from extra arguments, accepts report exits 0 and 1,
+maps finding severity/citation/one-based lines, and clears stale diagnostics on clean or
+invalid outcomes. Per-document generations prevent older scans from replacing newer
+results. The extension has no LSP, daemon, repository scan, code action, or auto-fix.
 
 ### Citation registry
 

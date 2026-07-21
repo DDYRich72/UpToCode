@@ -1,0 +1,56 @@
+{
+  "name": "uptocode-vscode",
+  "displayName": "UpToCode",
+  "description": "Save-time UpToCode diagnostics for Python files.",
+  "version": "0.1.0",
+  "publisher": "uptocode-local",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/DDYRich72/UpToCode.git" },
+  "engines": { "vscode": "^1.96.0" },
+  "categories": ["Linters"],
+  "activationEvents": ["onLanguage:python", "onCommand:uptocode.scanFile"],
+  "main": "./dist/extension.js",
+  "files": ["dist", "README.md", "LICENSE"],
+  "contributes": {
+    "commands": [
+      { "command": "uptocode.scanFile", "title": "UpToCode: Scan Current File" }
+    ],
+    "configuration": {
+      "title": "UpToCode",
+      "properties": {
+        "uptocode.executable": {
+          "type": "string",
+          "default": "uptocode",
+          "description": "Path or command name for the UpToCode executable."
+        },
+        "uptocode.extraArgs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Additional scan arguments. --format, --output, and --fail-on are reserved."
+        },
+        "uptocode.failOn": {
+          "type": "string",
+          "enum": ["off", "critical", "warning", "info"],
+          "default": "off",
+          "description": "Optional CLI failure threshold; diagnostics are parsed for exit 0 or 1."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "node esbuild.mjs",
+    "package": "npm run build && vsce package --no-dependencies --out uptocode-vscode.vsix",
+    "verify": "npm run typecheck && npm test && npm run package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.96.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.0.0"
+  }
+}

@@ -13,3 +13,7 @@ build/
 .uptocode/
 report.html
 out.json
+editor/vscode-uptocode/node_modules/
+editor/vscode-uptocode/node_modules.codex-incomplete-*/
+editor/vscode-uptocode/dist/
+editor/vscode-uptocode/*.vsix

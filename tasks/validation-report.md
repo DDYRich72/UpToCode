@@ -469,3 +469,17 @@ publication, and MCP registry submission are post-event Phase 7 work.
   branch coverage, offline acceptance, zero-finding production compliance, site build, and
   all seven site tests pass. No live model, release, publication, deployment, or tag action
   was performed.
+
+## Batch 3 Lane 3.3 — VS Code diagnostics / 1.10.0
+
+- **PASS — thin client:** the standalone TypeScript/esbuild workspace scans only saved or
+  explicitly requested Python files, reserves JSON/threshold output flags, and accepts
+  valid report exits 0 and 1 without adding a daemon, LSP, repository scan, code action,
+  or auto-fix.
+- **PASS — diagnostics:** critical/warning/info severity, rule code, first citation,
+  one-based full-line ranges, observed evidence, and experimental status are mapped.
+  Clean/failed scans clear stale diagnostics, analysis warnings reach the output channel,
+  and per-document generations prevent rapid-save races.
+- **PASS — extension gate:** strict TypeScript checking, nine Vitest tests, esbuild bundle,
+  and `@vscode/vsce` packaging produce a local 9.74 KB VSIX. CI has a separate Node 22
+  lockfile-scoped job; Marketplace listing and publication remain operator-only.
