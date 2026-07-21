@@ -6,6 +6,15 @@ from uptocode.models import Finding, Report, ReviewManifest
 from uptocode.review import report_fingerprint
 
 
+def remediation_prompt(finding: Finding) -> str:
+    return (
+        f"Address UpToCode finding {finding.rule_id} ({finding.fingerprint}) in "
+        f"{finding.file}:{finding.line}. Observed: {finding.verdict.observed} "
+        f"Required outcome: {finding.verdict.recommended} Preserve existing behavior, "
+        "add regression coverage, run the relevant checks, and report evidence."
+    )
+
+
 def _entry(finding: Finding) -> str:
     steps = [
         "Inspect the cited location and its callers to confirm the evidence.",
@@ -18,12 +27,7 @@ def _entry(finding: Finding) -> str:
         "The clean counterpart remains finding-free.",
         "Existing behavior and public contracts remain intact.",
     ]
-    prompt = (
-        f"Address UpToCode finding {finding.rule_id} ({finding.fingerprint}) in "
-        f"{finding.file}:{finding.line}. Observed: {finding.verdict.observed} "
-        f"Required outcome: {finding.verdict.recommended} Preserve existing behavior, "
-        "add regression coverage, run the relevant checks, and report evidence."
-    )
+    prompt = remediation_prompt(finding)
     return "\n".join(
         [
             f"## {finding.rule_id}: {finding.title}",

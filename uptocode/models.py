@@ -213,3 +213,24 @@ class ReviewManifest(StrictModel):
         default_factory=lambda: datetime.now(timezone.utc)
     )
     decisions: list[ReviewDecision]
+
+
+class FixResult(StrictModel):
+    rule_id: str
+    fingerprint: str
+    file: str
+    branch: str
+    worktree: str
+    runner_exit: int | None = None
+    fingerprint_gone: bool | None = None
+    verification_status: Literal["not_requested", "not_run", "passed", "failed"]
+    verification_exit: int | None = None
+    status: Literal["PASS", "FAIL"]
+    reason: str | None = None
+
+
+class FixSession(StrictModel):
+    schema_version: str = "1.0"
+    report_fingerprint: str
+    base_revision: str
+    results: list[FixResult] = Field(default_factory=list)

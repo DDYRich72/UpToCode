@@ -10,6 +10,13 @@ import typer
 from uptocode import __version__
 from uptocode.baseline import Baseline, apply_baseline, create_baseline, load_baseline
 from uptocode.engine import scan_path
+from uptocode.fixing import (
+    FixPreflightError,
+    FixRunner,
+    apply_fixes,
+    render_dry_run,
+    render_fix_session,
+)
 from uptocode.models import SEVERITY_ORDER, Severity
 from uptocode.models import Report, ReviewManifest
 from uptocode.planner import generate_fixplan
@@ -318,6 +325,38 @@ def plan_command(
         raise typer.Exit(2) from error
     _write_output(output, rendered)
     typer.echo(str(output))
+
+
+@app.command("fix")
+def fix_command(
+    report_path: Path = typer.Argument(..., metavar="REPORT"),
+    manifest_path: Path = typer.Option(..., "--manifest", metavar="MANIFEST"),
+    runner: FixRunner = typer.Option(..., "--runner"),
+    command: str | None = typer.Option(None, "--command"),
+    verify_command: str | None = typer.Option(None, "--verify-command"),
+    apply: bool = typer.Option(False, "--apply"),
+) -> None:
+    """Preview or run approved remediation in isolated Git worktrees."""
+    report = _read_report(report_path)
+    try:
+        manifest = ReviewManifest.model_validate_json(
+            manifest_path.read_text(encoding="utf-8")
+        )
+        if not apply:
+            typer.echo(
+                render_dry_run(report, manifest, runner, command, verify_command)
+            )
+            return
+        session = apply_fixes(report, manifest, runner, command, verify_command)
+    except (OSError, ValueError, FixPreflightError) as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(2) from error
+    output = Path(report.scan_root).resolve() / ".uptocode" / "fix-session.json"
+    _write_output(output, session.model_dump_json(indent=2), create_parent=True)
+    typer.echo(render_fix_session(session))
+    typer.echo(str(output))
+    if any(result.status == "FAIL" for result in session.results):
+        raise typer.Exit(1)
 
 
 @app.command()

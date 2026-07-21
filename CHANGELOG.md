@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.0 - 2026-07-20
+
+- Add approval-bound `uptocode fix` dry-runs and explicit external-runner remediation in
+  retained isolated Git branches/worktrees, with fingerprint rescans, optional verification,
+  strict session evidence, and no automatic commit, merge, cleanup, or invoking-checkout edits.
+
 ## 1.7.0 - 2026-07-20
 
 - Add keyboard-accessible approve/reject controls and local report-bound ReviewManifest

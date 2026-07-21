@@ -439,3 +439,16 @@ publication, and MCP registry submission are post-event Phase 7 work.
   Release creation, tag creation/push, or credential operation occurred.
 - **OPERATOR GATES REMAIN:** create the missing `v1.0.0` GitHub Release, list the Action on
   GitHub Marketplace, then create/push `v1.1.0` only after reviewing these local changes.
+
+## Batch 3 Lane 3.1 — Isolated remediation / 1.8.0
+
+- **PASS — approval contract:** D012 records operator approval; scan/review/plan and fix
+  preview remain non-mutating, while `fix --apply` delegates only to an external runner in
+  retained per-fingerprint branches/worktrees.
+- **PASS — implementation:** strict `FixSession`/`FixResult` evidence records runner exit,
+  fingerprint absence, verification status, branch, worktree, and final PASS/FAIL.
+- **PASS — offline tests:** fake runners cover no-write dry-run, clean-tree refusal, stale
+  findings, argv placeholders, successful isolation, runner failure, and retained work.
+- **PASS — Windows gate:** Ruff, strict mypy over 41 source files, 225 tests, 87% branch
+  coverage, offline acceptance, production compliance, site build, and all seven site tests
+  pass. No live runner, model call, merge, publication, or tag operation was performed.

@@ -99,7 +99,7 @@ def test_server_manifest_uses_the_canonical_registry_and_package_identity() -> N
         {
             "registryType": "pypi",
             "identifier": "uptocode",
-            "version": "1.7.0",
+            "version": "1.8.0",
             "runtimeHint": "uvx",
             "packageArguments": [
                 {"type": "positional", "value": "serve"},

@@ -187,7 +187,7 @@ Findings are deterministically ordered by severity, normalized path, line, and r
 ```json
 {
   "schema_version": "2.2",
-  "tool_version": "1.7.0",
+  "tool_version": "1.8.0",
   "scan_root": ".",
   "generated_at": "RFC3339 timestamp",
   "findings": [],
