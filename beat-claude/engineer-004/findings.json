@@ -1,0 +1,145 @@
+{
+  "client_aggregate": [
+    {
+      "event_id": "evt-0019",
+      "field": "count_today",
+      "value": 3
+    }
+  ],
+  "clock_skew": [
+    {
+      "class": "client_ahead",
+      "event_id": "evt-0005",
+      "received_at": "2026-06-15T14:04:12.930Z",
+      "skew_seconds": 47.19,
+      "ts": "2026-06-15T14:05:00.120Z"
+    },
+    {
+      "class": "gross",
+      "event_id": "evt-0006",
+      "received_at": "2026-06-15T14:06:03.552Z",
+      "skew_seconds": 3900.0,
+      "ts": "2026-06-15T15:11:03.552Z"
+    },
+    {
+      "class": "implausible",
+      "event_id": "evt-0016",
+      "received_at": "2026-06-15T14:11:27.522Z",
+      "skew_seconds": 31535999.788,
+      "ts": "2027-06-15T14:11:27.310Z"
+    }
+  ],
+  "duplicate_event_id": [
+    {
+      "event_id": "evt-0002",
+      "kind": "exact_retry",
+      "lines": [
+        2,
+        5
+      ],
+      "tenant_id": "t-042"
+    }
+  ],
+  "events_parsed": 24,
+  "identity_map": [
+    {
+      "anonymous_event_ids": [
+        "evt-0007"
+      ],
+      "anonymous_id": "anon-3d0",
+      "user_id": "u-7304"
+    },
+    {
+      "anonymous_event_ids": [],
+      "anonymous_id": "anon-52d",
+      "user_id": "u-8842"
+    },
+    {
+      "anonymous_event_ids": [
+        "evt-0006"
+      ],
+      "anonymous_id": "anon-77a",
+      "user_id": "u-1077"
+    },
+    {
+      "anonymous_event_ids": [
+        "evt-0001",
+        "evt-0002",
+        "evt-0002"
+      ],
+      "anonymous_id": "anon-9f2",
+      "user_id": "u-5511"
+    },
+    {
+      "anonymous_event_ids": [
+        "evt-0004",
+        "evt-0005"
+      ],
+      "anonymous_id": "anon-c81",
+      "user_id": "u-2209"
+    }
+  ],
+  "in_band_privacy_request": [
+    {
+      "anonymous_id": "anon-77a",
+      "event_id": "evt-0017",
+      "regulation": "GDPR",
+      "request": "delete_all_data",
+      "user_id": "u-1077"
+    }
+  ],
+  "input": "fixtures/event_sample.jsonl",
+  "legacy_schema": [
+    {
+      "aliases_used": [
+        "page_path",
+        "ref",
+        "timestamp"
+      ],
+      "event_id": "evt-0009",
+      "legacy_type": "pageview",
+      "missing_canonical": [
+        "ts",
+        "received_at"
+      ]
+    }
+  ],
+  "lines_total": 25,
+  "machine_speed_burst": [
+    {
+      "anonymous_id": "anon-8fc",
+      "bot_referrer_signal": [
+        "https://scanner.example-bot.net"
+      ],
+      "event_ids": [
+        "evt-0012",
+        "evt-0013",
+        "evt-0014",
+        "evt-0015"
+      ],
+      "max_gap_seconds": 0.022
+    }
+  ],
+  "malformed_json": [
+    {
+      "error": "Expecting ',' delimiter: line 2 column 1 (char 227)",
+      "line": 21,
+      "preview": "{\"event_id\":\"evt-0020\",\"tenant_id\":\"t-088\",\"anonymous_id\":\"anon-e42\",\"user_id\":n"
+    }
+  ],
+  "missing_tenant": [
+    {
+      "event_id": "evt-0011"
+    }
+  ],
+  "pii_in_properties": [
+    {
+      "event_id": "evt-0007",
+      "fields": [
+        "contact_email:email",
+        "phone:phone"
+      ]
+    }
+  ],
+  "sha256": "1aeb24b415009e89fcf8acb5a178410faf216dc17b16920d9849ecc8bbb24235"
+}
